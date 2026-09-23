@@ -1,0 +1,1 @@
+const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;while(n=walker.nextNode()){n.nodeValue=n.nodeValue.replace(/athletelink/gi,'SCOUTCARD').replace(/athlete\s*link/gi,'SCOUTCARD')}document.querySelectorAll('.brand').forEach(b=>{b.innerHTML='<span class="mark">S</span>SCOUT<span>CARD</span>'});
