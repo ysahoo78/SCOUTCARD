@@ -1,0 +1,1 @@
+document.querySelector('#order-form')?.addEventListener('submit',e=>{e.preventDefault();const email=document.querySelector('#order-email').value;document.querySelector('#order-note').textContent=`Thanks! Your card is reserved for ${email}. Secure Stripe checkout will go here next.`;e.currentTarget.querySelector('button').textContent='Reserved ✓'});
