@@ -3,3 +3,5 @@ outputs/
 *.sql
 *.md
 .DS_Store
+.env
+.env.*

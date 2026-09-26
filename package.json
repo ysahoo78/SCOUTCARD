@@ -1,0 +1,7 @@
+{
+  "name": "scoutcard",
+  "private": true,
+  "type": "module",
+  "scripts": { "test:payments": "node --test work/payments.test.mjs" },
+  "dependencies": { "stripe": "22.6.0" }
+}
