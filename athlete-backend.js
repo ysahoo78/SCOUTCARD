@@ -64,7 +64,7 @@ mountAuth(async nextUser => {
   const id = user.id;
   save.textContent = 'Loading your profile…';
   try {
-    const { data, error } = await withTimeout(db.from('athlete_profiles').select('*').eq('id', id).maybeSingle());
+    const { data, error } = await withTimeout(db.from('athlete_profiles').select('slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,is_public').eq('id', id).maybeSingle());
     if (user?.id !== id) return;
     if (error) throw error;
     if (data) {
