@@ -3,9 +3,13 @@
   const style = document.createElement('link');
   style.rel = 'stylesheet'; style.href = 'site-notice.css'; document.head.append(style);
   const nav = document.createElement('nav');
-  nav.id = 'scoutcard-policy-links'; nav.setAttribute('aria-label', 'Policies and privacy');
+  nav.id = 'scoutcard-policy-links'; nav.setAttribute('aria-label', 'Policies and social accounts');
   for (const [label, href] of [['Privacy','privacy.html'],['Terms','terms.html'],['Refunds','refunds.html'],['Cookies','cookies.html'],['Request data deletion','privacy.html#retention']]) {
     const link = document.createElement('a'); link.href = href; link.textContent = label; nav.append(link);
+  }
+  for (const [label, href] of [['Instagram @scoutcard26','https://www.instagram.com/scoutcard26/'],['TikTok @scoutcard26','https://www.tiktok.com/@scoutcard26']]) {
+    const link = document.createElement('a'); link.href = href; link.textContent = label;
+    link.target = '_blank'; link.rel = 'noopener noreferrer'; link.setAttribute('aria-label', label + ' (opens a new tab)'); nav.append(link);
   }
   const settings = document.createElement('button'); settings.type = 'button'; settings.textContent = 'Cookie settings';
   nav.append(settings); document.body.append(nav);
