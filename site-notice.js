@@ -9,6 +9,38 @@
   }
   const settings = document.createElement('button'); settings.type = 'button'; settings.textContent = 'Cookie settings';
   nav.append(settings); document.body.append(nav);
+  for (const id of ['signin-form','order-form','athlete-form']) {
+    const form = document.getElementById(id); if (!form) continue;
+    const group = document.createElement('div'); group.className = 'scoutcard-form-disclosure';
+    const label = document.createElement('label');
+    const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.required = true; checkbox.name = 'terms_acknowledgment';
+    const words = document.createElement('span'); words.append('I agree to the ');
+    const terms = document.createElement('a'); terms.href = 'terms.html'; terms.target = '_blank'; terms.rel = 'noopener'; terms.textContent = 'Terms of service (opens a new tab)';
+    words.append(terms,'.'); label.append(checkbox,words); group.append(label);
+    const note = document.createElement('p'); note.append('Read how we use your information in our ');
+    const privacy = document.createElement('a'); privacy.href = 'privacy.html'; privacy.target = '_blank'; privacy.rel = 'noopener'; privacy.textContent = 'Privacy policy (opens a new tab)';
+    note.append(privacy,'.'); group.append(note);
+    if (id === 'order-form') {
+      const refund = document.createElement('a'); refund.href = 'refunds.html'; refund.target = '_blank'; refund.rel = 'noopener'; refund.textContent = 'Read cancellation and refund rules (opens a new tab)';
+      group.append(refund);
+    }
+    form.insertBefore(group,form.querySelector('button[type="submit"]') || form.querySelector('button'));
+  }
+  // The public profile form is rendered asynchronously; observe only until it appears.
+  function explainMessage() {
+    const form = document.getElementById('message-form'); if (!form) return false;
+    if (!form.querySelector('.scoutcard-form-disclosure')) {
+      const note = document.createElement('p'); note.className = 'scoutcard-form-disclosure';
+      note.textContent = 'Sending shares your name, reply email, and message with this athlete. Do not include sensitive information. ';
+      const link = document.createElement('a'); link.href = 'privacy.html'; link.textContent = 'Privacy policy'; note.append(link);
+      form.insertBefore(note,form.querySelector('button'));
+    }
+    return true;
+  }
+  if (document.getElementById('profile-page') && !explainMessage()) {
+    const observer = new MutationObserver(() => { if (explainMessage()) observer.disconnect(); });
+    observer.observe(document.getElementById('profile-page'),{childList:true,subtree:true});
+  }
   const notice = document.createElement('section'); notice.id = 'scoutcard-storage-notice';
   notice.setAttribute('aria-labelledby','scoutcard-storage-title');
   const heading = document.createElement('h2'); heading.id = 'scoutcard-storage-title'; heading.textContent = 'Your browser storage';
