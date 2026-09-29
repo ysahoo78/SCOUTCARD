@@ -8,8 +8,19 @@ async function start(file, statusIds) {
     }
   }
 }
+if (document.getElementById('athlete-form')) start('./athlete.js', ['profile-status']);
+if (document.getElementById('athlete-form') || document.getElementById('activate-form')) {
+  try {
+    const { requireAccountEligibility } = await import('./age-gate.js');
+    await requireAccountEligibility();
+  } catch {
+    document.querySelectorAll('#signin-form,#athlete-form,#activate-form,#order-form').forEach(form => { form.hidden = true; });
+    const note = document.querySelector('#auth-note');
+    if (note) note.textContent = 'Account setup could not load. Please refresh to try again.';
+    throw new Error('Account eligibility check unavailable');
+  }
+}
 if (document.getElementById('athlete-form')) {
-  start('./athlete.js', ['profile-status']);
   start('./athlete-backend.js', ['auth-note', 'profile-status']);
   start('./order-demo.js', ['order-note']);
 } else if (document.getElementById('activate-form')) start('./activate.js', ['auth-note', 'note']);
