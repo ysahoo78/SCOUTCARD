@@ -5,6 +5,9 @@ const form = document.querySelector('#order-form'), note = document.querySelecto
 let pending = null;
 try { pending = JSON.parse(sessionStorage.getItem('scoutcard-pending-checkout')); } catch { /* Storage is optional. */ }
 if (!pending || !/^[0-9a-f-]{36}$/i.test(pending.id || '') || typeof pending.email !== 'string') pending = null;
+// A saved checkout from an earlier visit may predate the consent requirement.
+// Require the current form acknowledgments before exposing its payment link.
+if (pending) pending.saved = false;
 function resumeLink() {
   const link = document.querySelector('#checkout-resume');
   link.hidden = !pending?.saved;
