@@ -18,6 +18,12 @@ form.addEventListener('submit', async event => {
   const customer_name = document.querySelector('#order-name').value.trim();
   const email = document.querySelector('#order-email').value.trim().toLowerCase();
   const shipping_address = document.querySelector('#order-address').value.trim();
+  const terms_acknowledged = form.querySelector('[name="terms_acknowledgment"]')?.checked === true;
+  const adult_purchaser_acknowledged = form.querySelector('[name="adult_purchaser"]')?.checked === true;
+  if (!terms_acknowledged || !adult_purchaser_acknowledged) {
+    note.textContent = 'Review the terms and confirm an adult is making this purchase.';
+    return;
+  }
   if (customer_name.length < 2 || shipping_address.length < 6) { note.textContent = 'Enter your full name and complete shipping address.'; return; }
   button.disabled = true; button.textContent = 'Saving details…'; note.textContent = '';
   try {
@@ -27,8 +33,9 @@ form.addEventListener('submit', async event => {
   if (!pending || pending.fingerprint !== fingerprint) pending = { id:crypto.randomUUID(), email, fingerprint, saved:false };
   resumeLink();
   try { sessionStorage.setItem('scoutcard-pending-checkout', JSON.stringify(pending)); } catch { /* Optional. */ }
-    const { data, error } = await withTimeout(db.rpc('reserve_scoutcard_order', {
-      request_id:pending.id, customer_name, customer_email:email, delivery_address:shipping_address
+    const { data, error } = await withTimeout(db.rpc('reserve_scoutcard_order_with_consent', {
+      request_id:pending.id, customer_name, customer_email:email, delivery_address:shipping_address,
+      terms_acknowledged, adult_purchaser_acknowledged
     }));
     if (error) throw error;
     if (data !== pending.id) throw new Error('Unable to confirm the order reference. Please try again.');
