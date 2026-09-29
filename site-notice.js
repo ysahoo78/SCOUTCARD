@@ -65,21 +65,6 @@
     }
     form.insertBefore(group,form.querySelector('button[type="submit"]') || form.querySelector('button'));
   }
-  // The public profile form is rendered asynchronously; observe only until it appears.
-  function explainMessage() {
-    const form = document.getElementById('message-form'); if (!form) return false;
-    if (!form.querySelector('.scoutcard-form-disclosure')) {
-      const note = document.createElement('p'); note.className = 'scoutcard-form-disclosure';
-      note.textContent = 'Sending shares your name, reply email, and message with this athlete. Do not include sensitive information. ';
-      const link = document.createElement('a'); link.href = 'privacy.html'; link.textContent = 'Privacy policy'; note.append(link);
-      form.insertBefore(note,form.querySelector('button'));
-    }
-    return true;
-  }
-  if (document.getElementById('profile-page') && !explainMessage()) {
-    const observer = new MutationObserver(() => { if (explainMessage()) observer.disconnect(); });
-    observer.observe(document.getElementById('profile-page'),{childList:true,subtree:true});
-  }
   const notice = document.createElement('section'); notice.id = 'scoutcard-storage-notice';
   notice.setAttribute('aria-labelledby','scoutcard-storage-title');
   const heading = document.createElement('h2'); heading.id = 'scoutcard-storage-title'; heading.textContent = 'Your browser storage';
