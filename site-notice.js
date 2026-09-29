@@ -18,7 +18,7 @@
   style.rel = 'stylesheet'; style.href = 'site-notice.css'; document.head.append(style);
   const nav = document.createElement('nav');
   nav.id = 'scoutcard-policy-links'; nav.setAttribute('aria-label', 'Policies and social accounts');
-  for (const [label, href] of [['Privacy','privacy.html'],['Terms','terms.html'],['Refunds','refunds.html'],['Cookies','cookies.html'],['Request data deletion','privacy.html#retention']]) {
+  for (const [label, href] of [['Privacy','privacy.html'],['Terms','terms.html'],['Refunds','refunds.html'],['Cookies','cookies.html'],['Request data deletion','data-request.html']]) {
     const link = document.createElement('a'); link.href = href; link.textContent = label; nav.append(link);
   }
   const socials = document.createElement('div'); socials.className = 'scoutcard-socials';
