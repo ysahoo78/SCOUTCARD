@@ -8,6 +8,12 @@
     const skip = document.createElement('a'); skip.className = 'skip-link'; skip.href = '#' + main.id; skip.textContent = 'Skip to content';
     document.body.prepend(skip);
   }
+  document.querySelector('a.skip-link')?.addEventListener('click', event => {
+    if (!main) return;
+    event.preventDefault();
+    main.focus();
+    main.scrollIntoView({block:'start'});
+  });
   const style = document.createElement('link');
   style.rel = 'stylesheet'; style.href = 'site-notice.css'; document.head.append(style);
   const nav = document.createElement('nav');
