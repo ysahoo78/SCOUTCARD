@@ -145,6 +145,7 @@ begin
  return request_id;
 end; $$;
 revoke all on function public.reserve_scoutcard_order(uuid,text,text,text) from public,anon,authenticated;
-grant execute on function public.reserve_scoutcard_order(uuid,text,text,text) to anon,authenticated;
+-- Kept only for migration history. The browser uses the consent-aware RPC in
+-- order-consent.sql; never re-grant this legacy function to anon/authenticated.
 notify pgrst,'reload schema';
 commit;
