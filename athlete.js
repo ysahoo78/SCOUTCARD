@@ -17,7 +17,8 @@ updatePreview();
 function setMode() {
   const fragment = location.hash;
   const authReturn = /access_token=|error_description=|refresh_token=/.test(fragment) || location.search.includes('code=');
-  const mode = ['#setup', '#profile', '#account', '#athlete-workspace'].includes(fragment) || authReturn ? 'setup' : 'buy';
+  const preserveSetup = fragment === '#main' && document.body.classList.contains('setup-mode');
+  const mode = preserveSetup || ['#setup', '#profile', '#account', '#athlete-workspace'].includes(fragment) || authReturn ? 'setup' : 'buy';
   document.body.classList.toggle('setup-mode', mode === 'setup');
   document.body.classList.toggle('buy-mode', mode === 'buy');
   document.querySelectorAll('[data-mode]').forEach(link => {
