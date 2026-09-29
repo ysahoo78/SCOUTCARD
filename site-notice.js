@@ -1,6 +1,7 @@
 (() => {
   if (document.getElementById('scoutcard-policy-links')) return;
   const main = document.querySelector('main');
+  if (main) main.setAttribute('tabindex','-1');
   if (main && !document.querySelector('a.skip-link')) {
     if (!main.id) main.id = 'main';
     main.setAttribute('tabindex','-1');
