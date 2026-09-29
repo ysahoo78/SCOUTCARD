@@ -2,6 +2,7 @@ work/
 outputs/
 *.sql
 *.md
+script.js
 .DS_Store
 .env
 .env.*
