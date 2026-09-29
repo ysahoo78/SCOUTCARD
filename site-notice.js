@@ -30,7 +30,7 @@
   nav.prepend(socials);
   const settings = document.createElement('button'); settings.type = 'button'; settings.textContent = 'Cookie settings';
   nav.append(settings); document.body.append(nav);
-  for (const id of ['signin-form','order-form','athlete-form']) {
+  for (const id of ['signin-form','order-form']) {
     const form = document.getElementById(id); if (!form) continue;
     const group = document.createElement('div'); group.className = 'scoutcard-form-disclosure';
     const label = document.createElement('label');
