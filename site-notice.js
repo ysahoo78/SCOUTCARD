@@ -1,5 +1,12 @@
 (() => {
   if (document.getElementById('scoutcard-policy-links')) return;
+  const main = document.querySelector('main');
+  if (main && !document.querySelector('a.skip-link')) {
+    if (!main.id) main.id = 'main';
+    main.setAttribute('tabindex','-1');
+    const skip = document.createElement('a'); skip.className = 'skip-link'; skip.href = '#' + main.id; skip.textContent = 'Skip to content';
+    document.body.prepend(skip);
+  }
   const style = document.createElement('link');
   style.rel = 'stylesheet'; style.href = 'site-notice.css'; document.head.append(style);
   const nav = document.createElement('nav');
