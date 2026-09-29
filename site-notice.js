@@ -56,6 +56,10 @@
     const privacy = document.createElement('a'); privacy.href = 'privacy.html'; privacy.target = '_blank'; privacy.rel = 'noopener'; privacy.textContent = 'Privacy policy (opens a new tab)';
     note.append(privacy,'.'); group.append(note);
     if (id === 'order-form') {
+      const adult = document.createElement('label');
+      const adultCheck = document.createElement('input'); adultCheck.type = 'checkbox'; adultCheck.required = true; adultCheck.name = 'adult_purchaser';
+      const adultText = document.createElement('span'); adultText.textContent = 'I am 18 or older and am purchasing for myself or an athlete with their parent or guardian’s permission.';
+      adult.append(adultCheck,adultText); group.append(adult);
       const refund = document.createElement('a'); refund.href = 'refunds.html'; refund.target = '_blank'; refund.rel = 'noopener'; refund.textContent = 'Read cancellation and refund rules (opens a new tab)';
       group.append(refund);
     }
