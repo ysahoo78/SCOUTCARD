@@ -42,6 +42,29 @@ const env = {CRON_SECRET:'test-only-secret', RETENTION_MODE:'preview', SUPABASE_
 const request = () => new Request('https://example.com/api/cron/order-retention', {headers:{authorization:'Bearer test-only-secret'}});
 const candidate = {id:'order-a', created_at:'2026-01-01T00:00:00Z'};
 
+test('a paid session on the next page prevents an unpaid classification', async () => {
+  let calls = 0;
+  const response = await handleRetentionPreview(request(), env, async () => Response.json([candidate]), {
+    checkout:{sessions:{list:async params => {
+      calls += 1;
+      if (calls === 1) return {data:[{id:'cs_old',client_reference_id:'order-a',status:'expired',payment_status:'unpaid'}],has_more:true};
+      assert.equal(params.starting_after, 'cs_old');
+      return {data:[{id:'cs_paid',client_reference_id:'order-a',status:'complete',payment_status:'paid'}],has_more:false};
+    }}}
+  });
+  assert.equal(calls, 2);
+  assert.deepEqual(await response.json(), {mode:'preview',reviewed:1,review:1,notPaid:0});
+});
+
+test('scan limit never treats a partial result as complete', async () => {
+  let calls = 0;
+  const response = await handleRetentionPreview(request(), env, async () => Response.json([candidate]), {
+    checkout:{sessions:{list:async () => ({data:[{id:'cs_'+(++calls),client_reference_id:'order-a',status:'expired',payment_status:'unpaid'}],has_more:true})}}
+  });
+  assert.equal(calls, 3);
+  assert.equal((await response.json()).notPaid, 0);
+});
+
 test('missing or incorrect secret cannot reach either provider', async () => {
   const forbidden = () => { throw new Error('provider must not be called'); };
   assert.equal((await handleRetentionPreview(new Request('https://example.com', {headers:{authorization:'Bearer '}}), {...env, CRON_SECRET:''}, forbidden)).status, 401);
