@@ -1,6 +1,13 @@
 # SCOUTCARD asset and license record
 
-Last reviewed: September 29, 2026.
+Last reviewed: September 30, 2026.
+
+## Approved website logo
+
+- `assets/scoutcard-logo.svg` contains the AI-generated blue-and-coral logo approved by the owner on September 30, 2026. It wraps the approved PNG without changing the artwork, trimming presentation whitespace with its viewBox.
+- Created through the built-in image generation tool in this SCOUTCARD task, then recolored from the owner's selected silver-and-black concept to match the supplied card palette.
+- Used for site navigation, footer branding, and the browser icon. No third-party stock logo was supplied as its source.
+- This record documents provenance and approval; trademark clearance and exclusivity have not been assessed.
 
 ## Card artwork
 
