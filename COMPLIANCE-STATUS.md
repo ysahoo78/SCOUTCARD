@@ -16,7 +16,7 @@ Updated September 30, 2026. This tracks implementation work, not a certification
 
 ## Still open
 
-1. **Order data minimization and retention:** names, emails, and shipping addresses are still saved before Stripe checkout. Migrate fulfillment details from verified Stripe webhooks before removing those fields from the order form. Test delayed payments and duplicate sessions. Complete the 30-day cleanup with Stripe reconciliation and safe handling of late checkout links. Current retention code is read-only and unscheduled, with 13 payment/retention tests passing September 30.
+1. **Order data minimization and retention:** names, emails, and shipping addresses are still saved before Stripe checkout. Migrate fulfillment details from verified Stripe webhooks before removing those fields from the order form. Test delayed payments and duplicate sessions. Complete the 30-day cleanup with Stripe reconciliation and safe handling of late checkout links. Current retention code is read-only and unscheduled, with 15 payment/retention tests passing September 30.
 2. **Server configuration:** inspect/configure a restricted Stripe reconciliation key and a protected scheduler secret before enabling reconciliation. Never put those values in chat, source, or client code.
 3. **Teen permissions:** owner selected self-attestation pending legal review. The checkbox does not verify a parent or guardian. No verified-parental-consent flow is claimed.
 4. **Fulfillment provider:** owner confirmed September 30 that no printer/shipping company has been selected. Update disclosures and handling arrangements once chosen.
