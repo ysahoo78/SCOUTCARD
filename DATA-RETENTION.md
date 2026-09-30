@@ -33,8 +33,10 @@ Reviewed September 29, 2026. This is an internal plan and review checklist, not 
 
 The observed production database had one payment-pending order dated September 25, 2026, and no paid order on September 29. No records were deleted or changed during this audit.
 
-## Planned automatic cleanup (not yet active)
+## Retention preview prepared (not scheduled)
 
 The owner selected cleanup of unpaid order contact and shipping details after 30 days, but only after a successful server-side Stripe reconciliation. This must not be implemented as a database-only timer or a status-only `DELETE`: a missed webhook can leave a paid order marked `payment_pending`.
 
-Before enabling it, build and test a scheduled server job that uses a restricted Stripe read key to compare each eligible order reference against Checkout Sessions for the SCOUTCARD Payment Link. Skip any order with a paid, processing, refunded, disputed, or otherwise uncertain payment; record an operator-review case instead. A Stripe API failure must leave all candidate orders untouched and retry later. The job should be idempotent, log counts and non-sensitive references only, and avoid deleting payment or accounting records. Test with synthetic pending and paid cases before production rollout. Update the public privacy policy when the retention schedule is actually active.
+The repository now contains a disabled, read-only reconciliation preview endpoint. It uses a restricted Stripe read key only after the owner deliberately supplies protected server settings. It returns aggregate counts, logs no customer details, and does not schedule itself or make any change to an order. See `RETENTION-AUTOMATION.md` for the required guardrails.
+
+Before enabling any automated cleanup, compare each eligible order reference against Checkout Sessions for the SCOUTCARD Payment Link. Skip any order with a paid, processing, refunded, disputed, missing, or otherwise uncertain payment; record an operator-review case instead. A Stripe API failure must leave all candidate orders untouched and retry later. The job should be idempotent, avoid deleting payment or accounting records, and be tested with synthetic pending and paid cases before production rollout. Update the public privacy policy when a retention schedule is actually active.
