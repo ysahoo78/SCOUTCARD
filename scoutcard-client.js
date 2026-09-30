@@ -5,7 +5,10 @@ import { friendlyError, withTimeout } from './scoutcard-utils.js';
 export const db = createClient('https://canyprcqtbvvrrvaoltu.supabase.co', 'sb_publishable_0Qu4eJEl1jRtY6xZeW9Z1Q_dz6GsKYn');
 export const siteOrigin = location.protocol === 'file:' ? 'https://scoutcard.vercel.app' : location.origin;
 
-export function mountAuth(onSession, returnPath = '/#setup') {
+// Supabase's implicit magic-link session is delivered in the URL fragment.
+// Do not put a second fragment (such as /#setup) in emailRedirectTo: it can
+// hide the access token before the browser client has a chance to save it.
+export function mountAuth(onSession, returnPath = '/') {
   const form = document.querySelector('#signin-form');
   const email = document.querySelector('#signin-email');
   const send = form.querySelector('button');
@@ -29,6 +32,11 @@ export function mountAuth(onSession, returnPath = '/#setup') {
       setTimeout(() => Promise.resolve(onSession(user)).catch(error => {
         note.textContent = friendlyError(error);
       }), 0);
+    }
+    // Only clean an auth callback after Supabase has supplied a user. This
+    // leaves ordinary page anchors alone and avoids discarding callback data.
+    if (user && /access_token=|refresh_token=/.test(location.hash)) {
+      history.replaceState(null, '', `${location.pathname}#profile`);
     }
   };
   db.auth.onAuthStateChange((_event, session) => { apply(session); });
