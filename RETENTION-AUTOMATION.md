@@ -13,3 +13,9 @@ The endpoint only runs when all of the following are deliberately configured as 
 Before scheduling even this preview, test it against synthetic, non-customer orders. The preview deliberately treats a paid session, an open session, a missing session, a truncated Stripe result, or any API failure as **review required**. It returns counts only and does not log names, emails, addresses, or order identifiers.
 
 There is intentionally no deletion mode. Enabling permanent cleanup later requires an explicit production launch decision, a documented retention rule, an operator-reviewed test, and a separate implementation that updates the public privacy notice first.
+
+## September 30 verification
+
+The preview now rejects requests when its secret is missing, validates provider responses, and bounds Stripe request time. Only expired, explicitly unpaid sessions without a PaymentIntent or enabled recovery link can enter the `notPaid` preview count. Completed but unpaid sessions, attached PaymentIntents, unknown statuses, and recovery-enabled sessions require review. All matching sessions must pass; any paid or uncertain duplicate blocks eligibility. This count is not authorization to delete.
+
+Production cleanup still needs a restricted Stripe read key, tested reconciliation, and a race-safe database operation that rechecks the order and payment events before removing contact details. Existing Payment Links can create new checkout sessions for an old order reference, so a scan alone cannot safely authorize erasure. The order flow must first prevent or safely handle those late checkouts. No records are removed by this release.
