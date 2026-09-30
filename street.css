@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&display=swap');
+@import url('assets/fonts/barlow-condensed.css');
 :root{--ink:#141517;--blue:#075dff;--orange:#ff8068;--lime:#f6ce46;--paper:#f4f3ef}
 body{background:var(--paper);color:var(--ink);font-family:'DM Sans',Arial,sans-serif;margin:0}
 .wrap{width:min(1240px,calc(100% - 72px));max-width:1240px}
