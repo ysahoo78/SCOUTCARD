@@ -68,15 +68,28 @@ export async function handleRetentionPreview(request, env = process.env, send = 
   try {
     const stripe = stripeClient || new Stripe(env.STRIPE_RECONCILIATION_KEY, { timeout: 10000, maxNetworkRetries: 0 });
     const earliest = Math.floor(Math.min(...candidates.map(order => new Date(order.created_at).getTime())) / 1000);
-    const page = await stripe.checkout.sessions.list({
-      payment_link: env.STRIPE_PAYMENT_LINK_ID,
-      created: { gte: earliest },
-      limit: 100
-    });
-    if (!Array.isArray(page.data) || typeof page.has_more !== 'boolean' || page.data.some(session => !session)) {
-      throw new Error('Stripe response invalid');
+    const sessions = [];
+    let cursor;
+    let complete = false;
+    // Bound work. A truncated scan remains review-only, even if earlier pages
+    // contain apparently unpaid sessions. Later pages may contain a payment.
+    for (let pageNumber = 0; pageNumber < 3; pageNumber += 1) {
+      const page = await stripe.checkout.sessions.list({
+        payment_link: env.STRIPE_PAYMENT_LINK_ID,
+        created: { gte: earliest },
+        limit: 100,
+        ...(cursor ? { starting_after: cursor } : {})
+      });
+      if (!Array.isArray(page.data) || typeof page.has_more !== 'boolean' || page.data.some(session => !session)) {
+        throw new Error('Stripe response invalid');
+      }
+      sessions.push(...page.data);
+      if (!page.has_more) { complete = true; break; }
+      const next = page.data.at(-1)?.id;
+      if (typeof next !== 'string' || !next || next === cursor) throw new Error('Stripe cursor invalid');
+      cursor = next;
     }
-    const summary = previewReconciliation(candidates, page.data, !page.has_more);
+    const summary = previewReconciliation(candidates, sessions, complete);
     // Counts only: do not place order identifiers, contact details, or addresses in logs.
     console.info('SCOUTCARD retention preview complete', summary);
     return reply(200, { mode: 'preview', ...summary });
