@@ -18,7 +18,7 @@ Last reviewed: September 30, 2026.
 
 ## Web fonts
 
-The site loads these Google Fonts through Google's CSS endpoint. Each family is published in the Google Fonts repository under the SIL Open Font License 1.1:
+The site serves these Google Fonts from its own `assets/fonts/` stylesheets. Each family is published in the Google Fonts repository under the SIL Open Font License 1.1:
 
 | Font | License and copyright record |
 | --- | --- |
@@ -27,7 +27,7 @@ The site loads these Google Fonts through Google's CSS endpoint. Each family is 
 | Fraunces | https://github.com/google/fonts/blob/main/ofl/fraunces/OFL.txt |
 | Barlow Condensed | https://github.com/google/fonts/blob/main/ofl/barlowcondensed/OFL.txt |
 
-The font files are not bundled in this repository. If they are self-hosted later, include each font's copyright notice and full license text alongside the redistributed files. Do not sell font files by themselves.
+The original WOFF2 font data is embedded in the local stylesheets. Copyright notices and full license texts are bundled in `assets/fonts/LICENSES.txt`. The fonts have not been redesigned or renamed. Do not sell font files by themselves.
 
 ## Other visuals
 
