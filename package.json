@@ -2,6 +2,9 @@
   "name": "scoutcard",
   "private": true,
   "type": "module",
-  "scripts": { "test:payments": "node --test work/payments.test.mjs" },
+  "scripts": {
+    "test:payments": "node --test work/payments.test.mjs",
+    "test:retention": "node --test work/retention.test.mjs"
+  },
   "dependencies": { "stripe": "22.6.0" }
 }
