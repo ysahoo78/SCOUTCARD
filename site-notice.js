@@ -1,4 +1,16 @@
 (() => {
+  // Use the approved card-colored mark consistently on every page.
+  const brandStyle = document.createElement('style');
+  brandStyle.textContent = '.brand{display:inline-flex!important;align-items:center;gap:10px;white-space:nowrap}.brand .scoutcard-logo{display:block;width:34px;height:36px;object-fit:contain;flex:none}.brand .scoutcard-wordmark{color:inherit;font:inherit;letter-spacing:inherit}@media(max-width:600px){.brand .scoutcard-logo{width:28px;height:30px}.brand{gap:8px}}';
+  document.head.append(brandStyle);
+  document.querySelectorAll('a.brand').forEach(brand => {
+    const logo = document.createElement('img');
+    logo.src = 'assets/scoutcard-logo.svg'; logo.alt = ''; logo.width = 34; logo.height = 36; logo.className = 'scoutcard-logo';
+    const wordmark = document.createElement('span'); wordmark.className = 'scoutcard-wordmark'; wordmark.textContent = 'SCOUTCARD';
+    brand.replaceChildren(logo, wordmark);
+    brand.setAttribute('aria-label', 'SCOUTCARD home');
+  });
+  const favicon = document.createElement('link'); favicon.rel = 'icon'; favicon.type = 'image/svg+xml'; favicon.href = 'assets/scoutcard-logo.svg'; document.head.append(favicon);
   if (document.getElementById('scoutcard-policy-links')) return;
   const main = document.querySelector('main');
   if (main) main.setAttribute('tabindex','-1');
