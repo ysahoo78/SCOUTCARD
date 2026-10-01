@@ -35,3 +35,9 @@ The original WOFF2 font data is embedded in the local stylesheets. Copyright not
 - No stock photographs are included in the current deployed source. Recheck this record before adding images, videos, new fonts, or third-party icons.
 
 This is an asset provenance record, not legal advice or a guarantee that future uses meet every license condition.
+
+## Bundled application library
+
+- `assets/vendor/supabase-2.57.4.js` is the unmodified official UMD build from `@supabase/supabase-js` version 2.57.4, downloaded from the npm registry package. The existing client version was preserved.
+- MIT notice: `assets/vendor/SUPABASE-LICENSE.txt`. Source: https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.57.4.tgz
+- `assets/vendor/supabase-client.js` adapts the official browser global to the site's existing module import. Review upstream fixes before a separately tested version upgrade.
