@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { createClient } from './assets/vendor/supabase-client.js';
 import { friendlyError, withTimeout } from './scoutcard-utils.js';
 
 // Only a publishable key belongs in the browser. One client per page avoids auth lock conflicts.
