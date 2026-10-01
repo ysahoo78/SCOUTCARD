@@ -22,7 +22,7 @@ Updated September 30, 2026. This tracks implementation work, not a certification
 4. **Fulfillment provider:** owner confirmed September 30 that no printer/shipping company has been selected. Update disclosures and handling arrangements once chosen.
 5. **Business contact details:** owner has no public business mailing address yet. Review customer-facing Stripe support details with the operators before changing them.
 6. **Marketing:** there is no active marketing subscription. Add consent, unsubscribe handling, suppression, and appropriate sender details before launching promotional email. Requested sign-in messages remain separate.
-7. **SDK hosting:** esm.sh still serves client application code. Assess bundling locally while preserving tested authentication behavior.
+7. **SDK hosting completed:** the official Supabase 2.57.4 browser build is served locally with its license. Public profile loading and signed-out initialization passed; a fresh email-link login was not repeated in this round.
 
 ## Operational responsibilities
 
