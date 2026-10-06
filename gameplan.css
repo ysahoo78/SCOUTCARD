@@ -1,0 +1,29 @@
+/* Card artwork uses the approved full-resolution front/back composition. */
+.card-crop{aspect-ratio:816/452}
+.card-crop img{width:188.2353%;left:-44.1176%;top:-7.0796%}
+.card-crop.back img{top:-116.5929%}
+.how.gameplan{display:block;padding:72px 0 56px}
+.gameplan-heading{display:flex;justify-content:space-between;align-items:end;gap:32px;margin-bottom:32px}
+.gameplan-heading .eyebrow{color:#0751d6}
+.gameplan-heading h2{font-size:clamp(42px,4.5vw,64px);line-height:.98}
+.gameplan-intro{font-size:15px;line-height:1.8;color:#505862;margin:0 0 3px;max-width:330px}
+.gameplan-steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.gameplan-step{--accent:#7daaff;position:relative;display:flex;flex-direction:column;align-items:flex-start;min-width:0;overflow:hidden;padding:27px;background:#15181e;color:#fff;border-radius:12px;border-top:4px solid var(--accent)}
+.gameplan-step:nth-child(2){--accent:#ff9984}
+.gameplan-step:nth-child(3){--accent:#f6ce46}
+.gameplan-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px}
+.gameplan-number{font:800 56px/1 'Barlow Condensed',Impact,sans-serif;color:var(--accent)}
+.gameplan-tag{font:10px/1.6 'DM Mono',monospace;letter-spacing:.8px;text-align:right;max-width:145px;color:#dce0e7}
+.gameplan-icon{display:grid;place-items:center;width:60px;height:60px;margin:28px 0 22px;border:1px solid #ffffff30;border-radius:14px;color:var(--accent);background:#ffffff06}
+.gameplan-icon svg{width:36px;height:36px}
+.gameplan-step h3{font:700 clamp(28px,2.7vw,38px)/1.05 'Barlow Condensed',Impact,sans-serif;letter-spacing:.1px;margin:0 0 16px;color:#fff}
+.gameplan-step>p{font-size:14px;line-height:1.75;color:#c4cbd5;margin:0 0 28px;max-width:290px}
+.gameplan-step>a,.gameplan-note{margin-top:auto;font-size:13px;line-height:1.6;font-weight:700;color:var(--accent);padding:12px 0 0;border-top:1px solid #ffffff26;width:100%}
+.gameplan-step>a{text-decoration:underline;text-underline-offset:5px;display:flex;justify-content:space-between;gap:10px}
+.gameplan-step>a:hover{color:#fff}
+.gameplan-step>a:focus-visible{outline:3px solid #fff;outline-offset:5px;border-radius:2px}
+.gameplan-footer{display:flex;justify-content:space-between;align-items:center;gap:20px;padding-top:24px}
+.gameplan-footer>span{font:11px/1.7 'DM Mono',monospace;letter-spacing:.6px;color:#333c48}
+.gameplan-footer p{font-size:13px;line-height:1.6;color:#505862;margin:0}
+@media(max-width:900px){.gameplan-step{padding:20px}.gameplan-tag{font-size:9px}.gameplan-heading{align-items:start}.gameplan-number{font-size:46px}.gameplan-footer{align-items:start}}
+@media(max-width:650px){.how.gameplan{padding:44px 0 36px}.gameplan-heading{display:block}.gameplan-intro{margin-top:20px}.gameplan-steps{grid-template-columns:1fr;gap:16px}.gameplan-step{padding:24px}.gameplan-icon{position:absolute;right:24px;top:80px;margin:0}.gameplan-step h3{margin-top:26px;padding-right:70px;font-size:34px}.gameplan-step>p{max-width:none}.gameplan-footer{display:block}.gameplan-footer p{margin-top:8px}}
