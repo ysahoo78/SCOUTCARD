@@ -28,3 +28,33 @@
 .gameplan-footer p{font-size:13px;line-height:1.6;color:#505862;margin:0}
 @media(max-width:900px){.gameplan-step{padding:20px}.gameplan-tag{font-size:9px}.gameplan-heading{align-items:start}.gameplan-number{font-size:46px}.gameplan-footer{align-items:start}}
 @media(max-width:650px){.how.gameplan{padding:44px 0 36px}.gameplan-heading{display:block}.gameplan-intro{margin-top:20px}.gameplan-steps{grid-template-columns:1fr;gap:16px}.gameplan-step{padding:24px}.gameplan-icon{position:absolute;right:24px;top:80px;margin:0}.gameplan-step h3{margin-top:26px;padding-right:70px;font-size:34px}.gameplan-step>p{max-width:none}.gameplan-footer{display:block}.gameplan-footer p{margin-top:8px}}
+
+/* Profile setup: match the street-edition palette without changing behavior. */
+body .setup-card{background:#15181e;border-bottom-color:#075dff;box-shadow:0 18px 40px #14151720}
+body .setup-card .mini-mark{background:#075dff;color:#fff}
+body .setup-card strong{color:#fff}
+body .account{background:#fff;border:1px solid #d0d6e0;border-top:4px solid #075dff;border-radius:12px}
+body .builder .profile-box{background:#fff;border:1px solid #d0d6e0;border-radius:12px;box-shadow:0 12px 35px #1415170a}
+body .profile-box .live{background:#15181e;color:#dce4f2;border-bottom:3px solid #075dff;padding:28px 22px}
+body .profile-box .live>p{color:#cbd5e5}
+body .profile-box .live>p i{background:#ff9984}
+body .profile-box .mini-phone{background:#f4f3ef;border-color:#303642;box-shadow:0 12px 28px #0005;color:#141517}
+body .profile-box .mini-phone>small{color:#0751d6;font-weight:700}
+body .profile-box .p-avatar{background:#075dff;color:#fff;font-family:'Barlow Condensed',Impact,sans-serif;font-weight:700}
+body .profile-box .mini-phone h3{font-family:'Barlow Condensed',Impact,sans-serif;font-size:25px;font-weight:700}
+body .profile-box .mini-phone p{color:#505862}
+body .profile-box .live-position{background:#dfe9ff;color:#173e80}
+body .profile-box .live-accolade{background:#ffe3db;color:#743525}
+body .profile-box .mini-phone a{background:#0751d6;color:#fff;border-radius:5px}
+body .builder .privacy{background:#e8eeff;color:#294777;border:1px solid #cbd8f5;border-left:3px solid #075dff;border-radius:7px;padding:14px}
+body .profile-box .form-title{color:#0751d6;border-bottom:1px solid #e1e4eb;padding-bottom:16px;font-weight:700}
+body .profile-box label{color:#252b35}
+body .profile-box input:not([type=checkbox]),body .profile-box textarea,body .account input{background:#f7f8fa;border:1px solid #a9b2c1;color:#141517;border-radius:6px}
+body .profile-box input::placeholder,body .profile-box textarea::placeholder,body .account input::placeholder{color:#626c7b}
+body .profile-box input:focus-visible,body .profile-box textarea:focus-visible,body .account input:focus-visible{outline:3px solid #075dff;outline-offset:2px}
+body .builder .link-box{background:#fff;border:1px solid #cbd8f5;border-top:3px solid #075dff;border-radius:8px}
+body .builder .link-box a{color:#0751d6}
+body .builder .secondary,body .account .secondary{background:#fff;border:1px solid #a9b2c1;border-radius:5px;color:#252b35}
+body .builder .button,body .account .button{background:#0751d6;color:#fff}
+body .builder .button:hover,body .account .button:hover{background:#0044bd}
+@media(max-width:420px){body .profile-box .live{gap:14px;padding:24px 14px}body .profile-box .live>p{font-size:8px;max-width:70px}body .profile-box .mini-phone{flex-shrink:0}}
