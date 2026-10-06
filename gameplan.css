@@ -3,6 +3,7 @@
 .card-crop img{width:188.2353%;left:-44.1176%;top:-7.0796%}
 .card-crop.back img{top:-116.5929%}
 .how.gameplan{display:block;padding:72px 0 56px}
+.how.gameplan::before{content:none;display:none}
 .gameplan-heading{display:flex;justify-content:space-between;align-items:end;gap:32px;margin-bottom:32px}
 .gameplan-heading .eyebrow{color:#0751d6}
 .gameplan-heading h2{font-size:clamp(42px,4.5vw,64px);line-height:.98}
