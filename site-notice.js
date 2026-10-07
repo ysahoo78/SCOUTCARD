@@ -54,6 +54,12 @@
     link.target = '_blank'; link.rel = 'noopener noreferrer'; link.setAttribute('aria-label', platform + ' @scoutcard26 (opens a new tab)'); socials.append(link);
   }
   nav.prepend(socials);
+  const business = document.createElement('p');
+  business.style.cssText = 'flex-basis:100%;margin:8px 0;color:inherit;font-size:14px;line-height:1.6';
+  business.append('Operated by Yash Sahoo and Toryn Ibarra · Virginia, United States. ');
+  const contact = document.createElement('a'); contact.href = 'mailto:scout.card26@gmail.com'; contact.textContent = 'scout.card26@gmail.com';
+  business.append(contact, ' — Contact us for order, privacy, or accessibility help.');
+  nav.append(business);
   const settings = document.createElement('button'); settings.type = 'button'; settings.textContent = 'Cookie settings';
   nav.append(settings); document.body.append(nav);
   for (const id of ['signin-form','order-form']) {
