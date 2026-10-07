@@ -5,6 +5,20 @@ const supported = new Set(['checkout.session.completed', 'checkout.session.async
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const reply = (status, message) => Response.json({ message }, { status, headers: { 'Cache-Control': 'no-store' } });
 
+export function shippingFromSession(session) {
+  const shipping = session?.collected_information?.shipping_details ?? session?.shipping_details;
+  const address = shipping?.address;
+  const name = typeof shipping?.name === 'string' ? shipping.name.trim() : '';
+  if (!address || address.country !== 'US' || name.length < 2 || name.length > 100 ||
+      !['line1', 'city', 'state', 'postal_code'].every(key => typeof address[key] === 'string' && address[key].trim())) {
+    return { name: null, address: null };
+  }
+  const parts = [address.line1, address.line2, address.city, address.state, address.postal_code, 'US']
+    .filter(part => typeof part === 'string' && part.trim()).map(part => part.trim());
+  const formatted = parts.join(', ');
+  return formatted.length <= 500 ? { name, address: formatted } : { name: null, address: null };
+}
+
 // Dependency injection is for local tests only; public requests cannot override it.
 export async function handleWebhook(request, env = process.env, send = fetch) {
   if (request.method !== 'POST') return reply(405, 'POST required');
@@ -35,14 +49,18 @@ export async function handleWebhook(request, env = process.env, send = fetch) {
     console.warn('SCOUTCARD unexpected payment amount', event.id);
     return reply(422, 'Payment requires review');
   }
+  const shipping = shippingFromSession(session);
+  const checkoutEmail = typeof session.customer_details?.email === 'string' ? session.customer_details.email.trim().toLowerCase() : null;
   try {
-    const result = await send(new URL('/rest/v1/rpc/confirm_scoutcard_payment', env.SUPABASE_URL), {
+    const result = await send(new URL('/rest/v1/rpc/confirm_scoutcard_payment_with_shipping', env.SUPABASE_URL), {
       method: 'POST', signal: AbortSignal.timeout(10000),
       headers: { 'Content-Type': 'application/json', apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` },
       body: JSON.stringify({ p_event_id: event.id, p_session_id: session.id,
         p_order_id: session.client_reference_id, p_paid: session.payment_status === 'paid' && event.type !== 'checkout.session.async_payment_failed',
         p_amount: session.amount_total, p_currency: session.currency,
-        p_payment_intent: typeof session.payment_intent === 'string' ? session.payment_intent : null })
+        p_payment_intent: typeof session.payment_intent === 'string' ? session.payment_intent : null,
+        p_shipping_name: shipping.name, p_shipping_address: shipping.address,
+        p_checkout_email: checkoutEmail })
     });
     if (!result.ok) throw new Error('Database update failed');
     const outcome = await result.json();

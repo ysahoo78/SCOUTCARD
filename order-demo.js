@@ -18,26 +18,23 @@ form.addEventListener('submit', async event => {
   event.preventDefault();
   const button = form.querySelector('button');
   if (button.disabled || !form.reportValidity()) return;
-  const customer_name = document.querySelector('#order-name').value.trim();
   const email = document.querySelector('#order-email').value.trim().toLowerCase();
-  const shipping_address = document.querySelector('#order-address').value.trim();
   const terms_acknowledged = form.querySelector('[name="terms_acknowledgment"]')?.checked === true;
   const adult_purchaser_acknowledged = form.querySelector('[name="adult_purchaser"]')?.checked === true;
   if (!terms_acknowledged || !adult_purchaser_acknowledged) {
     note.textContent = 'Review the terms and confirm an adult is making this purchase.';
     return;
   }
-  if (customer_name.length < 2 || shipping_address.length < 6) { note.textContent = 'Enter your full name and complete shipping address.'; return; }
-  button.disabled = true; button.textContent = 'Saving details…'; note.textContent = '';
+  button.disabled = true; button.textContent = 'Preparing checkout…'; note.textContent = '';
   try {
   // Keep a stable request ID on retries so a slow network cannot create duplicate orders.
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify([customer_name,email,shipping_address])));
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email));
   const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2,'0')).join('');
   if (!pending || pending.fingerprint !== fingerprint) pending = { id:crypto.randomUUID(), email, fingerprint, saved:false };
   resumeLink();
   try { sessionStorage.setItem('scoutcard-pending-checkout', JSON.stringify(pending)); } catch { /* Optional. */ }
-    const { data, error } = await withTimeout(db.rpc('reserve_scoutcard_order_with_consent', {
-      request_id:pending.id, customer_name, customer_email:email, delivery_address:shipping_address,
+    const { data, error } = await withTimeout(db.rpc('reserve_scoutcard_order_email_only', {
+      request_id:pending.id, customer_email:email,
       terms_acknowledged, adult_purchaser_acknowledged
     }));
     if (error) throw error;
@@ -45,7 +42,7 @@ form.addEventListener('submit', async event => {
     pending.saved = true;
     try { sessionStorage.setItem('scoutcard-pending-checkout', JSON.stringify(pending)); } catch { /* Optional. */ }
     resumeLink();
-    note.textContent = 'Details saved. Opening Stripe checkout. Payment is not complete until Stripe confirms it.';
+    note.textContent = 'Order started. Opening Stripe for payment and shipping details.';
     window.location.assign(checkoutUrl(paymentLink, pending.id, email));
   } catch (error) { note.textContent = friendlyError(error); }
   finally { button.disabled = false; button.textContent = 'Continue to payment →'; }

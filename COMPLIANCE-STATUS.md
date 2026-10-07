@@ -1,6 +1,6 @@
 # SCOUTCARD compliance implementation status
 
-Updated September 30, 2026. This tracks implementation work, not a certification of legal compliance.
+Updated October 7, 2026. This tracks implementation work, not a certification of legal compliance.
 
 ## Implemented
 
@@ -13,10 +13,11 @@ Updated September 30, 2026. This tracks implementation work, not a certification
 - Website fonts self-hosted to remove Google Fonts browser connections.
 - Data-request contact page and manual operator handling checklist.
 - Stripe phone collection is optional; preselected save-information setting was disabled during the September 29 review.
+- The order form now takes only an email before Stripe checkout. A verified paid-checkout webhook supplies the recipient name and shipping address. A new order stays pending if verified shipping details are missing. This removes the site's duplicate shipping form; it does not certify Stripe's own billing/shipping field behavior.
 
 ## Still open
 
-1. **Order data minimization and retention:** names, emails, and shipping addresses are still saved before Stripe checkout. Migrate fulfillment details from verified Stripe webhooks before removing those fields from the order form. Test delayed payments and duplicate sessions. Complete the 30-day cleanup with Stripe reconciliation and safe handling of late checkout links. Current retention code is read-only and unscheduled, with 15 payment/retention tests passing September 30.
+1. **Order retention:** older pending orders may contain pre-checkout shipping details. Complete the 30-day cleanup with Stripe reconciliation and safe handling of late checkout links. Current retention code is read-only and unscheduled. A full live paid-order test has not been performed.
 2. **Server configuration:** inspect/configure a restricted Stripe reconciliation key and a protected scheduler secret before enabling reconciliation. Never put those values in chat, source, or client code.
 3. **Teen permissions:** owner selected self-attestation pending legal review. The checkbox does not verify a parent or guardian. No verified-parental-consent flow is claimed.
 4. **Fulfillment provider:** owner confirmed September 30 that no printer/shipping company has been selected. Update disclosures and handling arrangements once chosen.

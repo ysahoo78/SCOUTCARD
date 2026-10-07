@@ -32,7 +32,7 @@ Encode `https://scoutcard.vercel.app/card.html?card=PUBLIC_TOKEN` on the NFC chi
 
 ## Payment and messaging limitations
 
-The form reserves an order then opens the configured Stripe Payment Link with `client_reference_id` and the customer's prefilled email. The order reference lets an eventual webhook associate payment with the order. Orders remain `payment_pending`: a signed Stripe webhook has **not** been connected. Confirm payment in Stripe before shipping. Returning from checkout, a saved order, or opening a payment link is not proof of payment.
+The form reserves an email-only pending order, then opens the configured Stripe Payment Link with `client_reference_id` and the customer's prefilled email. A signed Stripe webhook matches a settled payment to that order and stores the shipping name and address provided by Stripe. Missing shipping details leave a new order pending for retry or manual review. Confirm that Stripe and the order both show a paid status before shipping; a saved order or return from checkout is not proof of payment. A full live paid-order test remains outstanding.
 
 Coach messages appear in the athlete's inbox. Automatic notification email and verified-coach identity are not implemented. Public contact has basic repeat-message throttling; a production anti-bot service is a separate next step. Magic-link delivery limits are set by Supabase/SMTP, not this website.
 
