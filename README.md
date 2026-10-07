@@ -8,7 +8,7 @@ Static athlete profile website, deployed through this repository to Vercel. Auth
 - `index.html#setup`: sign-in/out, profile editor, publishing, coach inbox, activated cards.
 - `profile.html?athlete=SLUG`: published athlete profile, coach contact, print/save PDF.
 - `activate.html`: private activation code connects a card to the signed-in athlete.
-- `card.html?card=PUBLIC_TOKEN`: the permanent NFC/QR destination, resolves to the currently connected public profile.
+- `card.html?card=PUBLIC_TOKEN`: the permanent NFC destination, resolves to the currently connected public profile.
 
 ## Database
 
@@ -28,7 +28,7 @@ values (upper(replace(gen_random_uuid()::text, '-', '')))
 returning activation_code, public_token;
 ```
 
-Encode `https://scoutcard.vercel.app/card.html?card=PUBLIC_TOKEN` on both the NFC chip and the printed QR. Include the separate activation code privately inside the packaging. Do not put the activation code in the QR/NFC URL or on a publicly visible card face. Test tapping and scanning before shipping; do not claim the card using the customer's secret during fulfillment.
+Encode `https://scoutcard.vercel.app/card.html?card=PUBLIC_TOKEN` on the NFC chip. Include the separate activation code privately inside the packaging. Do not put the activation code in the NFC URL or on a publicly visible card face. Test NFC tapping and the public link before shipping; do not claim the card using the customer's secret during fulfillment.
 
 ## Payment and messaging limitations
 

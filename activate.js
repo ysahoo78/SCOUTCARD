@@ -23,7 +23,7 @@ form.addEventListener('submit', async event => {
     if (error) throw error;
     if (user?.id !== id) return;
     if (!data) { note.textContent = 'This code was not found or belongs to another account. Check the code printed in your package.'; return; }
-    note.textContent = profile.is_public ? 'Your card is connected. Taps and scans can now open your profile.' : 'Your card is connected. Publish your profile from Set up profile before sharing it with coaches.';
+    note.textContent = profile.is_public ? 'Your card is connected. NFC taps and shared links can now open your profile.' : 'Your card is connected. Publish your profile from Set up profile before sharing it with coaches.';
     document.querySelector('#activated-profile').href = publicUrl(profile.slug, siteOrigin);
     document.querySelector('#activation-links').hidden = false;
     form.reset();
