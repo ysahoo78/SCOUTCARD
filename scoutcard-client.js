@@ -1,8 +1,9 @@
 import { createClient } from './assets/vendor/supabase-client.js';
 import { friendlyError, withTimeout } from './scoutcard-utils.js';
+import { createBoundedFetch } from './request-safety.js';
 
 // Only a publishable key belongs in the browser. One client per page avoids auth lock conflicts.
-export const db = createClient('https://canyprcqtbvvrrvaoltu.supabase.co', 'sb_publishable_0Qu4eJEl1jRtY6xZeW9Z1Q_dz6GsKYn');
+export const db = createClient('https://canyprcqtbvvrrvaoltu.supabase.co', 'sb_publishable_0Qu4eJEl1jRtY6xZeW9Z1Q_dz6GsKYn', { global: { fetch: createBoundedFetch() } });
 export const siteOrigin = location.protocol === 'file:' ? 'https://scoutcard.vercel.app' : location.origin;
 
 // Supabase's implicit magic-link session is delivered in the URL fragment.

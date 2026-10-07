@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { readBoundedBody } from '../request-safety.js';
 
 const supported = new Set(['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed']);
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -12,11 +13,13 @@ export async function handleWebhook(request, env = process.env, send = fetch) {
       !['true', 'false'].includes(env.STRIPE_LIVEMODE)) return reply(503, 'Payment confirmation is not configured');
   let event;
   try {
-    const raw = await request.text();
-    if (Buffer.byteLength(raw) > 262144) return reply(413, 'Payload too large');
+    const raw = Buffer.from(await readBoundedBody(request));
     // Stripe SDK signature utility: no Stripe API key or API call is needed.
     event = Stripe.webhooks.constructEvent(raw, request.headers.get('stripe-signature'), env.STRIPE_WEBHOOK_SECRET);
-  } catch { return reply(400, 'Invalid Stripe signature'); }
+  } catch (error) {
+    if (error.status === 413 || error.status === 408) return reply(error.status, error.message);
+    return reply(400, 'Invalid Stripe signature');
+  }
   if (!supported.has(event.type)) return reply(200, 'Ignored event');
   const session = event.data?.object;
   if (event.livemode !== (env.STRIPE_LIVEMODE === 'true') || session?.livemode !== event.livemode ||

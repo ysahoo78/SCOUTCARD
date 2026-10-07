@@ -14,41 +14,77 @@ function showLink(slug) {
     $('public-link').textContent = publicUrl(slug, siteOrigin);
   }
 }
+const listVersions = new Map();
+async function loadList(id, { target, table, columns, dateField, empty, render }) {
+  const container = $(target), version = (listVersions.get(target) || 0) + 1;
+  listVersions.set(target, version);
+  let cursor = null, busy = false;
+  const current = () => user?.id === id && listVersions.get(target) === version;
+  const items = document.createElement('div');
+  const note = document.createElement('p'); note.setAttribute('role', 'status');
+  const more = document.createElement('button'); more.type = 'button'; more.className = 'secondary';
+  more.textContent = 'Load more'; more.hidden = true;
+  container.replaceChildren(items, note, more);
+  async function next() {
+    if (busy || !current()) return;
+    busy = true; more.disabled = true; note.textContent = 'Loading…';
+    container.setAttribute('aria-busy', 'true');
+    try {
+      let query = db.from(table).select(columns).eq('profile_id', id)
+        .order(dateField, { ascending: false }).order('id', { ascending: false }).limit(21);
+      if (cursor) query = query.or(`${dateField}.lt.${cursor.date},and(${dateField}.eq.${cursor.date},id.lt.${cursor.id})`);
+      const { data, error } = await withTimeout(query);
+      if (!current()) return;
+      if (error) throw error;
+      const page = data.slice(0, 20);
+      for (const item of page) items.append(render(item));
+      if (page.length) {
+        const last = page.at(-1);
+        // Preserve database microseconds so records sharing a millisecond are not skipped.
+        if (!/^[0-9T:.+Z-]+$/.test(last[dateField]) || !/^[0-9a-f-]{36}$/i.test(last.id)) throw new Error('Unable to load the next page. Refresh to retry.');
+        cursor = { date: last[dateField], id: last.id };
+      }
+      more.hidden = data.length <= 20; more.textContent = 'Load more';
+      note.textContent = items.childElementCount ? `Showing ${items.childElementCount} items.` : empty;
+    } catch (error) {
+      if (current()) { note.textContent = friendlyError(error); more.hidden = false; more.textContent = 'Try again'; }
+    } finally {
+      busy = false;
+      if (current()) { more.disabled = false; container.setAttribute('aria-busy', 'false'); }
+    }
+  }
+  more.addEventListener('click', next);
+  await next();
+}
 async function loadInbox(id) {
-  $('inbox').textContent = 'Loading messages…';
-  try {
-    const { data, error } = await withTimeout(db.from('coach_messages').select('id,coach_name,coach_email,message,created_at').eq('profile_id', id).order('created_at', { ascending:false }).limit(50));
-    if (user?.id !== id) return;
-    if (error) throw error;
-    $('inbox').replaceChildren();
-    if (!data.length) { $('inbox').textContent = 'No messages yet. Share your published profile to start a conversation.'; return; }
-    for (const message of data) {
+  await loadList(id, {
+    target: 'inbox', table: 'coach_messages',
+    columns: 'id,coach_name,coach_email,message,created_at', dateField: 'created_at',
+    empty: 'No messages yet. Share your published profile to start a conversation.',
+    render(message) {
       const item = document.createElement('article'); item.className = 'message';
       const name = document.createElement('h3'); name.textContent = message.coach_name;
       const date = document.createElement('small'); date.textContent = new Date(message.created_at).toLocaleString();
       const text = document.createElement('p'); text.textContent = message.message;
       const reply = document.createElement('a'); reply.textContent = 'Reply by email';
       reply.href = 'mailto:' + encodeURIComponent(message.coach_email);
-      item.append(name, date, text, reply); $('inbox').append(item);
+      item.append(name, date, text, reply); return item;
     }
-  } catch (error) { if (user?.id === id) $('inbox').textContent = friendlyError(error); }
+  });
 }
 async function loadCards(id) {
-  $('cards-list').textContent = 'Loading cards…';
-  try {
-    const { data, error } = await withTimeout(db.from('athlete_cards').select('id,public_token,activated_at').eq('profile_id', id));
-    if (user?.id !== id) return;
-    if (error) throw error;
-    $('cards-list').replaceChildren();
-    if (!data.length) { $('cards-list').textContent = 'No activated cards yet.'; return; }
-    for (const card of data) {
+  await loadList(id, {
+    target: 'cards-list', table: 'athlete_cards',
+    columns: 'id,public_token,activated_at', dateField: 'activated_at',
+    empty: 'No activated cards yet. Activate your card using the private code included with it.',
+    render(card) {
       const item = document.createElement('div'); item.className = 'card-item';
       const label = document.createElement('p'); label.textContent = 'Active card · ' + new Date(card.activated_at).toLocaleDateString();
       const link = document.createElement('a'); link.href = siteOrigin + '/card.html?card=' + encodeURIComponent(card.public_token);
       link.textContent = link.href; link.target = '_blank'; link.rel = 'noopener';
-      item.append(label, link); $('cards-list').append(item);
+      item.append(label, link); return item;
     }
-  } catch (error) { if (user?.id === id) $('cards-list').textContent = friendlyError(error); }
+  });
 }
 mountAuth(async nextUser => {
   const previousId = user?.id;

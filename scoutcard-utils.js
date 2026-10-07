@@ -27,9 +27,9 @@ export function publicUrl(slug, origin = location.origin) {
 export function friendlyError(error) {
   const message = String(error?.message || 'An unexpected error occurred.');
   if (error?.code === '23505') return 'That profile address is already in use. Please try saving again.';
-  if (error?.status === 429 || /rate.limit|too many|security purposes/i.test(message)) return 'Too many requests. Wait before requesting another email; check your inbox and spam folder first.';
+  if (error?.status === 429 || /rate.limit|too many|security purposes/i.test(message)) return 'Too many requests. Please wait before trying again.';
   if (/schema cache|column .* does not exist|Could not find the function/i.test(message)) return 'This feature needs the latest website database update. Please contact SCOUTCARD support.';
-  if (/failed to fetch|network|timeout|timed out/i.test(message)) return 'The connection is taking too long. Check your internet and try again.';
+  if (/abort|failed to fetch|network|timeout|timed out/i.test(message)) return 'The connection was interrupted. Your last action may have completed. Check its status before submitting again.';
   if (/jwt|session.*expired|refresh token/i.test(message)) return 'Your session has expired. Please sign out and sign in again.';
   return message;
 }
