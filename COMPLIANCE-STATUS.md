@@ -14,6 +14,7 @@ Updated October 7, 2026. This tracks implementation work, not a certification of
 - Data-request contact page and manual operator handling checklist.
 - Stripe phone collection is optional; preselected save-information setting was disabled during the September 29 review.
 - The order form now takes only an email before Stripe checkout. A verified paid-checkout webhook supplies the recipient name and shipping address. A new order stays pending if verified shipping details are missing. This removes the site's duplicate shipping form; it does not certify Stripe's own billing/shipping field behavior.
+- The earlier order RPC that accepted pre-checkout shipping details no longer permits public callers.
 
 ## Still open
 
