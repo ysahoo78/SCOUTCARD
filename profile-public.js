@@ -1,6 +1,7 @@
 import { db } from './scoutcard-client.js';
 import { safeUrl, initials, friendlyError, withTimeout } from './scoutcard-utils.js';
 const page = document.querySelector('#profile-page');
+const announcement = document.querySelector('#profile-load-announcement');
 const slug = new URLSearchParams(location.search).get('athlete');
 function unavailable(title, description, retry = false) {
   const section = document.createElement('section'); section.className = 'missing';
@@ -10,6 +11,8 @@ function unavailable(title, description, retry = false) {
   section.append(heading, text, link);
   if (retry) { const button = document.createElement('button'); button.textContent = 'Try again'; button.onclick = () => location.reload(); section.append(button); }
   page.replaceChildren(section);
+  page.setAttribute('aria-busy', 'false');
+  announcement.textContent = `${title}. ${description}`;
 }
 async function load() {
   if (!slug || !/^[a-z0-9-]{3,60}$/.test(slug)) { unavailable('Incomplete profile link', 'Ask the athlete for their full SCOUTCARD profile link.'); return; }
@@ -28,6 +31,8 @@ async function load() {
     if (highlight) { node.querySelector('#highlight').href = highlight; node.querySelector('#highlight').hidden = false; }
     else set('highlight-note', 'No highlight link has been added yet.');
     page.replaceChildren(node);
+    page.setAttribute('aria-busy', 'false');
+    announcement.textContent = `${data.display_name} profile loaded.`;
     document.querySelector('#share').hidden = false; document.querySelector('#print-profile').hidden = false;
     document.querySelector('#message-form').addEventListener('submit', async event => {
       event.preventDefault();
