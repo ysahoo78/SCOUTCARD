@@ -8,7 +8,7 @@ Updated October 7, 2026. This tracks implementation work, not a certification of
 - Form acknowledgments, public-profile opt-in, optional profile fields, and age gate.
 - Operators, Virginia location, and support/privacy email disclosed.
 - Pricing and shipping disclosures; no recruiting guarantees or fabricated testimonials in the active pages reviewed previously.
-- Initial alt text, contrast, and keyboard improvements. Recheck new UI when it changes.
+- Initial alt text and contrast improvements. Keyboard-only checks on October 7 covered the age gate, order form, profile editor, activation sign-in, and coach-contact fields; recheck new UI when it changes. This is not a full assistive-technology audit.
 - Third-party inventory, font license notices, owner-confirmed card artwork provenance, and approved generated-logo provenance.
 - Website fonts self-hosted to remove Google Fonts browser connections.
 - Data-request contact page and manual operator handling checklist.
