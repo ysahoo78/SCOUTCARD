@@ -1,5 +1,5 @@
 import { db } from './scoutcard-client.js';
-import { safeUrl, initials, friendlyError, withTimeout } from './scoutcard-utils.js';
+import { safeUrl, initials, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
 const page = document.querySelector('#profile-page');
 const announcement = document.querySelector('#profile-load-announcement');
 const slug = new URLSearchParams(location.search).get('athlete');
@@ -55,9 +55,10 @@ async function load() {
 }
 document.querySelector('#share').addEventListener('click', async () => {
   const note = document.querySelector('#share-note');
+  const link = publicUrl(slug);
   try {
-    if (navigator.share) await navigator.share({title:document.title, url:location.href});
-    else { await navigator.clipboard.writeText(location.href); note.textContent = 'Profile link copied.'; }
+    if (navigator.share) await navigator.share({title:document.title, url:link});
+    else { await navigator.clipboard.writeText(link); note.textContent = 'Profile link copied.'; }
   } catch (error) { if (error.name !== 'AbortError') note.textContent = 'Copy this page’s address from your browser to share it.'; }
 });
 document.querySelector('#print-profile').addEventListener('click', () => window.print());

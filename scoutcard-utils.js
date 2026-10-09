@@ -1,4 +1,5 @@
 // Pure helpers shared by the browser and regression tests.
+export const canonicalOrigin = 'https://www.scoutcard.tech';
 export function safeUrl(value) {
   const text = String(value || '').trim();
   if (!text) return '';
@@ -20,7 +21,7 @@ export function initials(name) {
   return String(name || '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(word => word[0]).join('').toUpperCase() || 'SC';
 }
 
-export function publicUrl(slug, origin = location.origin) {
+export function publicUrl(slug, origin = canonicalOrigin) {
   return `${origin}/profile.html?athlete=${encodeURIComponent(slug)}`;
 }
 

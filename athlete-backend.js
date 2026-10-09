@@ -1,5 +1,5 @@
-import { db, mountAuth, siteOrigin } from './scoutcard-client.js';
-import { safeUrl, profileSlug, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
+import { db, mountAuth } from './scoutcard-client.js';
+import { canonicalOrigin, safeUrl, profileSlug, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
 const $ = id => document.getElementById(id);
 const form = $('athlete-form'), save = $('save-profile'), status = $('profile-status');
 const fields = { name:'display_name', sport:'sport', grad:'graduation_year', position:'position', accolade:'accolade', highlight:'highlight_url' };
@@ -10,8 +10,8 @@ window.addEventListener('beforeunload', event => { if (dirty) { event.preventDef
 function showLink(slug) {
   $('profile-link-box').hidden = !slug;
   if (slug) {
-    $('public-link').href = publicUrl(slug, siteOrigin);
-    $('public-link').textContent = publicUrl(slug, siteOrigin);
+    $('public-link').href = publicUrl(slug);
+    $('public-link').textContent = publicUrl(slug);
   }
 }
 const listVersions = new Map();
@@ -80,7 +80,7 @@ async function loadCards(id) {
     render(card) {
       const item = document.createElement('div'); item.className = 'card-item';
       const label = document.createElement('p'); label.textContent = 'Active card · ' + new Date(card.activated_at).toLocaleDateString();
-      const link = document.createElement('a'); link.href = siteOrigin + '/card.html?card=' + encodeURIComponent(card.public_token);
+      const link = document.createElement('a'); link.href = canonicalOrigin + '/card.html?card=' + encodeURIComponent(card.public_token);
       link.textContent = link.href; link.target = '_blank'; link.rel = 'noopener';
       item.append(label, link); return item;
     }

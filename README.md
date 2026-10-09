@@ -28,7 +28,7 @@ values (upper(replace(gen_random_uuid()::text, '-', '')))
 returning activation_code, public_token;
 ```
 
-Encode `https://scoutcard.vercel.app/card.html?card=PUBLIC_TOKEN` on the NFC chip. Include the separate activation code privately inside the packaging. Do not put the activation code in the NFC URL or on a publicly visible card face. Test NFC tapping and the public link before shipping; do not claim the card using the customer's secret during fulfillment.
+Encode `https://www.scoutcard.tech/card.html?card=PUBLIC_TOKEN` on the NFC chip. Include the separate activation code privately inside the packaging. Do not put the activation code in the NFC URL or on a publicly visible card face. Test NFC tapping and the public link before shipping; do not claim the card using the customer's secret during fulfillment. Previously encoded `scoutcard.vercel.app` card links remain valid and redirect to the branded athlete profile after activation.
 
 ## Payment and messaging limitations
 
@@ -44,4 +44,4 @@ Real database transaction tests verified profile privacy, activation retries, ca
 
 ## Deployment
 
-Vercel serves the static files directly; no build command is required. Keep all referenced JS and CSS alongside the HTML files. Supabase authentication Site URL and allowed redirect URLs must include the production domain, its `/#setup` return, and `/activate.html`.
+Vercel serves the static files directly; no build command is required. Keep all referenced JS and CSS alongside the HTML files. Supabase authentication Site URL is `https://www.scoutcard.tech/`. Its redirect allowlist includes the exact URLs `https://www.scoutcard.tech/` and `https://www.scoutcard.tech/activate.html`; keep the existing `https://scoutcard.vercel.app/*` entry for older sign-in links. The setup tab uses a fragment after authentication, not an additional redirect URL.

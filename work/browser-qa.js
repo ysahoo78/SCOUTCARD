@@ -4,7 +4,12 @@ const pause=()=>new Promise(resolve=>setTimeout(resolve,20));
 const win=()=>frame.contentWindow, doc=()=>frame.contentDocument, el=s=>doc().querySelector(s);
 function assert(value,message='Assertion failed'){if(!value)throw Error(message);}
 async function until(fn){const start=Date.now();while(!fn()){if(Date.now()-start>6000)throw Error('Timed out waiting for UI');await pause();}}
-async function load(path){frame.src='/__qa/'+path;await new Promise(resolve=>frame.onload=resolve);await until(()=>win().testState);}
+async function load(path){
+ frame.src='/__qa/'+path;await new Promise(resolve=>frame.onload=resolve);
+ await until(()=>win().testState||el('#scoutcard-age'));
+ if(el('#scoutcard-age')){el('#scoutcard-age').value='18';el('#scoutcard-age').form.requestSubmit();}
+ await until(()=>win().testState);
+}
 function fill(selector,value){el(selector).value=value;el(selector).dispatchEvent(new (win().Event)('input',{bubbles:true}));}
 function submit(selector){el(selector).requestSubmit();}
 const includes=(selector,text)=>el(selector)?.textContent.includes(text);
@@ -15,11 +20,11 @@ document.querySelector('#run').onclick=async()=>{
  try{
  await check('Navigation, blank profile, and buy-only order form',async()=>{await load('index.html');el('a[href="#profile"]').click();await until(()=>doc().body.classList.contains('setup-mode'));assert(win().getComputedStyle(el('#order')).display==='none');assert(el('#name').value==='');});
  await check('One auth client, no nested auth session call',async()=>{await until(()=>win().testState.sessionCalls===1);assert(win().testState.clients===1);assert(errors.length===0);});
- await check('Email link request and resend cooldown',async()=>{fill('#signin-email','athlete@example.com');submit('#signin-form');await until(()=>includes('#auth-note','Check your inbox'));assert(el('#signin-form button').disabled);assert(win().testState.calls.filter(x=>x[0]==='email').length===1);});
+ await check('Email link request and resend cooldown',async()=>{fill('#signin-email','athlete@example.com');el('#signin-form [name="terms_acknowledgment"]').checked=true;submit('#signin-form');await until(()=>includes('#auth-note','Check your inbox'));assert(el('#signin-form button').disabled);const emailCalls=win().testState.calls.filter(x=>x[0]==='email');assert(emailCalls.length===1);assert(emailCalls[0][1].options.emailRedirectTo===win().location.origin+'/');});
  await check('Sign-in enables saving without hanging',async()=>{win().testSignIn();await until(()=>!el('#save-profile').disabled);assert(!el('#signout').hidden);});
  await check('Unsafe highlight URLs are rejected before saving',async()=>{fill('#name','QA Athlete');fill('#sport','Soccer');fill('#grad','2028');fill('#highlight','javascript:alert(1)');submit('#athlete-form');await until(()=>includes('#profile-status','valid http'));assert(!win().testState.calls.some(x=>x[0]==='save'));});
  let slug;
- await check('Publish/save shows profile link and saves extended fields',async()=>{fill('#highlight','hudl.com/example');fill('#stats','2026: 12 goals');el('#is-public').checked=true;submit('#athlete-form');await until(()=>includes('#profile-status','saved and published'));slug=win().testState.profile.slug;assert(win().testState.profile.details.stats==='2026: 12 goals');assert(el('#public-link').href.includes(slug));});
+ await check('Publish/save shows branded profile link and saves extended fields',async()=>{fill('#highlight','hudl.com/example');fill('#stats','2026: 12 goals');el('#is-public').checked=true;submit('#athlete-form');await until(()=>includes('#profile-status','saved and published'));slug=win().testState.profile.slug;assert(win().testState.profile.details.stats==='2026: 12 goals');assert(el('#public-link').href==='https://www.scoutcard.tech/profile.html?athlete='+slug);});
  await check('Name changes preserve profile link',async()=>{fill('#name','Renamed QA Athlete');submit('#athlete-form');await until(()=>includes('#profile-status','saved and published'));assert(win().testState.profile.slug===slug);});
  await check('Save failure displays error and button recovers',async()=>{win().testState.failSave=true;submit('#athlete-form');await until(()=>includes('#profile-status','Save rejected'));assert(!el('#save-profile').disabled);win().testState.failSave=false;submit('#athlete-form');await until(()=>includes('#profile-status','saved and published'));});
  await check('Coach inbox renders untrusted text safely',async()=>{win().testState.messages=[{coach_name:'<img src=x onerror=alert(1)>',coach_email:'coach@example.com',message:'Interested in speaking with you.',created_at:new Date().toISOString()}];el('#refresh-inbox').click();await until(()=>includes('#inbox','Interested'));assert(!el('#inbox img'));});

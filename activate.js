@@ -1,4 +1,4 @@
-import { db, mountAuth, siteOrigin } from './scoutcard-client.js';
+import { db, mountAuth } from './scoutcard-client.js';
 import { publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
 const form = document.querySelector('#activate-form'), note = document.querySelector('#note');
 let user = null;
@@ -24,7 +24,7 @@ form.addEventListener('submit', async event => {
     if (user?.id !== id) return;
     if (!data) { note.textContent = 'This code was not found or belongs to another account. Check the code printed in your package.'; return; }
     note.textContent = profile.is_public ? 'Your card is connected. NFC taps and shared links can now open your profile.' : 'Your card is connected. Publish your profile from Set up profile before sharing it with coaches.';
-    document.querySelector('#activated-profile').href = publicUrl(profile.slug, siteOrigin);
+    document.querySelector('#activated-profile').href = publicUrl(profile.slug);
     document.querySelector('#activation-links').hidden = false;
     form.reset();
   } catch (error) { note.textContent = friendlyError(error); }
