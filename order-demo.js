@@ -23,9 +23,13 @@ form.addEventListener('submit', async event => {
   const adult_purchaser_acknowledged = form.querySelector('[name="adult_purchaser"]')?.checked === true;
   if (!terms_acknowledged || !adult_purchaser_acknowledged) {
     note.textContent = 'Review the terms and confirm an adult is making this purchase.';
+    note.dataset.state = 'error';
     return;
   }
-  button.disabled = true; button.textContent = 'Preparing checkout…'; note.textContent = '';
+  button.disabled = true; button.textContent = 'Preparing checkout…';
+  form.setAttribute('aria-busy', 'true');
+  note.textContent = 'Saving your order reference before opening secure checkout…';
+  note.dataset.state = 'busy';
   try {
   // Keep a stable request ID on retries so a slow network cannot create duplicate orders.
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email));
@@ -43,7 +47,8 @@ form.addEventListener('submit', async event => {
     try { sessionStorage.setItem('scoutcard-pending-checkout', JSON.stringify(pending)); } catch { /* Optional. */ }
     resumeLink();
     note.textContent = 'Order started. Opening Stripe for payment and shipping details.';
+    note.dataset.state = 'success';
     window.location.assign(checkoutUrl(paymentLink, pending.id, email));
-  } catch (error) { note.textContent = friendlyError(error); }
-  finally { button.disabled = false; button.textContent = 'Continue to payment →'; }
+  } catch (error) { note.textContent = friendlyError(error); note.dataset.state = 'error'; }
+  finally { form.setAttribute('aria-busy', 'false'); button.disabled = false; button.textContent = 'Continue to payment →'; }
 });
