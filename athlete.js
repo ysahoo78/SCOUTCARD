@@ -7,6 +7,12 @@ function updatePreview() {
   for (const id of ['sport', 'grad', 'position', 'accolade']) {
     $('live-' + id).textContent = $(id).value.trim() || ({ sport: 'Sport', grad: 'Year', position: 'Position / event', accolade: 'Your accolade' })[id];
   }
+  const teams = [
+    $('team').value.trim() && `School / primary: ${$('team').value.trim()}`,
+    $('club_team').value.trim() && `Club / other: ${$('club_team').value.trim()}`
+  ].filter(Boolean);
+  $('live-teams').textContent = teams.join(' · ');
+  $('live-teams').hidden = teams.length === 0;
   const url = safeUrl($('highlight').value);
   $('live-highlight').hidden = !url;
   if (url) $('live-highlight').href = url;
