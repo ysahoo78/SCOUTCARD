@@ -21,12 +21,33 @@ export function mountAuth(onSession, returnPath = '/') {
   let currentId;
   let initialized = false;
   let cooldown = 0;
+  // Avoid briefly showing a sign-in form while an existing session is loading.
+  form.hidden = true;
 
   const apply = session => {
     const user = session?.user || null;
+    const legacyReturn = !!user && /access_token=|refresh_token=/.test(location.hash);
     form.hidden = !!user;
     signout.hidden = !user;
     identity.textContent = user ? `Signed in as ${user.email}` : 'Sign in to save and manage your profile.';
+    if (user) {
+      let justSignedIn = false;
+      try {
+        justSignedIn = sessionStorage.getItem('scoutcard-signin-complete') === '1';
+        if (justSignedIn) sessionStorage.removeItem('scoutcard-signin-complete');
+      } catch {}
+      if (justSignedIn || legacyReturn) {
+        note.textContent = document.querySelector('#activate-form')
+          ? 'You are signed in. Enter your card code below to connect it.'
+          : 'You are signed in. You can edit your profile below.';
+        note.dataset.state = 'success';
+        const target = document.querySelector('#account') || document.querySelector('.auth-panel');
+        requestAnimationFrame(() => target?.scrollIntoView({
+          behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'center'
+        }));
+      }
+    }
     const id = user?.id || null;
     if (!initialized || id !== currentId) {
       initialized = true;
@@ -38,7 +59,7 @@ export function mountAuth(onSession, returnPath = '/') {
     }
     // Only clean an auth callback after Supabase has supplied a user. This
     // leaves ordinary page anchors alone and avoids discarding callback data.
-    if (user && /access_token=|refresh_token=/.test(location.hash)) {
+    if (legacyReturn) {
       history.replaceState(null, '', `${location.pathname}#profile`);
     }
   };
@@ -46,29 +67,39 @@ export function mountAuth(onSession, returnPath = '/') {
   withTimeout(db.auth.getSession()).then(({ data, error }) => {
     if (error) throw error;
     apply(data.session);
-  }).catch(error => { note.textContent = friendlyError(error); });
+  }).catch(error => {
+    if (!initialized) { form.hidden = false; identity.textContent = 'Sign-in status could not be checked.'; }
+    note.textContent = friendlyError(error); note.dataset.state = 'error';
+  });
 
   const callbackError = new URLSearchParams(location.hash.slice(1)).get('error_description') || new URLSearchParams(location.search).get('error_description');
-  if (callbackError) note.textContent = 'That sign-in link has expired or was already used. Request a new link below.';
+  if (callbackError) { note.textContent = 'That sign-in link has expired or was already used. Request a new link below.'; note.dataset.state = 'error'; }
 
   form.addEventListener('submit', async event => {
     event.preventDefault();
     if (!form.reportValidity() || Date.now() < cooldown || send.disabled) return;
     send.disabled = true;
     send.textContent = 'Sending…';
-    note.textContent = '';
+    note.textContent = 'Sending your sign-in link…';
+    note.dataset.state = 'busy';
+    form.setAttribute('aria-busy', 'true');
     try {
       const { error } = await withTimeout(db.auth.signInWithOtp({
         email: email.value.trim().toLowerCase(),
         options: { emailRedirectTo: new URL(returnPath, siteOrigin).href }
       }));
       if (error) throw error;
-      note.textContent = 'Check your inbox and spam folder. Open the newest sign-in link in this browser. You can keep editing while you wait.';
+      note.textContent = document.querySelector('#athlete-form')
+        ? 'Link sent. Check your inbox or spam folder. If it opens a new tab, return to this one afterward—anything you typed here is still here.'
+        : 'Link sent. Check your inbox or spam folder, then open the newest sign-in link in this browser.';
+      note.dataset.state = 'success';
       cooldown = Date.now() + 60000;
     } catch (error) {
       note.textContent = friendlyError(error);
+      note.dataset.state = 'error';
       if (error.status === 429) cooldown = Date.now() + 60000;
     } finally {
+      form.setAttribute('aria-busy', 'false');
       if (Date.now() < cooldown) {
         const tick = () => {
           const remaining = Math.ceil((cooldown - Date.now()) / 1000);
@@ -87,6 +118,7 @@ export function mountAuth(onSession, returnPath = '/') {
       if (error) throw error;
       apply(null);
       note.textContent = 'You are signed out on this browser.';
+      note.dataset.state = 'success';
     } catch (error) { note.textContent = friendlyError(error); }
     finally { signout.disabled = false; }
   });
