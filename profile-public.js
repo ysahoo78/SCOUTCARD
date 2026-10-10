@@ -38,7 +38,9 @@ async function load() {
       event.preventDefault();
       const form = event.currentTarget, button = form.querySelector('button'), note = document.querySelector('#message-note');
       if (button.disabled || !form.reportValidity()) return;
-      button.disabled = true; button.textContent = 'Sending…'; note.textContent = '';
+      button.disabled = true; button.textContent = 'Sending…';
+      form.setAttribute('aria-busy', 'true');
+      note.textContent = 'Sending your message…'; note.dataset.state = 'busy';
       try {
         const { error } = await withTimeout(db.rpc('send_coach_message', {
           athlete_id:data.id, sender_name:document.querySelector('#coach-name').value.trim(),
@@ -47,9 +49,10 @@ async function load() {
         }));
         if (error) throw error;
         note.textContent = 'Message delivered to the athlete’s inbox. They can reply to the email you provided.';
+        note.dataset.state = 'success';
         form.reset();
-      } catch (error) { note.textContent = friendlyError(error); }
-      finally { button.disabled = false; button.textContent = 'Send message →'; }
+      } catch (error) { note.textContent = friendlyError(error); note.dataset.state = 'error'; }
+      finally { form.setAttribute('aria-busy', 'false'); button.disabled = false; button.textContent = 'Send message →'; }
     });
   } catch (error) { unavailable('Could not load this profile', friendlyError(error), true); }
 }
