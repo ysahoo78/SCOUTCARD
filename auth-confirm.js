@@ -33,6 +33,8 @@ async function finishSignIn() {
     if (error) throw error;
     if (!data?.session?.user) throw new Error('No sign-in session was returned.');
     status.textContent = 'You are signed in. Opening SCOUTCARD…';
+    // Show a one-time confirmation on the page the athlete lands on.
+    try { sessionStorage.setItem('scoutcard-signin-complete', '1'); } catch {}
     location.replace(destination());
   } catch {
     status.textContent = 'This sign-in link expired, was already used, or could not be checked. Please request a new link from the Set up profile tab.';
