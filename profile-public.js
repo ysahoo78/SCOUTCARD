@@ -25,7 +25,17 @@ async function load() {
     document.title = data.display_name + ' | SCOUTCARD';
     set('initials', initials(data.display_name)); set('name', data.display_name);
     for (const [id, key] of Object.entries({sport:'sport',position:'position',year:'graduation_year',accolade:'accolade','detail-sport':'sport','detail-position':'position','detail-year':'graduation_year'})) set(id, data[key]);
-    for (const field of ['team','stats','academics','events','bio']) set(field, typeof data.details?.[field] === 'string' ? data.details[field] : '');
+    const schoolTeam = typeof data.details?.team === 'string' ? data.details.team.trim() : '';
+    const clubTeam = typeof data.details?.club_team === 'string' ? data.details.club_team.trim() : '';
+    const teams = node.querySelector('#teams');
+    if (teams) {
+      node.querySelector('#school-team-row').hidden = !schoolTeam;
+      node.querySelector('#club-team-row').hidden = !clubTeam;
+      node.querySelector('#school-team-name').textContent = schoolTeam;
+      node.querySelector('#club-team-name').textContent = clubTeam;
+      teams.hidden = !schoolTeam && !clubTeam;
+    } else if (node.querySelector('#team')) set('team', schoolTeam);
+    for (const field of ['stats','academics','events','bio']) set(field, typeof data.details?.[field] === 'string' ? data.details[field] : '');
     node.querySelector('#accolade').hidden = !data.accolade;
     const highlight = safeUrl(data.highlight_url);
     if (highlight) { node.querySelector('#highlight').href = highlight; node.querySelector('#highlight').hidden = false; }
