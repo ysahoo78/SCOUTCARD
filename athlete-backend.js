@@ -3,7 +3,7 @@ import { canonicalOrigin, safeUrl, profileSlug, publicUrl, friendlyError, withTi
 const $ = id => document.getElementById(id);
 const form = $('athlete-form'), save = $('save-profile'), status = $('profile-status');
 const fields = { name:'display_name', sport:'sport', grad:'graduation_year', position:'position', accolade:'accolade', highlight:'highlight_url' };
-const extraFields = ['team', 'stats', 'academics', 'events', 'bio'];
+const extraFields = ['team', 'club_team', 'stats', 'academics', 'events', 'bio'];
 const touched = new Set();
 let user = null, savedSlug = '', dirty = false, ready = false, revision = 0;
 form.addEventListener('input', event => {
