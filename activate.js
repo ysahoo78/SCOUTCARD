@@ -7,6 +7,7 @@ mountAuth(next => {
   form.hidden = !user;
   document.querySelector('#activation-links').hidden = true;
   note.textContent = user ? 'Enter your card’s activation code below.' : 'Sign in above to connect your card.';
+  note.dataset.state = 'neutral';
 }, '/activate.html');
 form.addEventListener('submit', async event => {
   event.preventDefault();
@@ -14,19 +15,23 @@ form.addEventListener('submit', async event => {
   if (!user || button.disabled || !form.reportValidity()) return;
   const id = user.id;
   button.disabled = true; button.textContent = 'Activating…';
-  note.textContent = ''; document.querySelector('#activation-links').hidden = true;
+  form.setAttribute('aria-busy', 'true');
+  note.textContent = 'Checking your card and connecting it to your profile…';
+  note.dataset.state = 'busy';
+  document.querySelector('#activation-links').hidden = true;
   try {
     const { data:profile, error:profileError } = await withTimeout(db.from('athlete_profiles').select('slug,is_public').eq('id', id).maybeSingle());
     if (profileError) throw profileError;
-    if (!profile) { note.textContent = 'Save your athlete profile on the Set up profile tab first, then return here.'; return; }
+    if (!profile) { note.textContent = 'Save your athlete profile on the Set up profile tab first, then return here.'; note.dataset.state = 'error'; return; }
     const { data, error } = await withTimeout(db.rpc('activate_athlete_card', { card_code:code }));
     if (error) throw error;
     if (user?.id !== id) return;
-    if (!data) { note.textContent = 'This code was not found or belongs to another account. Check the code printed in your package.'; return; }
+    if (!data) { note.textContent = 'This code was not found or belongs to another account. Check the code printed in your package.'; note.dataset.state = 'error'; return; }
     note.textContent = profile.is_public ? 'Your card is connected. NFC taps and shared links can now open your profile.' : 'Your card is connected. Publish your profile from Set up profile before sharing it with coaches.';
+    note.dataset.state = 'success';
     document.querySelector('#activated-profile').href = publicUrl(profile.slug);
     document.querySelector('#activation-links').hidden = false;
     form.reset();
-  } catch (error) { note.textContent = friendlyError(error); }
-  finally { button.disabled = false; button.textContent = 'Activate my card →'; }
+  } catch (error) { note.textContent = friendlyError(error); note.dataset.state = 'error'; }
+  finally { form.setAttribute('aria-busy', 'false'); button.disabled = false; button.textContent = 'Activate my card →'; }
 });
