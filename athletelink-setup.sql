@@ -62,7 +62,9 @@ begin
    or (coalesce(new.highlight_url,'')<>'' and new.highlight_url !~ '^https?://')
    or jsonb_typeof(new.details) <> 'object' or octet_length(new.details::text)>40000
  then raise exception 'Please check your profile name, sport, year, and field lengths.'; end if;
- if exists (select 1 from jsonb_each(new.details) d where d.key not in ('team','stats','academics','events','bio') or jsonb_typeof(d.value)<>'string')
+ if exists (select 1 from jsonb_each(new.details) d where d.key not in ('team','club_team','stats','academics','events','bio') or jsonb_typeof(d.value)<>'string')
+ then raise exception 'Profile details contain an unsupported field.'; end if;
+ if char_length(coalesce(new.details->>'club_team',''))>120
    or char_length(coalesce(new.details->>'team',''))>120
    or char_length(coalesce(new.details->>'stats',''))>2000
    or char_length(coalesce(new.details->>'academics',''))>1000
