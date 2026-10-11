@@ -44,8 +44,16 @@ export function requireAccountEligibility() {
   targets.forEach(element => { element.hidden = true; });
   const gate = document.createElement('section'); gate.className = 'scoutcard-age-gate wrap';
   gate.innerHTML = '<h2>Before you get started</h2><p>Choose your age group once on this device. We remember only the group for 30 days, not your birth date. On a shared device, use “Change age group” for the next person.</p><form><label for="scoutcard-age">Your age group</label><select id="scoutcard-age" required><option value="">Select an age group</option><option value="adult">18 or older</option><option value="teen">13–17</option><option value="blocked">Under 13</option></select><button type="submit">Continue</button></form><p class="age-status" role="status" aria-live="polite" tabindex="-1"></p><button class="secondary age-change" type="button" hidden>Change age group</button>';
-  const anchor = document.querySelector('#order') || document.querySelector('.auth-panel');
-  anchor.before(gate);
+  const orderForm = document.querySelector('#order-form');
+  const standaloneAnchor = document.querySelector('#order') || document.querySelector('.auth-panel');
+  const placeGate = () => {
+    const setupHash = ['#setup', '#profile', '#account', '#athlete-workspace'].includes(location.hash) ||
+      /access_token=|error_description=|refresh_token=/.test(location.hash) || location.search.includes('code=');
+    if (orderForm && !setupHash) orderForm.before(gate);
+    else standaloneAnchor.before(gate);
+  };
+  placeGate();
+  window.addEventListener('hashchange', placeGate);
   const form = gate.querySelector('form'), status = gate.querySelector('.age-status');
   const change = gate.querySelector('.age-change');
   change.addEventListener('click', () => {
@@ -62,6 +70,7 @@ export function requireAccountEligibility() {
     const finish = (band, permission = false) => {
       saveChoice(band, permission);
       targets.forEach((element,index) => { element.hidden = previous[index]; });
+      window.removeEventListener('hashchange', placeGate);
       gate.remove(); resolve();
       const next = ['#order-email', '#signin-email', '#activation-code']
         .map(selector => document.querySelector(selector))
