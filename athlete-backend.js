@@ -1,8 +1,9 @@
 import { db, mountAuth } from './scoutcard-client.js';
 import { canonicalOrigin, safeUrl, profileSlug, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
+import { getSportName, setSportName, getSportMetrics, setSportMetrics, resetSportPresets } from './sport-presets.js';
 const $ = id => document.getElementById(id);
 const form = $('athlete-form'), save = $('save-profile'), status = $('profile-status');
-const fields = { name:'display_name', sport:'sport', grad:'graduation_year', position:'position', accolade:'accolade', highlight:'highlight_url' };
+const fields = { name:'display_name', grad:'graduation_year', position:'position', accolade:'accolade', highlight:'highlight_url' };
 const extraFields = ['team', 'club_team', 'stats', 'academics', 'events', 'bio'];
 const touched = new Set();
 let user = null, savedSlug = '', dirty = false, ready = false, revision = 0;
@@ -107,7 +108,7 @@ mountAuth(async nextUser => {
   user = nextUser; ready = false; save.disabled = true; savedSlug = ''; showLink('');
   $('athlete-workspace').hidden = !user;
   if (!user) {
-    if (previousId) { form.reset(); dirty = false; touched.clear(); revision++; document.dispatchEvent(new Event('profile-loaded')); }
+    if (previousId) { form.reset(); resetSportPresets(); dirty = false; touched.clear(); revision++; document.dispatchEvent(new Event('profile-loaded')); }
     $('inbox').replaceChildren(); $('cards-list').replaceChildren();
     save.textContent = 'Sign in to save';
     status.textContent = 'Sign in above to save. Your email stays private.';
@@ -127,6 +128,8 @@ mountAuth(async nextUser => {
       for (const [field, key] of Object.entries(fields)) {
         if (!touched.has(field)) $(field).value = data[key] || '';
       }
+      if (!touched.has('sport') && !touched.has('sport-other')) setSportName(data.sport);
+      if (![...touched].some(field => field === 'sport' || field === 'sport-other' || field.startsWith('metric-'))) setSportMetrics(data.details?.sport_metrics);
       for (const key of extraFields) {
         if (!touched.has(key)) $(key).value = typeof data.details?.[key] === 'string' ? data.details[key] : '';
       }
@@ -145,14 +148,16 @@ form.addEventListener('submit', async event => {
   event.preventDefault();
   if (!user || !ready || save.disabled || !form.reportValidity()) return;
   const id = user.id, saveRevision = revision;
-  const name = $('name').value.trim(), sport = $('sport').value.trim();
+  const name = $('name').value.trim(), sport = getSportName();
   if (!name || !sport) { status.textContent = 'Add your name and sport before saving.'; status.dataset.state = 'error'; return; }
   const highlight = safeUrl($('highlight').value);
   if ($('highlight').value.trim() && !highlight) { status.textContent = 'Use a valid http or https highlight link.'; status.dataset.state = 'error'; $('highlight').focus(); return; }
+  const details = Object.fromEntries(extraFields.map(key => [key, $(key).value.trim()]));
+  details.sport_metrics = getSportMetrics();
   const payload = { id, slug:savedSlug || profileSlug(name, id), display_name:name, sport,
     graduation_year:$('grad').value.trim(), position:$('position').value.trim(),
     accolade:$('accolade').value.trim(), highlight_url:highlight,
-    details:Object.fromEntries(extraFields.map(key => [key, $(key).value.trim()])),
+    details,
     is_public:$('is-public').checked, updated_at:new Date().toISOString() };
   save.disabled = true; save.textContent = 'Saving…'; status.textContent = 'Saving your profile…';
   status.dataset.state = 'busy'; form.setAttribute('aria-busy', 'true');

@@ -1,5 +1,6 @@
 import { db } from './scoutcard-client.js';
 import { safeUrl, initials, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
+import { presetFor } from './sport-presets-data.js';
 const page = document.querySelector('#profile-page');
 const announcement = document.querySelector('#profile-load-announcement');
 const slug = new URLSearchParams(location.search).get('athlete');
@@ -36,6 +37,20 @@ async function load() {
       teams.hidden = !schoolTeam && !clubTeam;
     } else if (node.querySelector('#team')) set('team', schoolTeam);
     for (const field of ['stats','academics','events','bio']) set(field, typeof data.details?.[field] === 'string' ? data.details[field] : '');
+    const metricValues = data.details?.sport_metrics;
+    const metricList = node.querySelector('#sport-metrics');
+    if (metricValues && typeof metricValues === 'object' && !Array.isArray(metricValues)) {
+      for (const metric of presetFor(data.sport)) {
+        const value = metricValues[metric.key];
+        if (typeof value !== 'string' || !value.trim()) continue;
+        const row = document.createElement('div');
+        const label = document.createElement('dt'); label.textContent = metric.label;
+        const result = document.createElement('dd'); result.textContent = value.trim();
+        row.append(label, result); metricList.append(row);
+      }
+    }
+    metricList.hidden = metricList.childElementCount === 0;
+    if (metricList.childElementCount && !(typeof data.details?.stats === 'string' && data.details.stats.trim())) node.querySelector('#stats').hidden = true;
     node.querySelector('#accolade').hidden = !data.accolade;
     const highlight = safeUrl(data.highlight_url);
     if (highlight) { node.querySelector('#highlight').href = highlight; node.querySelector('#highlight').hidden = false; }
