@@ -12,3 +12,7 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Sans',Arial,sans-s
 /* Keep purchase-policy links legible against the dark checkout panel. */
 .order .micro a{color:#c7d8ff;text-decoration:underline;text-underline-offset:2px}
 .order .micro a:hover{color:#fff}
+
+/* Consistent pictograms for the six athlete-profile features. */
+.share-grid .feature-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid #d8e5fb;border-radius:12px;background:#edf3ff;color:#075be8}
+.share-grid .feature-icon svg{display:block;width:27px;height:27px}
