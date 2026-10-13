@@ -62,8 +62,22 @@ begin
    or (coalesce(new.highlight_url,'')<>'' and new.highlight_url !~ '^https?://')
    or jsonb_typeof(new.details) <> 'object' or octet_length(new.details::text)>40000
  then raise exception 'Please check your profile name, sport, year, and field lengths.'; end if;
- if exists (select 1 from jsonb_each(new.details) d where d.key not in ('team','club_team','stats','academics','events','bio') or jsonb_typeof(d.value)<>'string')
+ if exists (
+   select 1 from jsonb_each(new.details) d
+   where (d.key <> 'sport_metrics' and (d.key not in ('team','club_team','stats','academics','events','bio') or jsonb_typeof(d.value)<>'string'))
+      or (d.key = 'sport_metrics' and jsonb_typeof(d.value)<>'object')
+ )
  then raise exception 'Profile details contain an unsupported field.'; end if;
+ if new.details ? 'sport_metrics' then
+   if (select count(*) from jsonb_each(new.details->'sport_metrics')) > 12
+      or exists (
+        select 1 from jsonb_each(new.details->'sport_metrics') metric
+        where metric.key !~ '^[a-z][a-z0-9_]{0,39}$'
+           or jsonb_typeof(metric.value)<>'string'
+           or char_length(metric.value #>> '{}') > 120
+      )
+   then raise exception 'Sport results must be short text values.'; end if;
+ end if;
  if char_length(coalesce(new.details->>'club_team',''))>120
    or char_length(coalesce(new.details->>'team',''))>120
    or char_length(coalesce(new.details->>'stats',''))>2000
