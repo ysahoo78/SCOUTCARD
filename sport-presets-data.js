@@ -69,6 +69,13 @@ export const SPORT_PRESETS = Object.freeze({
     field('rating', 'Rating / ranking', 'Include the system and date'),
     field('best_result', 'Best tournament result', 'Event, finish, and year')
   ],
+  'Pickleball': [
+    field('singles_record', 'Singles record', 'e.g. 12–4 in 2026'),
+    field('doubles_record', 'Doubles record', 'e.g. 8–2 in 2026'),
+    field('mixed_doubles_record', 'Mixed doubles record', 'Include matches / season'),
+    field('rating', 'Rating / ranking', 'Include the system and date'),
+    field('best_result', 'Best tournament result', 'Event, finish, and year')
+  ],
   'Golf': [
     field('scoring_avg', 'Scoring average', 'Include round count / season'),
     field('lowest_round', 'Lowest round', 'Score, course, and year'),
