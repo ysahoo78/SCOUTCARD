@@ -50,7 +50,7 @@ document.querySelector('#run').onclick = async () => {
     await doc.querySelector('.perspective-photo img').decode();
     assert(doc.querySelector('.perspective-photo img').naturalWidth > 0, 'Approved portrait must load');
     assert(doc.querySelector('.recommendation').textContent.includes('great idea'), 'Recommendation missing');
-    assert(doc.querySelector('.perspective-disclosure').textContent.includes('friend'), 'Friendship disclosure missing');
+    assert(doc.querySelector('.perspective-disclosure').textContent.includes('not an endorsement by UVA'), 'Personal-recommendation disclosure missing');
     assert(!doc.querySelector('.college-strip'), 'Non-customer college strip must not appear as proof');
     output.textContent += '\n' + count + ' responsive page checks plus CTA, photo, and disclosure checks passed. No live customer data or payments used.';
   } catch (error) { output.textContent += '\nFAIL ' + error.message; }
