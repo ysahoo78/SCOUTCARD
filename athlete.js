@@ -35,7 +35,11 @@ function setMode() {
     if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
   });
   if (['#buy', '#setup'].includes(fragment)) window.scrollTo({ top: 0 });
-  else if (fragment === '#profile') $('profile').scrollIntoView();
+  else if (['#profile', '#account'].includes(fragment)) {
+    const target = $(fragment.slice(1));
+    const visibleTarget = target?.hidden ? document.querySelector('.scoutcard-age-gate') : target;
+    visibleTarget?.scrollIntoView({ block: 'start' });
+  }
 }
 window.addEventListener('hashchange', setMode);
 setMode();

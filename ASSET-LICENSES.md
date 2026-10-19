@@ -1,6 +1,6 @@
 # SCOUTCARD asset and license record
 
-Last reviewed: September 30, 2026.
+Last reviewed: October 19, 2026.
 
 ## Approved website logo
 
@@ -32,7 +32,10 @@ The original WOFF2 font data is embedded in the local stylesheets. Copyright not
 ## Other visuals
 
 - Social media icons are original inline SVG link graphics, not downloaded brand asset files.
-- No stock photographs are included in the current deployed source. Recheck this record before adding images, videos, new fonts, or third-party icons.
+- `assets/raymond-shaw.jpg`: portrait supplied directly by Yash Sahoo on October 19, 2026 for Raymond Shaw's recommendation. The owner stated Raymond permitted use of his name and image, confirmed the spelling, and approved the paraphrase. The image is resized/compressed for web delivery without generative changes. Preserve the permission and the original photograph/license in business records; this records the owner's representation, not independent copyright clearance.
+- The accompanying recommendation is an explicitly labeled paraphrase, not an invented quotation or claim of product use, recruiting results, or institutional endorsement. Friendship with the founders is disclosed.
+- The sample athlete profile uses fictional data and an initials avatar, not another person's photograph or personal information.
+- Recheck this record before adding images, videos, new fonts, or third-party icons.
 
 This is an asset provenance record, not legal advice or a guarantee that future uses meet every license condition.
 

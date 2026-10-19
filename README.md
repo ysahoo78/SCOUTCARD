@@ -9,6 +9,11 @@ Static athlete profile website, deployed through this repository to Vercel. Auth
 - `profile.html?athlete=SLUG`: published athlete profile, coach contact, print/save PDF.
 - `activate.html`: private activation code connects a card to the signed-in athlete.
 - `card.html?card=PUBLIC_TOKEN`: the permanent NFC destination, resolves to the currently connected public profile.
+- `example-profile.html`: clearly fictional, no-login marketing example; no customer records, video embeds, messaging submissions, or database writes.
+
+## Product introduction (October 19, 2026)
+
+The homepage starts with the digital profile, the $5 physical-card price, an example profile, and one primary setup action. The age gate stays in place but never focuses itself on initial load; on the setup tab it follows the introduction and roadmap. The college-organization marquee was replaced with Raymond Shaw's owner-approved paraphrased personal recommendation and supplied portrait, with friendship and non-institutional-endorsement disclosures. Founder biographies use information supplied by the owners; initials are used instead of unsupplied founder photographs.
 
 ## Database
 

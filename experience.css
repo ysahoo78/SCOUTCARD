@@ -1,0 +1,93 @@
+/* A product-first introduction, shared across the marketing and example pages. */
+.hero{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;min-height:0;padding-block:56px}
+.hero-copy,.hero-showcase{min-width:0}
+.hero h1{font-size:clamp(56px,6.8vw,92px);line-height:.95;letter-spacing:-.02em;margin:24px 0}
+.hero h1 em{color:#75a3ff}
+.hero .lede{max-width:470px;line-height:1.7}
+.hero .actions{flex-wrap:wrap;gap:18px}
+.hero .text-link{color:#c5d7ff;text-underline-offset:5px}
+.hero-price{font-size:13px;line-height:1.7;color:#d0d7e1;margin:20px 0 0}
+.hero-price strong{color:#fff}
+.hero-returning{font-size:13px;line-height:1.7;color:#c0c9d6;margin:8px 0 0}
+.hero-returning a{color:#c5d7ff;text-underline-offset:3px}
+.hero-benefits{margin-top:24px;font-size:9px;gap:16px;line-height:1.8}
+.hero-showcase{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.82fr);align-items:center;gap:20px}
+.profile-peek{position:relative;display:block;min-width:0;max-width:310px;padding:16px;border:6px solid #29303d;border-radius:28px;background:#fff;color:#141517;text-decoration:none;box-shadow:0 20px 48px #0005;transform:rotate(-2deg)}
+.profile-peek:focus-visible{outline:3px solid #ffad9b;outline-offset:6px}
+.peek-topline{display:flex;justify-content:space-between;gap:8px;font:700 8px/1.5 'DM Mono',monospace;letter-spacing:.4px}
+.peek-topline>span{font-size:7px;color:#52616a}
+.peek-cover{position:relative;min-height:105px;border-radius:12px;margin-top:14px;padding:18px 10px;background:radial-gradient(circle at 85% 15%,#426efb 0,transparent 50%),#111c38}
+.peek-avatar{display:grid;place-items:center;width:55px;height:55px;border:2px solid #9ebaff;border-radius:50%;background:#fff;color:#0751d6;font:700 25px 'Barlow Condensed',Impact,sans-serif;margin:auto}
+.peek-sport{display:block;font:8px/1.5 'DM Mono',monospace;color:#e4ebff;text-align:center;margin-top:11px}
+.profile-peek h2{font:800 32px/1 'Barlow Condensed',Impact,sans-serif;margin:17px 0 6px;letter-spacing:0;text-align:left}
+.profile-peek .peek-role{font-size:11px;line-height:1.5;color:#52616a;margin:0 0 14px}
+.peek-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:14px 0;border-block:1px solid #d9e0e9;text-align:center}
+.peek-stats span{font-size:9px;color:#52616a}
+.peek-stats strong{display:block;color:#141517;font:800 26px/1.2 'Barlow Condensed',Impact,sans-serif}
+.peek-film{display:block;margin-top:14px;padding:12px 9px;background:#edf2ff;color:#173e80;border-radius:7px;font-size:10px;line-height:1.6}
+.peek-film>span{margin-right:5px}
+.peek-open{display:flex;justify-content:space-between;padding-top:16px;font-size:11px;font-weight:700;color:#0751d6}
+.profile-peek>small{display:block;color:#59616c;font-size:9px;line-height:1.5;margin-top:12px}
+.hero-showcase .product-stage{padding:0;min-width:0}
+.hero-showcase .stage-label{display:block;font-size:8px;line-height:1.7;margin-bottom:20px}
+.hero-showcase .stage-label span{display:block}
+.hero-showcase .card-crop{border-radius:10px}
+.hero-showcase .card-crop img{height:auto}
+.hero-showcase .product-back{width:94%;margin-top:22px!important}
+.hero-showcase figcaption{line-height:1.6;font-size:7px}
+.athlete-perspective{background:#e8edf5;border-block:1px solid #d2dbe8;padding:32px 0}
+.perspective-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:48px;align-items:center}
+.perspective-person{display:flex;gap:20px;align-items:center;min-width:0}
+.perspective-photo{width:116px;aspect-ratio:4/5;flex-shrink:0;overflow:hidden;border-radius:12px;background:#dce2eb;box-shadow:0 8px 24px #14151714}
+.perspective-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 30%}
+.perspective-person .eyebrow{font-size:9px;letter-spacing:1px;color:#0751d6;line-height:1.7}
+.perspective-person h2{font-size:36px;margin:9px 0}
+.perspective-person p:last-child{font-size:12px;line-height:1.7;color:#485569;margin:0}
+.recommendation{font-size:clamp(20px,2.1vw,27px);font-weight:600;line-height:1.45;letter-spacing:-.5px;color:#141517;margin:0 0 14px}
+.perspective-disclosure{font-size:11px;line-height:1.7;color:#485569;margin:0;max-width:600px}
+.about-hero h1{font-size:clamp(42px,6.8vw,90px);overflow-wrap:anywhere;letter-spacing:-.02em}
+.about-hero .wrap,.about-story>*,.founder-grid>*{min-width:0}
+.about-story a{overflow-wrap:anywhere}
+.founders{padding:10px 0 56px}
+.founders>h2{margin:14px 0 25px}
+.founder-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.founder-grid article{padding:28px;background:#fff;border:1px solid #d3dae4;border-radius:12px}
+.founder-initials{display:grid;place-items:center;width:58px;height:58px;border-radius:16px;background:#e8eeff;color:#0751d6;font:800 28px 'Barlow Condensed',Impact,sans-serif;margin-bottom:20px}
+.founder-grid article:nth-child(2) .founder-initials{background:#ffe7e1;color:#843a27}
+.founder-grid h3{font:800 30px 'Barlow Condensed',Impact,sans-serif;margin:8px 0 13px}
+.founder-grid p:last-child{font-size:14px;line-height:1.9;color:#485569}
+.example-secondary{display:block;font-size:13px;color:inherit;text-underline-offset:4px;margin-top:19px}
+.setup-intro>div:first-child{min-width:0}
+.setup-intro h1{overflow-wrap:anywhere}
+.scoutcard-age-gate{scroll-margin-top:24px}
+.activation-page h1{font-size:clamp(30px,8vw,58px);overflow-wrap:anywhere}
+
+/* A no-login, no-data example of the information an athlete can share. */
+.demo-notice{background:#e8eeff;color:#173e80;padding:13px 20px;text-align:center;font-size:12px;line-height:1.7;border-bottom:1px solid #cbd8f5}
+.demo-notice a{color:#0751d6;font-weight:700;text-underline-offset:3px}
+.demo-main{max-width:960px;padding:38px 0 20px}
+.demo-profile-header{background:#14171d;color:#fff;border-radius:18px;padding:32px}
+.demo-profile-header .eyebrow{color:#ffad9b}
+.demo-profile-header h1{font:800 clamp(42px,7vw,68px)/1 'Barlow Condensed',Impact,sans-serif;letter-spacing:-1px;margin:16px 0 10px}
+.demo-profile-header>p:not(.eyebrow){color:#c7d2e4;font-size:14px;line-height:1.8}
+.demo-identity{display:flex;gap:20px;align-items:center}
+.demo-initials{display:grid;place-items:center;width:76px;height:76px;flex-shrink:0;border:2px solid #9ebaff;border-radius:50%;background:#fff;color:#0751d6;font:800 35px 'Barlow Condensed',Impact,sans-serif}
+.demo-chip{display:inline-block;border:1px solid #7493bf;border-radius:20px;padding:6px 10px;margin:6px 5px 0 0;font-size:11px;line-height:1.4;color:#e3ebff}
+.demo-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}
+.demo-stat-grid>div{padding:17px 10px;border-radius:10px;background:#fff;border:1px solid #d3dae4;text-align:center}
+.demo-stat-grid strong{display:block;font:800 34px 'Barlow Condensed',Impact,sans-serif;color:#0751d6}
+.demo-stat-grid span{font-size:12px;color:#485569;line-height:1.6}
+.demo-sections{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.demo-section{padding:24px;border-radius:12px;background:#fff;border:1px solid #d3dae4;min-width:0}
+.demo-section h2{font-size:30px;margin:0 0 14px}
+.demo-section p,.demo-section li{font-size:14px;line-height:1.8;color:#485569}
+.demo-section ul{padding-left:20px;margin-bottom:0}
+.demo-section details{padding:15px;background:#edf2ff;border-radius:8px}
+.demo-section summary{cursor:pointer;font-size:14px;line-height:1.7;font-weight:700;color:#173e80}
+.demo-section details p{margin-bottom:0}
+.demo-main .cta{margin-top:28px}
+.demo-main .cta h2{font-size:38px}
+.demo-main .cta p{font-size:14px;line-height:1.8}
+@media(max-width:1000px){.hero{gap:30px}.hero-showcase{grid-template-columns:minmax(0,1fr)}.hero-showcase .profile-peek{width:100%;margin:auto}.hero-showcase .product-stage{display:none}.hero h1{font-size:clamp(50px,6.8vw,76px)}}
+@media(max-width:760px){.hero{padding-block:32px;gap:28px;grid-template-columns:minmax(0,1fr);text-align:left}.hero h1{font-size:clamp(44px,10vw,68px);margin:18px 0}.hero .eyebrow{font-size:9px;letter-spacing:1px}.hero .lede{margin:0;font-size:15px}.hero .actions{justify-content:flex-start;flex-direction:row;gap:16px;margin-top:20px}.hero .button{font-size:13px;padding:14px 17px}.hero .text-link{font-size:12px}.hero-benefits{justify-content:flex-start;gap:12px;font-size:8px}.hero-showcase{grid-template-columns:minmax(0,1fr) minmax(0,.7fr);gap:15px}.hero-showcase .profile-peek{transform:none;max-width:320px}.hero-showcase .product-stage{display:block}.perspective-layout{grid-template-columns:1fr;gap:22px}.perspective-person{gap:16px}.perspective-photo{width:86px}.perspective-person h2{font-size:31px}.recommendation{font-size:23px}.about-hero h1{font-size:clamp(42px,10vw,65px);line-height:.98}.founder-grid{grid-template-columns:1fr;gap:16px}.founder-grid article{padding:23px}.demo-sections{grid-template-columns:1fr}.demo-profile-header{padding:23px}.demo-identity{gap:15px}.demo-initials{width:60px;height:60px}.demo-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.demo-section{padding:22px}.demo-page .nav{height:auto;min-height:90px;gap:16px}.demo-page .nav-links{flex-wrap:wrap;font-size:12px}}
+@media(max-width:420px){.hero-showcase{grid-template-columns:minmax(0,1fr)}.hero-showcase .profile-peek{width:min(100%,310px)}.hero-showcase .product-stage{width:min(100%,290px);margin:20px auto 0}.hero-showcase .stage-label{display:flex;justify-content:space-between;gap:12px}.hero-showcase .product-back{width:80%}.hero .actions{align-items:flex-start;flex-direction:column;gap:18px}.hero-price,.hero-returning{font-size:12px}.perspective-person .eyebrow{font-size:8px}.perspective-person h2{font-size:28px}.perspective-person p:last-child{font-size:11px}.about-page .nav-links{gap:13px;margin-left:0}.about-page .nav{justify-content:flex-start}.demo-notice{font-size:11px}.demo-main{padding-top:24px}}

@@ -18,8 +18,8 @@ const url=new URL(checkoutUrl('https://buy.stripe.com/test','123','athlete+team@
 assert.equal(url.searchParams.get('prefilled_email'),'athlete+team@example.com');assert.equal(url.searchParams.get('client_reference_id'),'123');
 await assert.rejects(withTimeout(new Promise(()=>{}),5),/timed out/);assert.equal(await withTimeout(Promise.resolve('done')),'done');
 for(const file of await readdir(root)) if(file.endsWith('.js')) {const check=spawnSync(process.execPath,['--check',resolve(root,file)]);assert.equal(check.status,0,check.stderr.toString());}
-for(const name of ['index.html','activate.html','profile.html','card.html']) {
+for(const name of ['index.html','activate.html','profile.html','card.html','about.html','example-profile.html']) {
  const html=await readFile(resolve(root,name),'utf8');const ids=Array.from(html.matchAll(/\bid="([^"]+)"/g),m=>m[1]);assert.equal(new Set(ids).size,ids.length,'Duplicate ids in '+name);
- for(const match of html.matchAll(/(?:src|href)="([^"#?]+\.(?:js|css))"/g)) if(!match[1].startsWith('http')) await access(resolve(root,match[1]));
+ for(const match of html.matchAll(/(?:src|href)="([^"#?]+\.(?:js|css|jpg|png|html))"/g)) if(!match[1].startsWith('http')) await access(resolve(root,match[1]));
 }
 console.log('Validation, URL safety, timeout handling, syntax, and linked asset checks passed.');
