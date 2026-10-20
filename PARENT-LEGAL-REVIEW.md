@@ -81,4 +81,8 @@ controls provide selected-child saved-profile downloads and safety-reporting
 links. Parent-managed public rendering asks cooperating search engines not to
 index it; that is not access control. Unused camera/microphone/geolocation browser
 APIs are disabled through the deployment Permissions-Policy. The owner chose to
-remove the entire Raymond testimonial, portrait display and star rating for now.
+remove the entire Raymond testimonial, portrait display and star rating, then
+clarified the request later the same day. The previously approved recommendation,
+portrait and rating are restored with a personal-connection disclosure and a
+clarification that this is not UVA's endorsement. Permission and photo-license
+evidence still belong in business records.

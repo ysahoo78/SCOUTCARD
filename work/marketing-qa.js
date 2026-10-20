@@ -46,10 +46,18 @@ document.querySelector('#run').onclick = async () => {
     }
     const doc = await load('index.html', 375);
     assert(doc.querySelector('.hero .button').getAttribute('href') === '#setup', 'Primary CTA must start setup');
-    assert(!doc.querySelector('.athlete-perspective'), 'Testimonial must stay removed at owner request');
-    assert(!doc.querySelector('img[src*="raymond-shaw"]'), 'Testimonial portrait must not display');
+    const portrait = doc.querySelector('.perspective-photo img');
+    assert(portrait, 'Testimonial portrait must display');
+    portrait.scrollIntoView();
+    await portrait.decode();
+    assert(portrait.naturalWidth > 0, 'Testimonial portrait must load');
+    assert(doc.querySelector('.recommendation').textContent.includes('great idea'), 'Approved recommendation must display');
+    const disclosure = doc.querySelector('.perspective-disclosure').textContent;
+    assert(disclosure.includes('knows SCOUTCARD’s founders personally'), 'Personal connection must be disclosed');
+    assert(disclosure.includes('not an endorsement by UVA'), 'UVA clarification must display');
+    assert(doc.querySelectorAll('.perspective-stars svg').length === 5, 'Five stars must display');
     assert(!doc.querySelector('.college-strip'), 'Non-customer college strip must not appear as proof');
-    output.textContent += '\n' + count + ' responsive page checks plus CTA and testimonial-removal checks passed. No live customer data or payments used.';
+    output.textContent += '\n' + count + ' responsive page checks plus CTA, portrait, rating and disclosure checks passed. No live customer data or payments used.';
   } catch (error) { output.textContent += '\nFAIL ' + error.message; }
   finally { button.disabled = false; }
 };

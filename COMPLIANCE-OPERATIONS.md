@@ -90,9 +90,12 @@ permissions. Personal image permission does not by itself establish photo
 copyright rights. Do not use children's profile content in marketing without an
 appropriate separate permission process.
 
-Raymond's testimonial, image display and star rating are removed from active HTML
-at the owner's request. Before any restoration, review the exact endorsement,
-rating approval, image rights and material-connection disclosure. No UVA logo or
-institutional endorsement should be added without the necessary authorization.
+Raymond's previously approved recommendation, portrait and owner-requested
+five-star rating were restored after the owner clarified the removal request.
+The section discloses his personal connection to the founders and states that
+his view is not a UVA endorsement. Preserve the endorsement/rating permission
+and photograph-license evidence; personal image permission is not copyright
+clearance. No UVA logo or institutional endorsement should be added without
+the necessary authorization.
 
 Reference: https://www.ftc.gov/business-guidance/resources/ftcs-endorsement-guides-what-people-are-asking

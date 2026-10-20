@@ -29,7 +29,7 @@ legal opinion, tax determination, signed agreement or compliance certificate.
 - Self-hosted fonts/client library with license records, no added ad/analytics SDK
   or video embeds, optional compressed metadata-stripped photos and safe links.
 - Recruiting-outcome disclaimers, fictional-example labels and clear pricing.
-- Raymond's testimonial, portrait display and star rating removed at owner request.
+- Raymond's approved testimonial, portrait and five-star rating restored after the owner clarified the removal request, with a personal-connection disclosure and no-UVA-endorsement clarification. Preserve permission and photo-license evidence.
 - Existing athlete accounts and NFC links preserved. No real charges, refunds,
   customer deletions, extra public database grants or live child test profiles
   were created to make this checklist look complete.
@@ -89,7 +89,7 @@ legal opinion, tax determination, signed agreement or compliance certificate.
   address or transmit customer data to an unnamed supplier without approval.
 - Preserve commercial artwork/font licenses, obtain any needed photo copyright
   permission, and assess trademark/name clearance. AI-generated logo provenance
-  does not establish trademark exclusivity. Raymond endorsement remains offline.
+  does not establish trademark exclusivity. Raymond's personal recommendation is displayed with connection and no-institutional-endorsement disclosures; keep permission and photo-license evidence.
 - Run an actual parent's intentional email return/profile/card test. Technical
   local tests do not verify legal guardianship or email deliverability. A full
   live $5 checkout/refund test was previously deferred by the owner.
