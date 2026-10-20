@@ -1,10 +1,11 @@
-import { initials, safeUrl } from './scoutcard-utils.js';
+import { safeUrl } from './scoutcard-utils.js';
 import { getSportName } from './sport-presets.js';
+import { refreshHeadshotPreview } from './headshot-editor.js';
 const $ = id => document.getElementById(id);
 function updatePreview() {
   const name = $('name').value.trim();
   $('live-name').textContent = name || 'Your name';
-  $('initial').textContent = initials(name);
+  refreshHeadshotPreview();
   $('live-sport').textContent = getSportName() || 'Sport';
   for (const id of ['grad', 'position', 'accolade']) {
     $('live-' + id).textContent = $(id).value.trim() || ({ grad: 'Year', position: 'Position / event', accolade: 'Your accolade' })[id];

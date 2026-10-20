@@ -1,6 +1,7 @@
 import { db, mountAuth } from './scoutcard-client.js';
 import { canonicalOrigin, safeUrl, profileSlug, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
 import { getSportName, setSportName, getSportMetrics, setSportMetrics, resetSportPresets } from './sport-presets.js';
+import { headshot, loadHeadshot, resetHeadshot, acceptHeadshotSave } from './headshot-editor.js';
 const $ = id => document.getElementById(id);
 const form = $('athlete-form'), save = $('save-profile'), status = $('profile-status');
 const fields = { name:'display_name', grad:'graduation_year', position:'position', accolade:'accolade', highlight:'highlight_url' };
@@ -106,6 +107,7 @@ async function loadCards(id) {
 mountAuth(async nextUser => {
   const previousId = user?.id;
   user = nextUser; ready = false; save.disabled = true; savedSlug = ''; showLink('');
+  if (previousId && previousId !== user?.id) resetHeadshot();
   $('athlete-workspace').hidden = !user;
   if (!user) {
     if (previousId) { form.reset(); resetSportPresets(); dirty = false; touched.clear(); revision++; document.dispatchEvent(new Event('profile-loaded')); }
@@ -120,7 +122,7 @@ mountAuth(async nextUser => {
   status.textContent = 'Loading your saved profile…';
   status.dataset.state = 'busy';
   try {
-    const { data, error } = await withTimeout(db.from('athlete_profiles').select('slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,is_public').eq('id', id).maybeSingle());
+    const { data, error } = await withTimeout(db.from('athlete_profiles').select('slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,is_public,headshot_path').eq('id', id).maybeSingle());
     if (user?.id !== id) return;
     if (error) throw error;
     if (data) {
@@ -135,6 +137,8 @@ mountAuth(async nextUser => {
       }
       if (!touched.has('is-public')) $('is-public').checked = data.is_public === true;
       showLink(savedSlug, data.is_public);
+      await loadHeadshot(db, data.headshot_path);
+      if (user?.id !== id) return;
     }
     ready = true;
     status.textContent = dirty ? 'Your draft is still here. Review it, then save when ready.' : data ? 'Your saved profile is ready to edit.' : 'Start with your name and sport. Publish when you are ready.';
@@ -162,6 +166,10 @@ form.addEventListener('submit', async event => {
   save.disabled = true; save.textContent = 'Saving…'; status.textContent = 'Saving your profile…';
   status.dataset.state = 'busy'; form.setAttribute('aria-busy', 'true');
   try {
+    const photo = await headshot.prepare(db, id);
+    if (user?.id !== id) return;
+    // Omit an untouched photo to avoid overwriting a change made in another tab.
+    if (photo.changed) payload.headshot_path = photo.path;
     const { error } = await withTimeout(db.from('athlete_profiles').upsert(payload, { onConflict:'id' }));
     if (error) throw error;
     if (user?.id !== id) return;
@@ -169,6 +177,7 @@ form.addEventListener('submit', async event => {
     if (!dirty) touched.clear();
     status.textContent = dirty ? 'Saved. You also have newer unsaved changes.' : payload.is_public ? 'Profile saved and published. Open your link to see what coaches see.' : 'Profile saved privately. Check “Publish my profile” and save when you want to share it.';
     status.dataset.state = 'success';
+    await acceptHeadshotSave(db, photo);
   } catch (error) { if (user?.id === id) { status.textContent = friendlyError(error); status.dataset.state = 'error'; } }
   finally { form.setAttribute('aria-busy', 'false'); if (user?.id === id) { save.disabled = false; save.textContent = 'Save my profile →'; } }
 });

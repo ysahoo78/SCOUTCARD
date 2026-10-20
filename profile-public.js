@@ -1,6 +1,7 @@
 import { db } from './scoutcard-client.js';
-import { safeUrl, initials, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
+import { safeUrl, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
 import { presetFor } from './sport-presets-data.js';
+import { renderAvatar, signedHeadshotUrl } from './headshots.js';
 const page = document.querySelector('#profile-page');
 const announcement = document.querySelector('#profile-load-announcement');
 const slug = new URLSearchParams(location.search).get('athlete');
@@ -18,13 +19,14 @@ function unavailable(title, description, retry = false) {
 async function load() {
   if (!slug || !/^[a-z0-9-]{3,60}$/.test(slug)) { unavailable('Incomplete profile link', 'Ask the athlete for their full SCOUTCARD profile link.'); return; }
   try {
-    const { data, error } = await withTimeout(db.from('athlete_profiles').select('id,slug,display_name,sport,graduation_year,position,accolade,highlight_url,details').eq('slug', slug).eq('is_public', true).maybeSingle());
+    const { data, error } = await withTimeout(db.from('athlete_profiles').select('id,slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,headshot_path').eq('slug', slug).eq('is_public', true).maybeSingle());
     if (error) throw error;
     if (!data) { unavailable('Profile not available', 'This profile may be private, removed, or not published yet.'); return; }
     const node = document.querySelector('#profile-template').content.cloneNode(true);
     const set = (id, value) => { node.querySelector('#' + id).textContent = value || 'Not added yet'; };
     document.title = data.display_name + ' | SCOUTCARD';
-    set('initials', initials(data.display_name)); set('name', data.display_name);
+    const avatar = node.querySelector('#initials');
+    renderAvatar(avatar, data.display_name); set('name', data.display_name);
     for (const [id, key] of Object.entries({sport:'sport',position:'position',year:'graduation_year',accolade:'accolade','detail-sport':'sport','detail-position':'position','detail-year':'graduation_year'})) set(id, data[key]);
     const schoolTeam = typeof data.details?.team === 'string' ? data.details.team.trim() : '';
     const clubTeam = typeof data.details?.club_team === 'string' ? data.details.club_team.trim() : '';
@@ -56,6 +58,9 @@ async function load() {
     if (highlight) { node.querySelector('#highlight').href = highlight; node.querySelector('#highlight').hidden = false; }
     else set('highlight-note', 'No highlight link has been added yet.');
     page.replaceChildren(node);
+    // Photo failures must never prevent the rest of an athlete profile from opening.
+    if (data.headshot_path) void signedHeadshotUrl(db, data.headshot_path)
+      .then(url => renderAvatar(avatar, data.display_name, url)).catch(() => {});
     page.setAttribute('aria-busy', 'false');
     announcement.textContent = `${data.display_name} profile loaded.`;
     document.querySelector('#share').hidden = false; document.querySelector('#print-profile').hidden = false;

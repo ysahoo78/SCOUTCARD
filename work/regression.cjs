@@ -16,7 +16,7 @@ class Query {
  then(resolve,reject){return Promise.resolve().then(()=>{
   if(notifying)throw Error('Nested auth operation');
   if(this.table==='athlete_profiles'){
-   if(this.value){state.calls.push(['save',this.value]);if(state.failSave)return result(null,{message:'Save rejected'});state.profile=this.value;return result(null);}
+   if(this.value){state.calls.push(['save',this.value]);if(state.failSave)return result(null,{message:'Save rejected'});state.profile={...state.profile,...this.value};sessionStorage.setItem('qa-profile',JSON.stringify(state.profile));return result(null);}
    let data=state.profile;if(data&&this.filters.some(([k,v])=>data[k]!==v))data=null;return result(data);
   }
   if(this.table==='coach_messages')return result(state.messages);
@@ -31,7 +31,11 @@ export function createClient(){
   async getSession(){state.sessionCalls++;if(notifying)throw Error('Auth callback deadlock');return result({session:state.signedIn?{user}:null});},
   async signInWithOtp(args){state.calls.push(['email',args]);return result(null);},
   async signOut(){state.signedIn=false;sessionStorage.removeItem('signed-in');emit();return result(null);}
- },from(table){return new Query(table);},async rpc(name,args){
+ },storage:{from(){return {
+  async upload(path,blob,options){state.calls.push(['upload',path,blob.size,options]);return state.failUpload?result(null,{message:'Photo upload failed'}):result({path});},
+  async createSignedUrl(path,ttl){state.calls.push(['sign',path,ttl]);return state.failPhoto?result(null,{message:'Photo unavailable'}):result({signedUrl:location.origin+'/assets/scoutcard-blank-back.jpg'});},
+  async remove(paths){state.calls.push(['remove',paths]);return result(null);}
+ };}},from(table){return new Query(table);},async rpc(name,args){
   state.calls.push([name,args]);
   if(name==='reserve_scoutcard_order_email_only')return state.failOrder?result(null,{message:'Order failed'}):result(args.request_id);
   if(name==='activate_athlete_card')return result(args.card_code==='VALID-CODE-123456');

@@ -28,6 +28,7 @@ http.createServer(async (request, response) => {
       const test = await readFile(resolve(root,'work/regression.cjs'),'utf8');
       let mock = test.match(/const mock = `([\s\S]*?)`;/)[1];
       mock += "\nif(new URLSearchParams(location.search).has('qa-public'))state.profile={id:'00000000-1111-4222-8333-000000000001',slug:'public-athlete',display_name:'<img src=x onerror=alert(1)>',sport:'Soccer',graduation_year:'2028',position:'Forward',is_public:true,highlight_url:'javascript:alert(1)',details:{stats:'12 goals',events:'Showcase, October 12'}};";
+      mock += "\nif(new URLSearchParams(location.search).has('qa-saved'))state.profile=JSON.parse(sessionStorage.getItem('qa-profile')||'null');if(new URLSearchParams(location.search).has('qa-photo-error'))state.failPhoto=true;";
       response.writeHead(200, {'content-type':'text/javascript','cache-control':'no-store'});response.end(mock);return;
     }
     if (name.includes('..') || (name.includes('/') && !name.startsWith('assets/')) || !types[extname(name)]) { response.writeHead(404).end(); return; }

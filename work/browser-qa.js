@@ -29,7 +29,33 @@ document.querySelector('#run').onclick=async()=>{
  await check('Save failure displays error and button recovers',async()=>{win().testState.failSave=true;submit('#athlete-form');await until(()=>includes('#profile-status','Save rejected'));assert(!el('#save-profile').disabled);win().testState.failSave=false;submit('#athlete-form');await until(()=>includes('#profile-status','saved and published'));});
  await check('Coach inbox renders untrusted text safely',async()=>{win().testState.messages=[{coach_name:'<img src=x onerror=alert(1)>',coach_email:'coach@example.com',message:'Interested in speaking with you.',created_at:new Date().toISOString()}];el('#refresh-inbox').click();await until(()=>includes('#inbox','Interested'));assert(!el('#inbox img'));});
  await check('Mobile setup has no horizontal overflow',async()=>{assert(doc().documentElement.scrollWidth<=win().innerWidth,'Setup overflows phone');});
+ await check('Unsupported photo shows a useful error and can be cleared',async()=>{
+  const dt=new (win().DataTransfer)();dt.items.add(new (win().File)(['<svg/>'],'bad.svg',{type:'image/svg+xml'}));el('#headshot').files=dt.files;el('#headshot').dispatchEvent(new (win().Event)('change',{bubbles:true}));
+  await until(()=>includes('#headshot-status','Choose a JPG'));el('#remove-headshot').click();assert(!el('#initial img'));
+ });
+ await check('Optional photo is compressed, previewed and uploaded only when saving',async()=>{
+  const canvas=doc().createElement('canvas');canvas.width=1200;canvas.height=1600;const ctx=canvas.getContext('2d');ctx.fillStyle='#1763df';ctx.fillRect(0,0,1200,1600);
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));const dt=new (win().DataTransfer)();dt.items.add(new (win().File)([blob],'portrait.png',{type:'image/png'}));el('#headshot').files=dt.files;
+  el('#headshot').dispatchEvent(new (win().Event)('input',{bubbles:true}));el('#headshot').dispatchEvent(new (win().Event)('change',{bubbles:true}));
+  await until(()=>includes('#headshot-status','Photo ready'));await until(()=>el('#initial').classList.contains('has-headshot'));
+  assert(!win().testState.calls.some(x=>x[0]==='upload'));assert(el('#initial img').alt.includes('headshot'));
+  win().testState.failUpload=true;submit('#athlete-form');await until(()=>includes('#profile-status','Photo upload failed'));assert(!el('#save-profile').disabled);
+  win().testState.failUpload=false;submit('#athlete-form');await until(()=>includes('#headshot-status','Headshot saved'));
+  assert(win().testState.profile.headshot_path.startsWith(id+'/'));const upload=win().testState.calls.filter(x=>x[0]==='upload').at(-1);
+  assert(upload[2]<=524288&&upload[3].contentType==='image/jpeg');assert(upload[3].upsert===false);
+ });
+ await check('Saved photo reloads in editor and keeps its path on a text-only save',async()=>{
+  await load('index.html?qa-saved=1#profile');await until(()=>!el('#save-profile').disabled);await until(()=>el('#initial').classList.contains('has-headshot'));
+  const path=win().testState.profile.headshot_path;fill('#position','Forward');submit('#athlete-form');await until(()=>includes('#profile-status','saved and published'));assert(win().testState.profile.headshot_path===path);
+ });
  await check('Sign-out clears private fields and inbox',async()=>{el('#signout').click();await until(()=>includes('#auth-note','signed out'));await until(()=>el('#save-profile').disabled);assert(el('#name').value==='');assert(el('#athlete-workspace').hidden);});
+ await check('Published headshot renders for logged-out viewers',async()=>{await load('profile.html?athlete='+slug+'&qa-saved=1');await until(()=>el('#initials')?.classList.contains('has-headshot'));assert(el('#initials img').alt.includes('headshot'));assert(win().testState.calls.some(x=>x[0]==='sign'&&x[2]===300));});
+ await check('Photo failure does not block profile or initials',async()=>{await load('profile.html?athlete='+slug+'&qa-saved=1&qa-photo-error=1');await until(()=>el('#message-form'));assert(!el('#initials img'));assert(el('#initials').textContent==='RQ');});
+ await check('Removing photo saves initials and deletes the old file',async()=>{
+  await load('index.html?qa-saved=1#profile');win().testSignIn();await until(()=>!el('#save-profile').disabled);el('#remove-headshot').click();submit('#athlete-form');
+  await until(()=>includes('#headshot-status','saved with initials'));assert(win().testState.profile.headshot_path===null);assert(!el('#initial img'));assert(win().testState.calls.some(x=>x[0]==='remove'));
+  el('#signout').click();await until(()=>el('#save-profile').disabled);
+ });
  await check('Activation requires profile and handles invalid code',async()=>{await load('activate.html');win().testSignIn();await until(()=>!el('#activate-form').hidden);fill('#activation-code','UNKNOWN-CODE');submit('#activate-form');await until(()=>includes('#note','Save your athlete profile'));win().testState.profile={id,slug:'qa-athlete',is_public:true};submit('#activate-form');await until(()=>includes('#note','not found'));assert(!el('#activate-form button').disabled);});
  await check('Activation and retry return public profile link',async()=>{for(let n=0;n<2;n++){fill('#activation-code','VALID-CODE-123456');submit('#activate-form');await until(()=>includes('#note','Your card is connected'));}assert(!el('#activation-links').hidden);});
  await check('Missing public profile never loads a sample athlete',async()=>{await load('profile.html');await until(()=>includes('#profile-page','Incomplete profile link'));assert(el('#share').hidden);await load('profile.html?athlete=missing-athlete');await until(()=>includes('#profile-page','Profile not available'));});
