@@ -5,13 +5,13 @@ const userId = '00000000-1111-4222-8333-000000000001';
 const mock = `
 let callback, notifying = false;
 const user = {id:'00000000-1111-4222-8333-000000000001',email:'athlete@example.com'};
-const state = window.testState = {signedIn:sessionStorage.getItem('signed-in')==='yes',profile:window.fixture||null,failSave:false,failOrder:false,calls:[],cards:[],messages:[],sessionCalls:0};
+const state = window.testState = {signedIn:sessionStorage.getItem('signed-in')==='yes',profile:window.fixture||null,failSave:false,failOrder:false,calls:[],cards:[],messages:[],sessionCalls:0,family:JSON.parse(sessionStorage.getItem('qa-family')||'[]'),files:[]};
 const result=(data,error=null)=>({data,error});
 const emit=()=>{notifying=true;callback('SIGNED_IN',state.signedIn?{user}:null);notifying=false;};
 window.testSignIn=()=>{state.signedIn=true;sessionStorage.setItem('signed-in','yes');emit();};
 class Query {
  constructor(table){this.table=table;this.filters=[];this.value=null;}
- select(){return this;} eq(k,v){this.filters.push([k,v]);return this;} order(){return this;} limit(){return this;}
+ select(){return this;} eq(k,v){this.filters.push([k,v]);return this;} order(){return this;} limit(n){this.max=n;return this;} or(){return this;}
  upsert(v){this.value=v;return this;} maybeSingle(){return this;}
  then(resolve,reject){return Promise.resolve().then(()=>{
   if(notifying)throw Error('Nested auth operation');
@@ -19,8 +19,8 @@ class Query {
    if(this.value){state.calls.push(['save',this.value]);if(state.failSave)return result(null,{message:'Save rejected'});state.profile={...state.profile,...this.value};sessionStorage.setItem('qa-profile',JSON.stringify(state.profile));return result(null);}
    let data=state.profile;if(data&&this.filters.some(([k,v])=>data[k]!==v))data=null;return result(data);
   }
-  if(this.table==='coach_messages')return result(state.messages);
-  if(this.table==='athlete_cards')return result(state.cards);
+  if(this.table==='coach_messages')return result(state.messages.filter(row=>this.filters.every(([k,v])=>row[k]===undefined||row[k]===v)).slice(0,this.max));
+  if(this.table==='athlete_cards')return result(state.cards.filter(row=>this.filters.every(([k,v])=>row[k]===undefined||row[k]===v)).slice(0,this.max));
   return result(null);
  }).then(resolve,reject);}
 }
@@ -32,11 +32,13 @@ export function createClient(){
   async signInWithOtp(args){state.calls.push(['email',args]);return result(null);},
   async signOut(){state.signedIn=false;sessionStorage.removeItem('signed-in');emit();return result(null);}
  },storage:{from(){return {
-  async upload(path,blob,options){state.calls.push(['upload',path,blob.size,options]);return state.failUpload?result(null,{message:'Photo upload failed'}):result({path});},
+  async upload(path,blob,options){state.calls.push(['upload',path,blob.size,options]);if(state.failUpload)return result(null,{message:'Photo upload failed'});state.files.push(path);return result({path});},
   async createSignedUrl(path,ttl){state.calls.push(['sign',path,ttl]);return state.failPhoto?result(null,{message:'Photo unavailable'}):result({signedUrl:location.origin+'/assets/scoutcard-blank-back.jpg'});},
-  async remove(paths){state.calls.push(['remove',paths]);return result(null);}
+  async list(folder){return state.failList?result(null,{message:'Photo listing failed'}):result(state.files.filter(p=>p.startsWith(folder+'/')).map(p=>({name:p.split('/')[1]})));},
+  async remove(paths){state.calls.push(['remove',paths]);state.files=state.files.filter(p=>!paths.includes(p));return result(null);}
  };}},from(table){return new Query(table);},async rpc(name,args){
   state.calls.push([name,args]);
+  if(window.familyRpc&&name.includes('parent_'))return window.familyRpc(name,args||{},state,result);
   if(name==='reserve_scoutcard_order_email_only')return state.failOrder?result(null,{message:'Order failed'}):result(args.request_id);
   if(name==='activate_athlete_card')return result(args.card_code==='VALID-CODE-123456');
   if(name==='resolve_scoutcard')return result(null);

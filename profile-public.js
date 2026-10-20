@@ -19,7 +19,7 @@ function unavailable(title, description, retry = false) {
 async function load() {
   if (!slug || !/^[a-z0-9-]{3,60}$/.test(slug)) { unavailable('Incomplete profile link', 'Ask the athlete for their full SCOUTCARD profile link.'); return; }
   try {
-    const { data, error } = await withTimeout(db.from('athlete_profiles').select('id,slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,headshot_path').eq('slug', slug).eq('is_public', true).maybeSingle());
+    const { data, error } = await withTimeout(db.from('athlete_profiles').select('id,slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,headshot_path,parent_managed').eq('slug', slug).eq('is_public', true).maybeSingle());
     if (error) throw error;
     if (!data) { unavailable('Profile not available', 'This profile may be private, removed, or not published yet.'); return; }
     const node = document.querySelector('#profile-template').content.cloneNode(true);
@@ -57,7 +57,22 @@ async function load() {
     const highlight = safeUrl(data.highlight_url);
     if (highlight) { node.querySelector('#highlight').href = highlight; node.querySelector('#highlight').hidden = false; }
     else set('highlight-note', 'No highlight link has been added yet.');
+    if (data.parent_managed) {
+      node.querySelector('.kicker').textContent='PARENT-MANAGED ATHLETE PROFILE';
+      node.querySelector('.meta').textContent=[data.sport,data.position,data.graduation_year&&('Class of '+data.graduation_year)].filter(Boolean).join(' · ');
+      if (!data.graduation_year) node.querySelector('#detail-year').parentElement.hidden=true;
+      for (const field of ['stats','academics','events','bio']) {
+        const value=typeof data.details?.[field]==='string'?data.details[field].trim():'';
+        if (!value && !(field==='stats' && metricList.childElementCount)) node.querySelector('#'+field).closest('article').hidden=true;
+      }
+      node.querySelector('.contact .label').textContent='COACH → PARENT / GUARDIAN';
+      node.querySelector('.contact > p:not(.label)').textContent='Introduce yourself and your program. Messages go to the adult parent or guardian managing this profile—not directly to the child. Senders are not verified coaches.';
+      node.querySelector('.scoutcard-form-disclosure').firstChild.textContent='Sending shares your name, reply email and message with the managing parent or guardian. Do not include sensitive information. ';
+      const source=node.querySelector('#stats').closest('article').querySelector('small');
+      source.textContent='Provided by the parent or guardian.';
+    }
     page.replaceChildren(node);
+    if (data.parent_managed) document.querySelector('footer').textContent='© 2026 SCOUTCARD · Profile managed by an adult parent or guardian. This label does not verify identity or guardianship.';
     // Photo failures must never prevent the rest of an athlete profile from opening.
     if (data.headshot_path) void signedHeadshotUrl(db, data.headshot_path)
       .then(url => renderAvatar(avatar, data.display_name, url)).catch(() => {});
@@ -78,7 +93,7 @@ async function load() {
           message_text:document.querySelector('#coach-message').value.trim()
         }));
         if (error) throw error;
-        note.textContent = 'Message delivered to the athlete’s inbox. They can reply to the email you provided.';
+        note.textContent = data.parent_managed ? 'Message delivered to the managing parent or guardian’s inbox. They can reply to the email you provided.' : 'Message delivered to the athlete’s inbox. They can reply to the email you provided.';
         note.dataset.state = 'success';
         form.reset();
       } catch (error) { note.textContent = friendlyError(error); note.dataset.state = 'error'; }

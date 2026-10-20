@@ -43,7 +43,7 @@ export function requireAccountEligibility() {
   const previous = targets.map(element => element.hidden);
   targets.forEach(element => { element.hidden = true; });
   const gate = document.createElement('section'); gate.className = 'scoutcard-age-gate wrap';
-  gate.innerHTML = '<h2>Before you get started</h2><p>Choose your age group once on this device. We remember only the group for 30 days, not your birth date. On a shared device, use “Change age group” for the next person.</p><form><label for="scoutcard-age">Your age group</label><select id="scoutcard-age" required><option value="">Select an age group</option><option value="adult">18 or older</option><option value="teen">13–17</option><option value="blocked">Under 13</option></select><button type="submit">Continue</button></form><p class="age-status" role="status" aria-live="polite" tabindex="-1"></p><button class="secondary age-change" type="button" hidden>Change age group</button>';
+  gate.innerHTML = '<h2>Before you get started</h2><p>Choose your age group once on this device. We remember only the group for 30 days, not your birth date. On a shared device, use “Change age group” for the next person.</p><form><label for="scoutcard-age">Your age group</label><select id="scoutcard-age" required><option value="">Select an age group</option><option value="adult">18 or older</option><option value="teen">13–17</option><option value="blocked">Under 13</option></select><button type="submit">Continue</button></form><p class="age-status" role="status" aria-live="polite" tabindex="-1"></p><button class="secondary age-change" type="button" hidden>Change age group</button><p>An adult parent or legal guardian can manage a child’s profile through the <a href="https://www.scoutcard.tech/family.html">parent dashboard</a>. Children must not sign in there.</p>';
   const orderForm = document.querySelector('#order-form');
   const setupAnchor = document.querySelector('#account');
   const standaloneAnchor = document.querySelector('.auth-panel');
@@ -64,7 +64,7 @@ export function requireAccountEligibility() {
   });
   if (stored?.band === 'blocked') {
     form.hidden = true; change.hidden = false;
-    status.textContent = 'SCOUTCARD accounts are not available for children under 13. Please do not enter personal information.';
+    status.textContent = 'Individual Individual SCOUTCARD accounts are not available for children under 13. Please do not enter personal information. Ask your adult parent or guardian to use the parent dashboard instead. Ask your adult parent or guardian to use the parent dashboard instead.';
   }
   // Do not focus on initial load: focus scrolls visitors past the page introduction.
   // Explicit form actions below still move focus to the next relevant control.
@@ -85,7 +85,7 @@ export function requireAccountEligibility() {
       form.hidden = true;
       if (band === 'blocked') {
         saveChoice('blocked');
-        status.textContent = 'SCOUTCARD accounts are not available for children under 13. Please do not enter personal information.';
+        status.textContent = 'Individual SCOUTCARD accounts are not available for children under 13. Please do not enter personal information. Ask your adult parent or guardian to use the parent dashboard instead.';
         change.hidden = false; status.focus();
       } else if (band === 'teen') {
         status.textContent = 'You can use your own email. Please involve a parent or guardian before creating or publishing a profile. A parent or guardian must handle purchases.';

@@ -6,6 +6,9 @@ const types = {'.html':'text/html', '.css':'text/css', '.js':'text/javascript', 
 http.createServer(async (request, response) => {
   try {
     let name = decodeURIComponent(new URL(request.url,'http://localhost').pathname).slice(1) || 'index.html';
+    if(name==='parent-sql-review.html') { const query=new URL(request.url,'http://localhost').searchParams.has('checks')?'work/parent-db-test.sql':'parent-accounts-setup.sql';const source=(await readFile(resolve(root,query),'utf8')).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');response.writeHead(200,{'content-type':'text/html','cache-control':'no-store'});response.end('<!doctype html><title>Reviewed parent account SQL</title><pre id="sql">'+source+'</pre>');return; }
+    if(name==='family-qa.html') { response.writeHead(200,{'content-type':'text/html','cache-control':'no-store'});response.end('<!doctype html><title>Parent account checks</title><button id="run">Run parent checks</button><pre id="results"></pre><iframe id="preview" style="width:375px;height:812px"></iframe><script type="module" src="family-qa.js"></script>');return; }
+    if(name==='family-qa.js'||name==='parent-check.sql') { response.writeHead(200,{'content-type':name.endsWith('.sql')?'text/plain':'text/javascript','cache-control':'no-store'});response.end(await readFile(resolve(root,name==='parent-check.sql'?'work/parent-db-test.sql':'work/family-qa.js')));return; }
     if (name === 'qa.html') {
       response.writeHead(200, {'content-type':'text/html','cache-control':'no-store'});
       response.end('<!doctype html><title>SCOUTCARD browser checks</title><button id="run">Run isolated checks</button><pre id="results"></pre><iframe id="preview" style="width:375px;height:812px"></iframe><script type="module" src="qa-runner.js"></script>'); return;
@@ -27,6 +30,7 @@ http.createServer(async (request, response) => {
     if (isolated && name === 'mock-sdk.js') {
       const test = await readFile(resolve(root,'work/regression.cjs'),'utf8');
       let mock = test.match(/const mock = `([\s\S]*?)`;/)[1];
+      mock += '\n'+await readFile(resolve(root,'work/family-mock.js'),'utf8');
       mock += "\nif(new URLSearchParams(location.search).has('qa-public'))state.profile={id:'00000000-1111-4222-8333-000000000001',slug:'public-athlete',display_name:'<img src=x onerror=alert(1)>',sport:'Soccer',graduation_year:'2028',position:'Forward',is_public:true,highlight_url:'javascript:alert(1)',details:{stats:'12 goals',events:'Showcase, October 12'}};";
       mock += "\nif(new URLSearchParams(location.search).has('qa-saved'))state.profile=JSON.parse(sessionStorage.getItem('qa-profile')||'null');if(new URLSearchParams(location.search).has('qa-photo-error'))state.failPhoto=true;";
       response.writeHead(200, {'content-type':'text/javascript','cache-control':'no-store'});response.end(mock);return;

@@ -23,7 +23,7 @@ document.querySelector('#run').onclick = async () => {
     localStorage.removeItem('scoutcard-age-group-v2');
     sessionStorage.removeItem('scoutcard-age-session-v1');
     for (const width of [320, 332, 375, 768, 1280]) {
-      for (const path of ['index.html', 'index.html#setup', 'activate.html', 'about.html', 'example-profile.html']) {
+      for (const path of ['index.html', 'index.html#setup', 'activate.html', 'about.html', 'example-profile.html','family.html']) {
         const doc = await load(path, width);
         const win = frame.contentWindow;
         assert(doc.documentElement.scrollWidth <= win.innerWidth, path + ' overflows at ' + width);
