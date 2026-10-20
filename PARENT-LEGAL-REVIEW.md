@@ -70,3 +70,15 @@ an adult-use checkbox or email sign-in.
 
 These sources inform safeguards and the remaining review questions; they do not
 establish that every law applies or that every obligation has been fulfilled.
+
+## Subsequent owner-directed completion work
+
+The owner confirmed operations in both areas and no completed business/name/tax
+registrations. LEGAL-HANDOFF.md contains the location-specific official filing
+links, unknowns and owner/professional actions; COMPLIANCE-OPERATIONS.md contains
+prepared operating procedures, not fabricated completion evidence. New website
+controls provide selected-child saved-profile downloads and safety-reporting
+links. Parent-managed public rendering asks cooperating search engines not to
+index it; that is not access control. Unused camera/microphone/geolocation browser
+APIs are disabled through the deployment Permissions-Policy. The owner chose to
+remove the entire Raymond testimonial, portrait display and star rating for now.

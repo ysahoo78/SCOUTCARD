@@ -2,6 +2,7 @@ import { db, mountAuth } from './scoutcard-client.js';
 import { canonicalOrigin, safeUrl, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
 import { getSportName, setSportName, getSportMetrics, setSportMetrics, resetSportPresets } from './sport-presets.js';
 import { headshot, loadHeadshot, resetHeadshot, refreshHeadshotPreview, acceptHeadshotSave } from './headshot-editor.js';
+import { downloadProfile } from './privacy-tools.js';
 const $=id=>document.getElementById(id);
 const form=$('athlete-form'), status=$('profile-status'), list=$('profiles-list');
 const basic={name:'display_name',grad:'graduation_year',position:'position',accolade:'accolade',highlight:'highlight_url'};
@@ -17,6 +18,7 @@ function setBusy(value) {
  busy=value; $('child-fields').disabled=value;$('save-profile').disabled=value;
  for(const id of ['refresh-family','unpublish-child'])$(id).disabled=value;
  $('new-child').disabled=value||!familyReady||profiles.length>=10;
+ $('download-child-profile').disabled=value||!selected;
  list.querySelectorAll('button').forEach(button=>button.disabled=value);
  $('save-profile').textContent=value?'Saving…':'Save child profile →';
  form.setAttribute('aria-busy',String(value));
@@ -164,6 +166,7 @@ $('unpublish-child').onclick=async()=>{
  catch(error){if(epoch===version)note('profile-status',friendlyError(error),'error');}finally{if(epoch===version)setBusy(false);}
 };
 $('copy-child-link').onclick=async()=>{if(!selected)return;try{await navigator.clipboard.writeText(publicUrl(selected.slug));note('profile-status','Profile link copied.');}catch{note('profile-status','Select and copy the permanent link below.');}};
+$('download-child-profile').onclick=()=>{if(!selected||!user||busy)return;try{downloadProfile(selected);note('profile-status','Saved profile download requested. Keep the JSON file private; it does not contain unsaved edits or your full account records.');}catch{note('profile-status','The download could not start. You can request a copy through the privacy-request page.','error');}};
 
 async function loadPage(kind,reset=false) {
  const id=selected?.id,version=epoch;if(!id||!user)return;

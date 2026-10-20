@@ -58,6 +58,8 @@ async function load() {
     if (highlight) { node.querySelector('#highlight').href = highlight; node.querySelector('#highlight').hidden = false; }
     else set('highlight-note', 'No highlight link has been added yet.');
     if (data.parent_managed) {
+      // A request to cooperating search engines, not an access-control boundary.
+      const robots=document.createElement('meta');robots.name='robots';robots.content='noindex,nofollow';document.head.append(robots);
       node.querySelector('.kicker').textContent='PARENT-MANAGED ATHLETE PROFILE';
       node.querySelector('.meta').textContent=[data.sport,data.position,data.graduation_year&&('Class of '+data.graduation_year)].filter(Boolean).join(' · ');
       if (!data.graduation_year) node.querySelector('#detail-year').parentElement.hidden=true;
@@ -72,6 +74,8 @@ async function load() {
       source.textContent='Provided by the parent or guardian.';
     }
     page.replaceChildren(node);
+    const safety=document.createElement('p');safety.className='share-note';
+    const report=document.createElement('a');report.href='safety.html?athlete='+encodeURIComponent(slug);report.textContent='Report a safety or privacy concern about this profile';safety.append(report);page.append(safety);
     if (data.parent_managed) document.querySelector('footer').textContent='© 2026 SCOUTCARD · Profile managed by an adult parent or guardian. This label does not verify identity or guardianship.';
     // Photo failures must never prevent the rest of an athlete profile from opening.
     if (data.headshot_path) void signedHeadshotUrl(db, data.headshot_path)

@@ -3,6 +3,7 @@ outputs/
 *.sql
 *.md
 script.js
+assets/raymond-shaw.jpg
 .DS_Store
 .env
 .env.*

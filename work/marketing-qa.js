@@ -23,7 +23,7 @@ document.querySelector('#run').onclick = async () => {
     localStorage.removeItem('scoutcard-age-group-v2');
     sessionStorage.removeItem('scoutcard-age-session-v1');
     for (const width of [320, 332, 375, 768, 1280]) {
-      for (const path of ['index.html', 'index.html#setup', 'activate.html', 'about.html', 'example-profile.html','family.html','parent-privacy.html','data-request.html']) {
+      for (const path of ['index.html', 'index.html#setup', 'activate.html', 'about.html', 'example-profile.html','family.html','parent-privacy.html','data-request.html','safety.html']) {
         const doc = await load(path, width);
         const win = frame.contentWindow;
         assert(doc.documentElement.scrollWidth <= win.innerWidth, path + ' overflows at ' + width);
@@ -46,13 +46,10 @@ document.querySelector('#run').onclick = async () => {
     }
     const doc = await load('index.html', 375);
     assert(doc.querySelector('.hero .button').getAttribute('href') === '#setup', 'Primary CTA must start setup');
-    doc.querySelector('.perspective-photo').scrollIntoView();
-    await doc.querySelector('.perspective-photo img').decode();
-    assert(doc.querySelector('.perspective-photo img').naturalWidth > 0, 'Approved portrait must load');
-    assert(doc.querySelector('.recommendation').textContent.includes('great idea'), 'Recommendation missing');
-    assert(doc.querySelector('.perspective-disclosure').textContent.includes('not an endorsement by UVA'), 'Personal-recommendation disclosure missing');
+    assert(!doc.querySelector('.athlete-perspective'), 'Testimonial must stay removed at owner request');
+    assert(!doc.querySelector('img[src*="raymond-shaw"]'), 'Testimonial portrait must not display');
     assert(!doc.querySelector('.college-strip'), 'Non-customer college strip must not appear as proof');
-    output.textContent += '\n' + count + ' responsive page checks plus CTA, photo, and disclosure checks passed. No live customer data or payments used.';
+    output.textContent += '\n' + count + ' responsive page checks plus CTA and testimonial-removal checks passed. No live customer data or payments used.';
   } catch (error) { output.textContent += '\nFAIL ' + error.message; }
   finally { button.disabled = false; }
 };
