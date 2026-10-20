@@ -6,6 +6,7 @@ const input = document.getElementById('headshot');
 const remove = document.getElementById('remove-headshot');
 const note = document.getElementById('headshot-status');
 const form = document.getElementById('athlete-form');
+const saveLabel = document.getElementById('parent-entry') ? 'Save child profile' : 'Save my profile';
 const name = () => document.getElementById('name')?.value || '';
 
 export function refreshHeadshotPreview() {
@@ -23,7 +24,7 @@ input.addEventListener('change', async () => {
   refreshHeadshotPreview();
   try {
     if (!await preparing) return;
-    note.textContent = 'Photo ready. Select “Save my profile” to upload and save it.';
+    note.textContent = 'Photo ready. Select “' + saveLabel + '” to upload and save it.';
     note.dataset.state = 'success';
     refreshHeadshotPreview();
   } catch (error) {

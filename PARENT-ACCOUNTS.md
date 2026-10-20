@@ -72,6 +72,15 @@ verifies access to the mailbox, not adult identity or legal guardianship.
 
 ## Launch/review boundary
 
+The follow-up privacy/UX review adds a dedicated parent-privacy.html notice before
+entry and in the editor, parent-specific email-return wording, a saved-state next
+step panel, automatic opening for a single returning child, safe family-load
+retry controls, and clearing hidden child names/links on sign-out. Follow-up QA:
+24 parent browser checks, 26 existing athlete browser checks, 40 responsive page
+checks, and the unchanged 46 local PostgreSQL checks passed. No live family data,
+permission changes, payments or emails were created during that review. See
+PARENT-LEGAL-REVIEW.md for safeguards and remaining operator/legal tasks.
+
 Technical safeguards do not certify COPPA or state-law compliance. Obtain review
 of the actual adult-only collection model, direct notice, public sharing choices,
 data-processing arrangements and handling of known child use before expanding the

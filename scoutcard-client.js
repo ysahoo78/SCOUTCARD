@@ -18,6 +18,7 @@ export function mountAuth(onSession, returnPath = '/') {
   const note = document.querySelector('#auth-note');
   const signout = document.querySelector('#signout');
   const identity = document.querySelector('#account-email');
+  const parentDashboard = !!document.querySelector('#parent-entry');
   let currentId;
   let initialized = false;
   let cooldown = 0;
@@ -29,7 +30,7 @@ export function mountAuth(onSession, returnPath = '/') {
     const legacyReturn = !!user && /access_token=|refresh_token=/.test(location.hash);
     form.hidden = !!user;
     signout.hidden = !user;
-    identity.textContent = user ? `Signed in as ${user.email}` : 'Sign in to save and manage your profile.';
+    identity.textContent = user ? `Signed in as ${user.email}` : parentDashboard ? 'Use your own adult email to create or manage your children’s profiles.' : 'Sign in to save and manage your profile.';
     if (user) {
       let justSignedIn = false;
       try {
@@ -37,7 +38,7 @@ export function mountAuth(onSession, returnPath = '/') {
         if (justSignedIn) sessionStorage.removeItem('scoutcard-signin-complete');
       } catch {}
       if (justSignedIn || legacyReturn) {
-        note.textContent = document.querySelector('#activate-form')
+        note.textContent = parentDashboard ? 'You are signed in as the parent. Add a child or choose a saved profile below.' : document.querySelector('#activate-form')
           ? 'You are signed in. Enter your card code below to connect it.'
           : 'You are signed in. You can edit your profile below.';
         note.dataset.state = 'success';
@@ -60,7 +61,7 @@ export function mountAuth(onSession, returnPath = '/') {
     // Only clean an auth callback after Supabase has supplied a user. This
     // leaves ordinary page anchors alone and avoids discarding callback data.
     if (legacyReturn) {
-      history.replaceState(null, '', `${location.pathname}#profile`);
+      history.replaceState(null, '', `${location.pathname}${parentDashboard ? '' : '#profile'}`);
     }
   };
   db.auth.onAuthStateChange((_event, session) => { apply(session); });
@@ -89,7 +90,9 @@ export function mountAuth(onSession, returnPath = '/') {
         options: { emailRedirectTo: new URL(returnPath, siteOrigin).href }
       }));
       if (error) throw error;
-      note.textContent = document.querySelector('#athlete-form')
+      note.textContent = parentDashboard
+        ? 'Link sent. Open the newest email link in this browser. Continue on the parent dashboard that opens, then select “Add a child” or choose a saved profile. No child information needs to be entered before signing in.'
+        : document.querySelector('#athlete-form')
         ? 'Link sent. Check your inbox or spam folder. If it opens a new tab, return to this one afterward—anything you typed here is still here.'
         : 'Link sent. Check your inbox or spam folder, then open the newest sign-in link in this browser.';
       note.dataset.state = 'success';

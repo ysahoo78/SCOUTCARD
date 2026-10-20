@@ -6,7 +6,8 @@ const $=id=>document.getElementById(id);
 const form=$('athlete-form'), status=$('profile-status'), list=$('profiles-list');
 const basic={name:'display_name',grad:'graduation_year',position:'position',accolade:'accolade',highlight:'highlight_url'};
 const extra=['team','club_team','stats','academics','bio'];
-let user=null, profiles=[], selected=null, draftId=null, epoch=0, busy=false, dirty=false, pendingSwitch=null, listVersion=0;
+let user=null, profiles=[], selected=null, draftId=null, epoch=0, busy=false, dirty=false, pendingSwitch=null, listVersion=0, familyReady=false;
+const connections=new Map();
 const cursors={cards:null,messages:null}, loading={cards:false,messages:false};
 const tickets={cards:0,messages:0};
 function note(target,text,state='neutral'){const node=$(target);node.textContent=text;node.dataset.state=state;}
@@ -14,7 +15,8 @@ async function rpc(name,args={}){const {data,error}=await withTimeout(db.rpc(nam
 function preview(){refreshHeadshotPreview();$('live-name').textContent=$('name').value.trim()||'Your child’s display name';$('live-sport').textContent=getSportName();}
 function setBusy(value) {
  busy=value; $('child-fields').disabled=value;$('save-profile').disabled=value;
- for(const id of ['new-child','refresh-family','unpublish-child'])$(id).disabled=value;
+ for(const id of ['refresh-family','unpublish-child'])$(id).disabled=value;
+ $('new-child').disabled=value||!familyReady||profiles.length>=10;
  list.querySelectorAll('button').forEach(button=>button.disabled=value);
  $('save-profile').textContent=value?'Saving…':'Save child profile →';
  form.setAttribute('aria-busy',String(value));
@@ -37,7 +39,7 @@ function remember(profile) {
 function showSaved() {
  $('child-link-box').hidden=!selected;$('child-tools').hidden=!selected;
  $('unpublish-child').hidden=!selected?.is_public;
- if(!selected)return;
+ showNext();if(!selected)return;
  const name=selected.display_name;
  $('child-editor-title').textContent='Profile: '+name;
  $('child-public-link').textContent=publicUrl(selected.slug);$('child-public-link').href=publicUrl(selected.slug);
@@ -46,26 +48,48 @@ function showSaved() {
  $('activation-child-label').textContent='I confirm this card belongs to '+name+'.';
  $('delete-child-label').textContent='I understand and want to permanently delete '+name+'’s profile, messages and headshots, and disable their cards.';
 }
+function showNext() {
+ $('child-next').hidden=!selected;if(!selected)return;
+ const connected=connections.get(selected.id);
+ $('child-next-title').textContent='Setup for '+selected.display_name;
+ $('child-saved-state').textContent='Profile saved · '+(selected.is_public?'Published':'Private')+' · '+(connected===true?'Card connected':connected===false?'No card connected':'Checking card connection');
+ const action=$('child-next-action');action.removeAttribute('target');action.removeAttribute('rel');
+ if(!selected.is_public){
+  $('child-next-copy').textContent='Review the information below. If you want others to see it, approve public sharing and select “Save child profile.” You may also keep it private; a connected card will not show a private profile.';
+  action.href='#parent-public-choice';action.textContent='Review sharing choice ↓';
+ }else if(connected===true){
+  $('child-next-copy').textContent='Ready to share. Open the public profile to check it, then tap the physical card on an NFC-compatible phone to confirm it opens the right child’s page.';
+  action.href=publicUrl(selected.slug);action.textContent='View published profile (opens a new tab) ↗';action.target='_blank';action.rel='noopener';
+ }else{
+  $('child-next-copy').textContent=connected===false?'Have the card? Enter its private activation code below to connect it to this child. If you already paid in person, do not buy again.':'Your profile is published. Checking whether a card is connected; you can review the card section below.';
+  action.href='#parent-card-section';action.textContent='Go to this child’s card ↓';
+ }
+}
 function clearPrivate() {
- epoch++;profiles=[];selected=null;draftId=null;dirty=false;pendingSwitch=null;listVersion++;
+ epoch++;profiles=[];selected=null;draftId=null;dirty=false;pendingSwitch=null;listVersion++;familyReady=false;connections.clear();
  list.replaceChildren();form.reset();resetSportPresets();resetHeadshot();preview();
  $('parent-workspace').hidden=true;$('child-editor').hidden=true;$('child-tools').hidden=true;$('child-link-box').hidden=true;$('unsaved-switch').hidden=true;
  $('child-inbox').replaceChildren();$('child-cards').replaceChildren();
+ $('child-next').hidden=true;$('child-public-link').textContent='';$('child-public-link').removeAttribute('href');
+ $('child-next-action').removeAttribute('href');$('child-next-title').textContent='Finish this child’s setup.';
+ $('child-saved-state').textContent='';$('child-next-copy').textContent='';
+ for(const [id,text] of Object.entries({'child-editor-title':'New child profile','card-child-heading':'Connect this child’s card','inbox-child-heading':'Coach inquiries','activation-child-label':'I am connecting this card to the selected child.','delete-child-label':'I understand and want to permanently delete this child’s profile.'}))$(id).textContent=text;
  $('parent-activate-form').reset();$('delete-child-form').reset();
  for(const id of ['family-status','profile-status','activation-status','delete-status'])note(id,'');
  setBusy(false);
 }
 async function reloadFamily() {
  const account=user?.id, version=++listVersion;if(!account)return;
- $('refresh-family').disabled=true;note('family-status','Loading your saved profiles…','busy');
+ familyReady=false;$('new-child').disabled=true;$('refresh-family').disabled=true;note('family-status','Loading your saved profiles…','busy');
  try{
   const data=await rpc('list_parent_athletes');
   if(user?.id!==account||listVersion!==version)return;
   if(!Array.isArray(data))throw Error('The family list could not be read. Refresh to retry.');
-  profiles=data;updateList();
-  note('family-status',profiles.length?'Choose a profile to edit, activate its card, or read its messages.':'No child profiles yet. Select “Add a child” to begin.');
+  profiles=data;familyReady=true;updateList();
+  note('family-status',profiles.length>=10?'Your 10 saved profiles are below. Contact SCOUTCARD if you need help adding more.':profiles.length?'Choose a profile to edit, activate its card, or read its messages.':'No child profiles yet. Select “Add a child” to begin.');
+  if(profiles.length===1&&!selected&&!dirty)await openChild(profiles[0].id);
  }catch(error){if(user?.id===account)note('family-status',friendlyError(error)+' Use “Reload saved profiles” to retry.','error');}
- finally{if(user?.id===account)$('refresh-family').disabled=false;}
+ finally{if(user?.id===account){$('refresh-family').disabled=false;$('new-child').disabled=busy||!familyReady||profiles.length>=10;}}
 }
 function requestSwitch(id) {
  if(busy||!user)return;
@@ -75,6 +99,7 @@ function requestSwitch(id) {
 async function openChild(id) {
  const version=++epoch;selected=id?profiles.find(p=>p.id===id)||null:null;draftId=selected?.id||crypto.randomUUID();dirty=false;
  form.reset();resetSportPresets();resetHeadshot();$('parent-activate-form').reset();$('delete-child-form').reset();
+ $('child-inbox').replaceChildren();$('child-cards').replaceChildren();
  for(const target of ['profile-status','activation-status','delete-status'])note(target,'');
  $('unsaved-switch').hidden=true;$('child-editor').hidden=false;setBusy(false);
  $('child-editor-title').textContent=selected?'Profile: '+selected.display_name:'New child profile';
@@ -100,6 +125,8 @@ mountAuth(async next=>{
  const previous=user?.id;user=next;clearPrivate();
  if(!user){if(previous)document.dispatchEvent(new Event('parent-signed-out'));return;}
  $('parent-workspace').hidden=false;await reloadFamily();
+ if(user?.id!==next.id)return;
+ if(!profiles.length)$('new-child').focus({preventScroll:true});
 },canonicalOrigin+'/family.html');
 
 function values() {
@@ -140,7 +167,7 @@ $('copy-child-link').onclick=async()=>{if(!selected)return;try{await navigator.c
 
 async function loadPage(kind,reset=false) {
  const id=selected?.id,version=epoch;if(!id||!user)return;
- if(reset){cursors[kind]=null;loading[kind]=false;tickets[kind]++;}
+ if(reset){cursors[kind]=null;loading[kind]=false;tickets[kind]++;if(kind==='cards'){connections.set(id,null);showNext();}}
  if(loading[kind])return;loading[kind]=true;
  const ticket=tickets[kind];
  const cards=kind==='cards',container=$(cards?'child-cards':'child-inbox'),more=$(cards?'more-cards':'more-messages');
@@ -153,6 +180,7 @@ async function loadPage(kind,reset=false) {
   const cursor=cursors[kind];if(cursor)query=query.or(field+'.lt.'+cursor.date+',and('+field+'.eq.'+cursor.date+',id.lt.'+cursor.id+')');
   const {data,error}=await withTimeout(query);if(epoch!==version||selected?.id!==id||tickets[kind]!==ticket)return;if(error)throw error;
   message.remove();const rows=data.slice(0,20);
+  if(cards){connections.set(id,rows.length>0||(!reset&&connections.get(id)===true));showNext();}
   for(const row of rows){
    const item=document.createElement('article');item.className='list-item';
    if(cards){
