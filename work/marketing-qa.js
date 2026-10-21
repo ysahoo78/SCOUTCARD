@@ -58,6 +58,8 @@ document.querySelector('#run').onclick = async () => {
     assert(doc.querySelector('#parents').textContent.includes('does not automatically save a contact'), 'Do not imply automatic contact saving');
     const jumps = [...doc.querySelectorAll('.page-jumps a')];
     assert(jumps.every(link => doc.querySelector(link.getAttribute('href'))), 'Section navigation must have real destinations');
+    assert(doc.querySelector('.hero').nextElementSibling.matches('.athlete-perspective'), 'Raymond testimonial must stay immediately below the hero');
+    assert(doc.querySelectorAll('.athlete-perspective').length === 1, 'Testimonial must not be duplicated');
     const portrait = doc.querySelector('.perspective-photo img');
     assert(portrait, 'Testimonial portrait must display');
     portrait.scrollIntoView();
