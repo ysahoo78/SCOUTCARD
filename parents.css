@@ -1,0 +1,52 @@
+/* Parent discovery and a clear account choice; no account or eligibility changes. */
+.hero .parent-hero-button{background:transparent;border:1px solid #a9c3ff;color:#fff}
+.hero .parent-hero-button:hover{background:#20335b}
+.hero-example{display:inline-block;margin-top:20px;color:#c5d7ff;font-size:13px;text-underline-offset:4px}
+.page-jumps{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 30px;padding-block:22px;border-bottom:1px solid #d3dae4}
+.page-jumps a{font-size:12px;font-weight:700;color:#34465e;text-decoration:none;padding:6px 0}
+.page-jumps a:hover{text-decoration:underline;text-underline-offset:5px}
+.parent-play{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);align-items:center;gap:64px;padding-block:72px}
+.parent-play-copy,.parent-play-visual{min-width:0}
+.parent-play .eyebrow{color:#2456b5;font-size:10px;line-height:1.7}
+.parent-play h2{font:800 clamp(42px,5.4vw,66px)/1.02 'Barlow Condensed',Impact,sans-serif;letter-spacing:-.02em;margin:18px 0}
+.parent-play h2 em{font-style:normal;color:#0751d6}
+.parent-lede{font-size:16px;line-height:1.8;color:#485569;max-width:540px}
+.parent-play-list{list-style:none;padding:0;margin:26px 0;counter-reset:parent-step}
+.parent-play-list li{position:relative;padding:0 0 19px 43px;counter-increment:parent-step}
+.parent-play-list li::before{content:counter(parent-step,decimal-leading-zero);position:absolute;left:0;top:2px;color:#0751d6;font:700 13px/1.6 'DM Mono',monospace}
+.parent-play-list li strong{display:block;font-size:15px;line-height:1.6;color:#161a22}
+.parent-play-list li>span{display:block;font-size:13px;line-height:1.8;color:#485569;margin-top:4px}
+.parent-footnote{font-size:11px;line-height:1.8;color:#485569;max-width:520px;margin:16px 0 0}
+.parent-play-visual{background:#111d35;color:#fff;padding:30px;border:1px solid #294369;border-radius:20px;box-shadow:0 18px 44px #142c3614}
+.parent-visual-label{font:10px/1.7 'DM Mono',monospace;letter-spacing:.08em;color:#c4d5f5;margin:0 0 28px}
+.parent-product{margin:0 auto;width:100%;max-width:340px;transform:rotate(-4deg)}
+.parent-product .card-crop{border-radius:15px;box-shadow:0 12px 25px #0005}
+.parent-sharing-line{display:flex;align-items:center;justify-content:center;gap:16px;margin:30px 0 24px;font-size:12px;color:#dce7ff}
+.parent-sharing-line svg{width:32px;height:24px;flex-shrink:0;color:#80adff}
+.parent-preview{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:18px;color:#15171c}
+.parent-preview-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#e7efff;color:#0751d6;font-size:15px;font-weight:800}
+.parent-preview strong{display:block;font-size:18px;line-height:1.3}
+.parent-preview div>span{display:block;font-size:11px;line-height:1.7;color:#485569;margin-top:3px}
+.parent-preview-tag{font:8px 'DM Mono',monospace;color:#485569;letter-spacing:.04em}
+.parent-preview>p{grid-column:1/-1;border-top:1px solid #dbe2ec;margin:3px 0 0;padding-top:13px;font-size:12px;color:#34465e}
+.parent-preview>p span{padding-inline:8px;color:#0751d6}
+.parent-visual-note{font-size:11px;line-height:1.8;color:#c4d5f5;margin:20px 0 12px}
+.parent-play-visual>a{font-size:12px;font-weight:600;color:#cfddff;text-underline-offset:4px}
+.setup-choices{padding-block:12px 32px}
+.setup-choices-heading h2{font:800 clamp(30px,4vw,43px)/1.1 'Barlow Condensed',Impact,sans-serif;color:#15171c;margin:10px 0}
+.setup-choices-heading>p:last-child,.setup-existing{font-size:13px;line-height:1.8;color:#485569}
+.setup-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
+.setup-choice{display:flex;flex-direction:column;align-items:flex-start;min-width:0;border:1px solid #c9d4e4;background:#fff;border-radius:12px;padding:28px}
+.setup-choice-parent{background:#edf2ff;border-color:#b2c6ee}
+.setup-choice-label{font:10px/1.7 'DM Mono',monospace;letter-spacing:.06em;color:#2456b5;margin:0}
+.setup-choice h3{font:800 31px/1.1 'Barlow Condensed',Impact,sans-serif;color:#15171c;margin:14px 0}
+.setup-choice>p:not(.setup-choice-label){font-size:13px;line-height:1.8;color:#485569;margin:0 0 24px}
+.setup-choice .button{margin-top:auto;font-size:13px;min-height:46px}
+.setup-existing{margin:18px 0 0}
+.setup-existing a{color:#0751d6;text-underline-offset:3px}
+.page-jumps a:focus-visible,.parent-play a:focus-visible,.setup-choices a:focus-visible,.hero-example:focus-visible{outline:3px solid #0751d6;outline-offset:5px}
+.hero .parent-hero-button:focus-visible,.hero-example:focus-visible{outline-color:#a9c3ff}
+@media(max-width:1050px){.parent-play{gap:35px}.parent-play-visual{padding:24px}.nav .nav-links{gap:16px}.parent-preview{padding:14px;gap:9px}.parent-preview-tag{grid-column:2}.parent-preview>p{grid-column:1/-1}}
+@media(max-width:760px){.nav{height:auto;min-height:86px;flex-wrap:wrap;gap:16px;padding-block:18px}.nav .mode-tabs{order:3;width:100%;margin-left:0;justify-content:center}.nav .nav-links{margin-left:auto;gap:14px}.nav .nav-links a{font-size:11px}.page-jumps{gap:8px 20px;padding-block:16px;justify-content:flex-start}.page-jumps a{font-size:11px}.parent-play{grid-template-columns:1fr;padding-block:44px;gap:30px}.parent-play h2{font-size:48px}.parent-lede{font-size:15px}.parent-play-visual{max-width:500px;width:100%;margin:auto}.parent-preview-tag{grid-column:auto}.setup-intro{min-height:0}.setup-choice-grid{grid-template-columns:1fr;gap:16px}.setup-choice{padding:23px}.setup-choices{padding-top:0}.hero .actions{flex-direction:row;align-items:center;gap:12px}.hero .button{padding:14px 16px}.hero-example{font-size:12px}}
+@media(max-width:420px){.nav .brand{font-size:18px}.nav .nav-links{gap:12px}.nav .nav-activate{display:none}.parent-play h2{font-size:43px}.parent-play-visual{padding:22px}.parent-sharing-line{font-size:11px;gap:10px}.parent-preview{grid-template-columns:auto minmax(0,1fr);gap:12px}.parent-preview-tag{grid-column:2}.parent-preview>p{font-size:11px}.parent-preview>p span{padding-inline:4px}.setup-choice h3{font-size:29px}}
+@media(prefers-reduced-motion:reduce){.parent-product{transform:none}}

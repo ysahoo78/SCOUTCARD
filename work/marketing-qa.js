@@ -29,12 +29,18 @@ document.querySelector('#run').onclick = async () => {
         assert(doc.documentElement.scrollWidth <= win.innerWidth, path + ' overflows at ' + width);
         assert(win.scrollY === 0, path + ' jumped on initial load at ' + width);
         assert(doc.activeElement?.id !== 'scoutcard-age', 'Age control stole focus');
+        // Exercise off-screen lazy images too, without scrolling past the setup choice.
+        await Promise.all([...doc.images].map(async image => { image.loading = 'eager'; await image.decode(); }));
         assert([...doc.images].every(image => image.complete && image.naturalWidth > 0), path + ' has a broken image');
         if (path === 'index.html#setup') {
           const gate = doc.querySelector('.scoutcard-age-gate');
           const roadmap = doc.querySelector('.setup-roadmap');
           assert(gate && roadmap.compareDocumentPosition(gate) & Node.DOCUMENT_POSITION_FOLLOWING, 'Gate must follow the setup introduction');
           assert(doc.querySelector('#profile').hidden, 'Age gate must still protect the form');
+          const choices = doc.querySelector('.setup-choices');
+          assert(choices && frame.contentWindow.getComputedStyle(choices).display !== 'none', 'Account choice must be visible before age gate');
+          assert(choices.querySelector('a[href="family.html"]'), 'Parents must reach their dashboard without the individual age gate');
+          assert(choices.querySelector('a[href="#account"]'), 'Athletes must reach the individual sign-in');
         }
         if (path === 'example-profile.html') {
           assert(doc.querySelector('.demo-notice').textContent.includes('fictional'), 'Demo must disclose fictional data');
@@ -46,6 +52,12 @@ document.querySelector('#run').onclick = async () => {
     }
     const doc = await load('index.html', 375);
     assert(doc.querySelector('.hero .button').getAttribute('href') === '#setup', 'Primary CTA must start setup');
+    assert(doc.querySelector('.hero .parent-hero-button').getAttribute('href') === 'family.html', 'Parent hero action must open the parent dashboard');
+    assert(doc.querySelector('#parents a.button').getAttribute('href') === 'family.html', 'Parent section must use the parent setup path');
+    assert(doc.querySelector('#parents').textContent.includes('published profile'), 'Parent sharing must explain publishing');
+    assert(doc.querySelector('#parents').textContent.includes('does not automatically save a contact'), 'Do not imply automatic contact saving');
+    const jumps = [...doc.querySelectorAll('.page-jumps a')];
+    assert(jumps.every(link => doc.querySelector(link.getAttribute('href'))), 'Section navigation must have real destinations');
     const portrait = doc.querySelector('.perspective-photo img');
     assert(portrait, 'Testimonial portrait must display');
     portrait.scrollIntoView();
@@ -57,7 +69,7 @@ document.querySelector('#run').onclick = async () => {
     assert(disclosure.includes('not an endorsement by UVA'), 'UVA clarification must display');
     assert(doc.querySelectorAll('.perspective-stars svg').length === 5, 'Five stars must display');
     assert(!doc.querySelector('.college-strip'), 'Non-customer college strip must not appear as proof');
-    output.textContent += '\n' + count + ' responsive page checks plus CTA, portrait, rating and disclosure checks passed. No live customer data or payments used.';
+    output.textContent += '\n' + count + ' responsive page checks plus athlete/parent paths, section navigation, CTA, portrait, rating and disclosure checks passed. No live customer data or payments used.';
   } catch (error) { output.textContent += '\nFAIL ' + error.message; }
   finally { button.disabled = false; }
 };
