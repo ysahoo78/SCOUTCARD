@@ -60,16 +60,32 @@ document.querySelector('#run').onclick = async () => {
     assert(jumps.every(link => doc.querySelector(link.getAttribute('href'))), 'Section navigation must have real destinations');
     assert(doc.querySelector('.hero').nextElementSibling.matches('.athlete-perspective'), 'Raymond testimonial must stay immediately below the hero');
     assert(doc.querySelectorAll('.athlete-perspective').length === 1, 'Testimonial must not be duplicated');
-    const portrait = doc.querySelector('.perspective-photo img');
-    assert(portrait, 'Testimonial portrait must display');
-    portrait.scrollIntoView();
-    await portrait.decode();
-    assert(portrait.naturalWidth > 0, 'Testimonial portrait must load');
+    const portraits = [...doc.querySelectorAll('.perspective-photo img')];
+    assert(portraits.length === 2, 'Both testimonial portraits must display');
+    for (const portrait of portraits) {
+      portrait.scrollIntoView();
+      await portrait.decode();
+      assert(portrait.naturalWidth > 0, 'Both testimonial portraits must load');
+    }
     assert(doc.querySelector('.recommendation').textContent.includes('great idea'), 'Approved recommendation must display');
+    assert(doc.querySelector('#preston-title').textContent === 'Preston Wagner', 'Preston must be identified');
+    assert(doc.querySelector('blockquote.recommendation').textContent === '“All high-school athletes should get a ScoutCard to reach their goals.”', 'Preserve Preston’s exact approved quote');
     const disclosure = doc.querySelector('.perspective-disclosure').textContent;
-    assert(disclosure.includes('knows SCOUTCARD’s founders personally'), 'Personal connection must be disclosed');
+    assert(disclosure.includes('Raymond and Preston know SCOUTCARD’s founders personally'), 'Both personal connections must be disclosed');
     assert(disclosure.includes('not an endorsement by UVA'), 'UVA clarification must display');
     assert(doc.querySelectorAll('.perspective-stars svg').length === 5, 'Five stars must display');
+    assert(doc.querySelector('.perspective-layout').children[1].matches('.perspective-rating'), 'The shared stars must stay between both athletes');
+    for (const width of [375, 768, 1280]) {
+      const layout = await load('index.html', width);
+      const [raymond, stars, preston] = [...layout.querySelector('.perspective-layout').children].map(node => node.getBoundingClientRect());
+      if (width > 760) {
+        assert(raymond.right <= stars.left && stars.right <= preston.left, 'Both athletes must sit on opposite sides of the stars at ' + width);
+        const row = layout.querySelector('.perspective-layout').getBoundingClientRect();
+        assert(Math.abs((stars.left + stars.width / 2) - (row.left + row.width / 2)) < 2, 'Stars must be centered at ' + width);
+      } else {
+        assert(raymond.bottom <= stars.top && stars.bottom <= preston.top, 'Small screens must stack Raymond, stars, then Preston');
+      }
+    }
     assert(!doc.querySelector('.college-strip'), 'Non-customer college strip must not appear as proof');
     output.textContent += '\n' + count + ' responsive page checks plus athlete/parent paths, section navigation, CTA, portrait, rating and disclosure checks passed. No live customer data or payments used.';
   } catch (error) { output.textContent += '\nFAIL ' + error.message; }

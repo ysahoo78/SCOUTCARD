@@ -1,6 +1,6 @@
 # SCOUTCARD asset and license record
 
-Last reviewed: October 20, 2026.
+Last reviewed: October 21, 2026.
 
 ## Approved website logo
 
@@ -34,6 +34,7 @@ The original WOFF2 font data is embedded in the local stylesheets. Copyright not
 - Social media icons are original inline SVG link graphics, not downloaded brand asset files.
 - `assets/raymond-shaw.jpg`: portrait supplied directly by Yash Sahoo on October 19, 2026 for Raymond Shaw's recommendation. The owner stated Raymond permitted use of his name and image, confirmed the spelling, and approved the paraphrase. The image is resized/compressed for web delivery without generative changes. Preserve the permission and the original photograph/license in business records; this records the owner's representation, not independent copyright clearance.
 - The testimonial, portrait and owner-requested five-star rating were temporarily removed on October 20, 2026 and restored that day after the owner clarified the request. The restored section uses the previously approved paraphrase, discloses that Raymond knows the founders personally, and states that his personal view is not a UVA endorsement. Preserve written evidence of permission for the paraphrase, rating and photograph; personal image permission alone does not establish copyright ownership.
+- `assets/preston-wagner.jpg`: portrait supplied by Yash Sahoo on October 21, 2026. The owner confirmed Preston approved promotional use of this photograph and the exact quote, “All high-school athletes should get a ScoutCard to reach their goals.”, and gave a 5-out-of-5 rating. The owner confirmed Preston knows the founders personally; the section discloses this connection. The photo is resized/compressed for web delivery without generative alterations. Retain the written approval and original photo/license; this records the owner's representation, not independent copyright clearance. UVA affiliation reference: https://virginiasports.com/sports/wrestling/roster . No UVA logo is used and the recommendations do not represent a university endorsement.
 - The sample athlete profile uses fictional data and an initials avatar, not another person's photograph or personal information.
 - Recheck this record before adding images, videos, new fonts, or third-party icons.
 

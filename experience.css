@@ -36,20 +36,27 @@
 .hero-showcase .product-back{width:94%;margin-top:22px!important}
 .hero-showcase figcaption{line-height:1.6;font-size:7px}
 .athlete-perspective{background:#e8edf5;border-block:1px solid #d2dbe8;padding:32px 0}
-.perspective-layout{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.15fr);gap:28px;align-items:center}
+.perspective-heading{font:700 12px/1.6 'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#34465e;text-align:center;margin:0 0 28px}
+.perspective-layout{display:grid;grid-template-columns:minmax(0,1fr) 148px minmax(0,1fr);gap:28px;align-items:center}
+.perspective-athlete{min-width:0;align-self:start}
+.perspective-athlete .perspective-person{margin-bottom:22px}
+.perspective-athlete-right{text-align:right}
+.perspective-athlete-right .perspective-person{flex-direction:row-reverse}
 .perspective-rating{display:grid;justify-items:center;align-content:center;gap:9px;justify-self:center;padding:18px 16px;min-width:130px;text-align:center}
 .perspective-stars{display:flex;gap:4px;color:#9b650c}
 .perspective-stars svg{display:block;width:20px;height:20px;fill:currentColor;flex-shrink:0}
 .perspective-score{font-size:12px;font-weight:700;letter-spacing:.03em;color:#485569}
-@media(max-width:1050px){.perspective-layout{grid-template-columns:minmax(0,1fr);gap:20px}.perspective-rating{padding:2px 16px}}
+.perspective-rating-note{font-size:10px;line-height:1.6;color:#485569}
+.perspective-attribution{font-size:11px;line-height:1.7;color:#485569;margin:0}
+@media(min-width:761px) and (max-width:1050px){.perspective-layout{grid-template-columns:minmax(0,1fr) 112px minmax(0,1fr);gap:18px}.perspective-rating{padding:12px 0;min-width:0}.perspective-person{flex-direction:column;align-items:flex-start}.perspective-athlete-right .perspective-person{flex-direction:column;align-items:flex-end}}
 .perspective-person{display:flex;gap:20px;align-items:center;min-width:0}
 .perspective-photo{width:116px;aspect-ratio:4/5;flex-shrink:0;overflow:hidden;border-radius:12px;background:#dce2eb;box-shadow:0 8px 24px #14151714}
 .perspective-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 30%}
 .perspective-person .eyebrow{font-size:9px;letter-spacing:1px;color:#0751d6;line-height:1.7}
-.perspective-person h2{font-size:36px;margin:9px 0}
+.perspective-person h3{font:800 clamp(27px,2.5vw,36px)/1.08 'Barlow Condensed',Impact,sans-serif;color:#141517;margin:9px 0}
 .perspective-person p:last-child{font-size:12px;line-height:1.7;color:#485569;margin:0}
 .recommendation{font-size:clamp(20px,2.1vw,27px);font-weight:600;line-height:1.45;letter-spacing:-.5px;color:#141517;margin:0 0 14px}
-.perspective-disclosure{font-size:11px;line-height:1.7;color:#485569;margin:0;max-width:600px}
+.perspective-disclosure{font-size:11px;line-height:1.7;color:#485569;margin:26px auto 0;padding-top:18px;border-top:1px solid #cbd5e3;text-align:center;max-width:1000px}
 .about-hero h1{font-size:clamp(42px,6.8vw,90px);overflow-wrap:anywhere;letter-spacing:-.02em}
 .about-hero .wrap,.about-story>*,.founder-grid>*{min-width:0}
 .about-story a{overflow-wrap:anywhere}
