@@ -15,8 +15,11 @@ function destination() {
   if (requestedReturn) {
     try {
       const url = new URL(requestedReturn);
-      if (url.origin === location.origin && url.pathname === '/activate.html') {
-        return '/activate.html';
+      // Preserve the parent's dashboard and card setup without allowing an
+      // email parameter to send a signed-in user to an arbitrary destination.
+      const allowedPaths = new Set(['/activate.html', '/family.html']);
+      if (url.origin === location.origin && !url.username && !url.password && allowedPaths.has(url.pathname)) {
+        return url.pathname;
       }
     } catch { /* Use the default destination. */ }
   }
