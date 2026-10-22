@@ -67,9 +67,10 @@ document.querySelector('#run').onclick = async () => {
       await portrait.decode();
       assert(portrait.naturalWidth > 0, 'Both testimonial portraits must load');
     }
-    assert(doc.querySelector('.recommendation').textContent.includes('great idea'), 'Approved recommendation must display');
+    assert(doc.querySelector('[aria-labelledby="raymond-title"] blockquote.recommendation').textContent === '“SCOUTCARD is a great tool that is going to help a lot of young athletes.”', 'Preserve Raymond’s exact supplied quote');
+    assert(!doc.querySelector('[aria-labelledby="raymond-title"]').textContent.includes('Approved paraphrase'), 'Do not label Raymond’s direct quote as a paraphrase');
     assert(doc.querySelector('#preston-title').textContent === 'Preston Wagner', 'Preston must be identified');
-    assert(doc.querySelector('blockquote.recommendation').textContent === '“All high-school athletes should get a ScoutCard to reach their goals.”', 'Preserve Preston’s exact approved quote');
+    assert(doc.querySelector('[aria-labelledby="preston-title"] blockquote.recommendation').textContent === '“All high-school athletes should get a SCOUTCARD to reach their goals.”', 'Preserve Preston’s quote with the requested brand capitalization');
     const disclosure = doc.querySelector('.perspective-disclosure').textContent;
     assert(disclosure.includes('Raymond and Preston know SCOUTCARD’s founders personally'), 'Both personal connections must be disclosed');
     assert(disclosure.includes('not an endorsement by UVA'), 'UVA clarification must display');
