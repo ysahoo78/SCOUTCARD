@@ -93,7 +93,7 @@ export function mountAuth(onSession, returnPath = '/') {
       note.textContent = parentDashboard
         ? 'Link sent. Open the newest email link in this browser. Continue on the parent dashboard that opens, then select “Add a child” or choose a saved profile. No child information needs to be entered before signing in.'
         : document.querySelector('#athlete-form')
-        ? 'Link sent. Check your inbox or spam folder. If it opens a new tab, return to this one afterward—anything you typed here is still here.'
+        ? 'Link sent. Open the newest email link and continue on the SCOUTCARD page it opens. After sign-in, we create or resume your private draft. No long form is needed to create your account.'
         : 'Link sent. Check your inbox or spam folder, then open the newest sign-in link in this browser.';
       note.dataset.state = 'success';
       cooldown = Date.now() + 60000;
@@ -117,6 +117,9 @@ export function mountAuth(onSession, returnPath = '/') {
   signout.addEventListener('click', async () => {
     signout.disabled = true;
     try {
+      const waits = [];
+      document.dispatchEvent(new CustomEvent('scoutcard-before-signout', {detail:{waitUntil:promise=>waits.push(promise)}}));
+      await Promise.all(waits);
       const { error } = await withTimeout(db.auth.signOut({ scope: 'local' }));
       if (error) throw error;
       apply(null);

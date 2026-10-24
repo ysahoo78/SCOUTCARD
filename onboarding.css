@@ -1,0 +1,16 @@
+.onboarding-editor [hidden]{display:none!important}
+.wizard-intro{padding:18px;border:1px solid #c8d7f8;border-radius:12px;background:#edf3ff;color:#152442;line-height:1.6}
+.wizard-steps{display:flex;list-style:none;padding:0!important;margin:24px 0!important;gap:8px;counter-reset:steps;flex-wrap:wrap}
+.wizard-steps li{flex:1;min-width:68px;padding:10px 5px;text-align:center;border-bottom:3px solid #d3d6dc;color:#485366;font-size:13px;font-weight:700}
+.wizard-steps li[aria-current=step]{border-color:#1658e8;color:#1245b5;background:#eef3ff;border-radius:7px 7px 0 0}
+.wizard-step h3{font:700 24px/1.2 'DM Sans',sans-serif;letter-spacing:-.5px;margin:12px 0}.wizard-step>p{color:#485366;line-height:1.6}
+.wizard-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:24px}.wizard-controls button{min-height:46px;width:auto!important;padding:12px 20px!important}
+.wizard-controls .wizard-skip{background:transparent!important;color:#1748ae!important;text-decoration:underline;border:0}
+.wizard-save-state{padding:12px 0;font-size:14px;line-height:1.6;min-height:48px;color:#344257}
+.wizard-save-state[data-state=error]{color:#9b2727}.wizard-save-state[data-state=success]{color:#12603c}
+.wizard-recovery{display:flex;gap:12px;flex-wrap:wrap}.wizard-recovery button{width:auto!important;min-height:44px}
+.wizard-review{border:1px solid #d4dbe8;border-radius:12px;padding:18px;background:#f8faff;color:#17233b;overflow-wrap:anywhere}.wizard-review dl{margin:0}.wizard-review dt{font-weight:700;margin-top:15px}.wizard-review dd{margin:5px 0;white-space:pre-wrap;line-height:1.5}.wizard-review h4{margin:0;font-size:22px}
+.onboarding-editor input:focus-visible,.onboarding-editor select:focus-visible,.onboarding-editor textarea:focus-visible,.onboarding-editor button:focus-visible,.onboarding-editor a:focus-visible{outline:3px solid #1658e8!important;outline-offset:3px}
+.onboarding-editor .check,.onboarding-editor .check-label{line-height:1.6;color:#17233b}.onboarding-editor .wizard-step input:not([type=checkbox]):not([type=file]),.onboarding-editor .wizard-step textarea,.onboarding-editor .wizard-step select{background:#fff;color:#17233b;border-color:#aeb9cd}
+.onboarding-editor .wizard-step label{color:#17233b}.onboarding-editor .wizard-step small{color:#4a5870}
+@media(max-width:600px){.wizard-steps{gap:2px}.wizard-steps li{font-size:11px;min-width:48px}.wizard-controls{gap:8px}.wizard-controls button{flex:1}.wizard-review{padding:14px}.wizard-step h3{font-size:22px}}

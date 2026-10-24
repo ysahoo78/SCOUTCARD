@@ -6,7 +6,6 @@ const input = document.getElementById('headshot');
 const remove = document.getElementById('remove-headshot');
 const note = document.getElementById('headshot-status');
 const form = document.getElementById('athlete-form');
-const saveLabel = document.getElementById('parent-entry') ? 'Save child profile' : 'Save my profile';
 const name = () => document.getElementById('name')?.value || '';
 
 export function refreshHeadshotPreview() {
@@ -24,7 +23,7 @@ input.addEventListener('change', async () => {
   refreshHeadshotPreview();
   try {
     if (!await preparing) return;
-    note.textContent = 'Photo ready. Select “' + saveLabel + '” to upload and save it.';
+    note.textContent = 'Photo ready for your private draft. Wait for “Saved privately” before leaving. Publishing is a separate action.';
     note.dataset.state = 'success';
     refreshHeadshotPreview();
   } catch (error) {
@@ -35,7 +34,7 @@ input.addEventListener('change', async () => {
 });
 remove.addEventListener('click', () => {
   headshot.remove(); input.value = '';
-  note.textContent = 'Initials selected. Save your profile to remove the saved photo.';
+  note.textContent = 'Initials selected for your draft. Publish to change the public profile.';
   note.dataset.state = 'neutral';
   remove.dispatchEvent(new Event('input', { bubbles: true }));
   refreshHeadshotPreview();
@@ -54,7 +53,7 @@ export async function loadHeadshot(db, path) {
   refreshHeadshotPreview();
 }
 
-export async function acceptHeadshotSave(db, snapshot) {
+export async function acceptHeadshotSave(db, snapshot, {cleanup = true} = {}) {
   headshot.accept(snapshot);
   refreshHeadshotPreview();
   if (!snapshot.changed) return;
@@ -63,7 +62,8 @@ export async function acceptHeadshotSave(db, snapshot) {
     note.textContent = snapshot.path ? 'Headshot saved.' : 'Profile saved with initials.';
     note.dataset.state = 'success';
   }
-  if (snapshot.previousPath && snapshot.previousPath !== snapshot.path) {
+  // A private draft must never delete the image used by a published profile.
+  if (cleanup && snapshot.previousPath && snapshot.previousPath !== snapshot.path) {
     try {
       const { error } = await withTimeout(db.storage.from(HEADSHOT_BUCKET).remove([snapshot.previousPath]));
       if (error) throw error;

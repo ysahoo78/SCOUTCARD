@@ -1,16 +1,41 @@
 import { db, mountAuth } from './scoutcard-client.js';
-import { canonicalOrigin, safeUrl, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
-import { getSportName, setSportName, getSportMetrics, setSportMetrics, resetSportPresets } from './sport-presets.js';
-import { headshot, loadHeadshot, resetHeadshot, refreshHeadshotPreview, acceptHeadshotSave } from './headshot-editor.js';
+import { canonicalOrigin, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
+import { getSportName, resetSportPresets } from './sport-presets.js';
+import { resetHeadshot, refreshHeadshotPreview } from './headshot-editor.js';
 import { downloadProfile } from './privacy-tools.js';
+import { createProfileOnboarding } from './profile-onboarding.js';
 const $=id=>document.getElementById(id);
 const form=$('athlete-form'), status=$('profile-status'), list=$('profiles-list');
-const basic={name:'display_name',grad:'graduation_year',position:'position',accolade:'accolade',highlight:'highlight_url'};
-const extra=['team','club_team','stats','academics','bio'];
 let user=null, profiles=[], selected=null, draftId=null, epoch=0, busy=false, dirty=false, pendingSwitch=null, listVersion=0, familyReady=false;
 const connections=new Map();
+const editor=createProfileOnboarding({db,parent:true,
+ onDirty:value=>{dirty=value;},
+ onSaved:record=>{
+  if(!draftId||record.profile_id!==draftId)return;
+  const existing=profiles.find(p=>p.id===draftId);
+  const item=existing||{id:draftId,is_public:false,_draftOnly:true};
+  item._draft=record;
+  if(item._draftOnly){item.display_name=record.payload.display_name||'Untitled private draft';item.sport=record.payload.sport||'Choose a sport';}
+  remember(item);
+ },
+ onPublished:async profile=>{remember({...profile,_draftOnly:false});await Promise.all([loadPage('cards',true),loadPage('messages',true)]);}
+});
 const cursors={cards:null,messages:null}, loading={cards:false,messages:false};
 const tickets={cards:0,messages:0};
+const deleteDraft=document.createElement('button');deleteDraft.id='delete-draft';deleteDraft.type='button';deleteDraft.className='secondary';deleteDraft.textContent='Delete this unfinished private draft';deleteDraft.hidden=true;$('child-editor').append(deleteDraft);
+deleteDraft.onclick=async()=>{
+ if(!selected?._draftOnly||busy||!confirm('Delete this unfinished private draft and its uploaded photos? This cannot be undone.'))return;
+ const id=selected.id,account=user?.id;setBusy(true);
+ try{
+  if(editor.dirty)await editor.flush();
+  for(let batch=0;batch<20;batch++){
+   const files=await withTimeout(db.storage.from('athlete-headshots').list(id,{limit:100}));if(files.error)throw files.error;if(!files.data.length)break;
+   const removed=await withTimeout(db.storage.from('athlete-headshots').remove(files.data.map(file=>id+'/'+file.name)));if(removed.error)throw removed.error;
+  }
+  await rpc('delete_scoutcard_draft',{athlete_id:id});if(user?.id!==account)return;
+  editor.reset();selected=null;draftId=null;$('child-editor').hidden=true;await reloadFamily();note('family-status','Private draft deleted. No published profile or card was changed.','success');
+ }catch(error){note('profile-status',friendlyError(error),'error');}finally{setBusy(false);}
+};
 function note(target,text,state='neutral'){const node=$(target);node.textContent=text;node.dataset.state=state;}
 async function rpc(name,args={}){const {data,error}=await withTimeout(db.rpc(name,args));if(error)throw error;return data;}
 function preview(){refreshHeadshotPreview();$('live-name').textContent=$('name').value.trim()||'Your child’s display name';$('live-sport').textContent=getSportName();}
@@ -20,7 +45,7 @@ function setBusy(value) {
  $('new-child').disabled=value||!familyReady||profiles.length>=10;
  $('download-child-profile').disabled=value||!selected;
  list.querySelectorAll('button').forEach(button=>button.disabled=value);
- $('save-profile').textContent=value?'Saving…':'Save child profile →';
+ $('save-profile').textContent=value?'Please wait…':'Publish profile →';
  form.setAttribute('aria-busy',String(value));
 }
 function updateList(){
@@ -39,9 +64,11 @@ function remember(profile) {
  selected=profile;draftId=profile.id;updateList();showSaved();
 }
 function showSaved() {
- $('child-link-box').hidden=!selected;$('child-tools').hidden=!selected;
+ $('child-link-box').hidden=!selected?.is_public;$('child-tools').hidden=!selected||selected._draftOnly;
+ $('delete-draft').hidden=!selected?._draftOnly;
  $('unpublish-child').hidden=!selected?.is_public;
  showNext();if(!selected)return;
+ if(selected._draftOnly){$('child-editor-title').textContent='Private draft: '+selected.display_name;return;}
  const name=selected.display_name;
  $('child-editor-title').textContent='Profile: '+name;
  $('child-public-link').textContent=publicUrl(selected.slug);$('child-public-link').href=publicUrl(selected.slug);
@@ -54,10 +81,10 @@ function showNext() {
  $('child-next').hidden=!selected;if(!selected)return;
  const connected=connections.get(selected.id);
  $('child-next-title').textContent='Setup for '+selected.display_name;
- $('child-saved-state').textContent='Profile saved · '+(selected.is_public?'Published':'Private')+' · '+(connected===true?'Card connected':connected===false?'No card connected':'Checking card connection');
+ $('child-saved-state').textContent=selected._draftOnly?'Private draft · Not published · No card connected':'Profile saved · '+(selected.is_public?'Published':'Private')+' · '+(connected===true?'Card connected':connected===false?'No card connected':'Checking card connection');
  const action=$('child-next-action');action.removeAttribute('target');action.removeAttribute('rel');
  if(!selected.is_public){
-  $('child-next-copy').textContent='Review the information below. If you want others to see it, approve public sharing and select “Save child profile.” You may also keep it private; a connected card will not show a private profile.';
+  $('child-next-copy').textContent='Your private draft is not visible through public or NFC links. Finish the short Basics step, skip optional sections if you like, then review and explicitly publish. No card has been purchased or activated by creating this draft.';
   action.href='#parent-public-choice';action.textContent='Review sharing choice ↓';
  }else if(connected===true){
   $('child-next-copy').textContent='Ready to share. Open the public profile to check it, then tap the physical card on an NFC-compatible phone to confirm it opens the right child’s page.';
@@ -68,7 +95,7 @@ function showNext() {
  }
 }
 function clearPrivate() {
- epoch++;profiles=[];selected=null;draftId=null;dirty=false;pendingSwitch=null;listVersion++;familyReady=false;connections.clear();
+ editor.reset();epoch++;profiles=[];selected=null;draftId=null;dirty=false;pendingSwitch=null;listVersion++;familyReady=false;connections.clear();
  list.replaceChildren();form.reset();resetSportPresets();resetHeadshot();preview();
  $('parent-workspace').hidden=true;$('child-editor').hidden=true;$('child-tools').hidden=true;$('child-link-box').hidden=true;$('unsaved-switch').hidden=true;
  $('child-inbox').replaceChildren();$('child-cards').replaceChildren();
@@ -85,6 +112,9 @@ async function reloadFamily() {
  familyReady=false;$('new-child').disabled=true;$('refresh-family').disabled=true;note('family-status','Loading your saved profiles…','busy');
  try{
   const data=await rpc('list_parent_athletes');
+  const result=await withTimeout(db.from('athlete_profile_drafts').select('profile_id,payload,updated_at,version').eq('owner_id',account).eq('parent_managed',true).order('updated_at',{ascending:false}).limit(10));
+  if(result.error)throw result.error;
+  for(const draft of result.data||[]){const existing=data.find(p=>p.id===draft.profile_id);if(existing)existing._draft=draft;else data.push({id:draft.profile_id,display_name:draft.payload.display_name||'Untitled private draft',sport:draft.payload.sport||'Choose a sport',is_public:false,_draftOnly:true,_draft:draft});}
   if(user?.id!==account||listVersion!==version)return;
   if(!Array.isArray(data))throw Error('The family list could not be read. Refresh to retry.');
   profiles=data;familyReady=true;updateList();
@@ -93,35 +123,28 @@ async function reloadFamily() {
  }catch(error){if(user?.id===account)note('family-status',friendlyError(error)+' Use “Reload saved profiles” to retry.','error');}
  finally{if(user?.id===account){$('refresh-family').disabled=false;$('new-child').disabled=busy||!familyReady||profiles.length>=10;}}
 }
-function requestSwitch(id) {
+async function requestSwitch(id) {
  if(busy||!user)return;
- if(dirty){pendingSwitch={id};$('unsaved-switch').hidden=false;return;}
- openChild(id);
+ if(dirty){try{await editor.flush();}catch{pendingSwitch={id};$('unsaved-switch').hidden=false;return;}}
+ await openChild(id);
 }
 async function openChild(id) {
  const version=++epoch;selected=id?profiles.find(p=>p.id===id)||null:null;draftId=selected?.id||crypto.randomUUID();dirty=false;
- form.reset();resetSportPresets();resetHeadshot();$('parent-activate-form').reset();$('delete-child-form').reset();
+ $('parent-activate-form').reset();$('delete-child-form').reset();
  $('child-inbox').replaceChildren();$('child-cards').replaceChildren();
  for(const target of ['profile-status','activation-status','delete-status'])note(target,'');
- $('unsaved-switch').hidden=true;$('child-editor').hidden=false;setBusy(false);
- $('child-editor-title').textContent=selected?'Profile: '+selected.display_name:'New child profile';
- if(selected){
-  for(const [field,key] of Object.entries(basic))$(field).value=selected[key]||'';
-  $('child-age-band').value=selected.child_age_band||'';setSportName(selected.sport);setSportMetrics(selected.details?.sport_metrics);
-  for(const key of extra)$(key).value=selected.details?.[key]||'';
-  $('is-public').checked=selected.is_public===true;
-  // A stored acknowledgment is shown only for the parent's own saved profile.
-  $('parent-save-ack').checked=!!selected.parent_acknowledged_at;
- }
- showSaved();updateList();preview();$('child-editor-title').focus();
- if(selected){const current=selected;await Promise.all([loadHeadshot(db,current.headshot_path),loadPage('cards',true),loadPage('messages',true)]);if(epoch!==version)return;}
+ $('unsaved-switch').hidden=true;$('child-editor').hidden=false;setBusy(true);
+ try{
+  await editor.open({user,profileId:draftId,profile:selected?._draftOnly?null:selected});
+  if(epoch!==version)return;showSaved();updateList();preview();$('child-editor-title').focus({preventScroll:true});
+  if(selected&&!selected._draftOnly)await Promise.all([loadPage('cards',true),loadPage('messages',true)]);
+ }finally{if(epoch===version)setBusy(false);}
 }
 $('new-child').onclick=()=>requestSwitch(null);
 $('refresh-family').onclick=()=>{if(dirty){note('family-status','Save or switch/discard your draft before reloading.');return;}reloadFamily();};
 $('discard-switch').onclick=()=>{if(pendingSwitch){const {id}=pendingSwitch;pendingSwitch=null;dirty=false;openChild(id);}};
 $('cancel-switch').onclick=()=>{pendingSwitch=null;$('unsaved-switch').hidden=true;};
-form.addEventListener('input',()=>{dirty=true;preview();note('profile-status','You have unsaved changes.');});
-window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
+form.addEventListener('input',preview);
 
 mountAuth(async next=>{
  const previous=user?.id;user=next;clearPrivate();
@@ -131,41 +154,13 @@ mountAuth(async next=>{
  if(!profiles.length)$('new-child').focus({preventScroll:true});
 },canonicalOrigin+'/family.html');
 
-function values() {
- const name=$('name').value.trim(),sport=getSportName(),highlight=safeUrl($('highlight').value);
- if(!name||!sport)throw Error('Add a display name and sport before saving.');
- if($('highlight').value.trim()&&!highlight)throw Error('Use a valid http or https highlight link.');
- const details=Object.fromEntries(extra.map(key=>[key,$(key).value.trim()]));details.sport_metrics=getSportMetrics();
- return {display_name:name,sport,graduation_year:$('grad').value.trim(),position:$('position').value.trim(),accolade:$('accolade').value.trim(),highlight_url:highlight,details,child_age_band:$('child-age-band').value,is_public:$('is-public').checked};
-}
-form.addEventListener('submit',async event=>{
- event.preventDefault();if(!user||busy||!form.reportValidity())return;
- const account=user.id,version=epoch,id=draftId;let payload;
- try{payload=values();}catch(error){note('profile-status',error.message,'error');return;}
- const adult=$('parent-save-ack').checked;setBusy(true);note('profile-status','Saving this child’s profile…','busy');
- try{
-  if(!selected){
-   const created=await rpc('save_parent_athlete',{profile_id:id,profile_data:{...payload,is_public:false},adult_ack:adult,sharing_ack:false});
-   if(user?.id!==account||epoch!==version)return;remember(created);
-  }
-  const photo=await headshot.prepare(db,id);
-  if(user?.id!==account||epoch!==version)return;
-  if(photo.changed)payload.headshot_path=photo.path;
-  payload.expected_updated_at=selected.updated_at;
-  const saved=await rpc('save_parent_athlete',{profile_id:id,profile_data:payload,adult_ack:adult,sharing_ack:payload.is_public});
-  if(user?.id!==account||epoch!==version)return;
-  remember(saved);dirty=false;await acceptHeadshotSave(db,photo);
-  note('profile-status',saved.is_public?'Saved and published. Review the public link below. New inquiries go to your parent inbox.':'Saved privately. Public/NFC viewers cannot see it until you approve publishing.','success');
-  await Promise.all([loadPage('cards',true),loadPage('messages',true)]);
- }catch(error){if(user?.id===account&&epoch===version)note('profile-status',friendlyError(error)+(selected?' Your saved profile is still available; review it before retrying.':''),'error');}
- finally{if(user?.id===account&&epoch===version)setBusy(false);}
-});
 $('unpublish-child').onclick=async()=>{
  if(!selected||busy)return;const id=selected.id,account=user?.id,version=epoch;setBusy(true);
- try{const saved=await rpc('unpublish_parent_athlete',{athlete_id:id});if(user?.id!==account||version!==epoch)return;remember(saved);$('is-public').checked=false;note('profile-status','Unpublished. New public requests are blocked. Previously issued photo links may last up to 5 minutes, and others may have copies.','success');}
+ try{const saved=await editor.unpublish();if(user?.id!==account||version!==epoch)return;remember(saved);$('is-public').checked=false;note('profile-status','Unpublished. New public requests are blocked. Previously issued photo links may last up to 5 minutes, and others may have copies.','success');}
  catch(error){if(epoch===version)note('profile-status',friendlyError(error),'error');}finally{if(epoch===version)setBusy(false);}
 };
 $('copy-child-link').onclick=async()=>{if(!selected)return;try{await navigator.clipboard.writeText(publicUrl(selected.slug));note('profile-status','Profile link copied.');}catch{note('profile-status','Select and copy the permanent link below.');}};
+$('child-next-action').addEventListener('click',event=>{if(selected&&!selected.is_public){event.preventDefault();editor.review();}});
 $('download-child-profile').onclick=()=>{if(!selected||!user||busy)return;try{downloadProfile(selected);note('profile-status','Saved profile download requested. Keep the JSON file private; it does not contain unsaved edits or your full account records.');}catch{note('profile-status','The download could not start. You can request a copy through the privacy-request page.','error');}};
 
 async function loadPage(kind,reset=false) {
@@ -231,7 +226,7 @@ $('delete-child-form').addEventListener('submit',async event=>{
   }
   if(user?.id!==account||epoch!==version)return;await rpc('delete_parent_athlete',{athlete_id:id});
   if(user?.id!==account||epoch!==version)return;
-  dirty=false;await openChild(null);$('child-editor').hidden=true;await reloadFamily();note('family-status','Child profile and inbox deleted, stored photos removed, and connected cards disabled.','success');
+  dirty=false;editor.reset();selected=null;draftId=null;$('child-editor').hidden=true;await reloadFamily();note('family-status','Child profile and inbox deleted, stored photos removed, and connected cards disabled.','success');
  }catch(error){if(epoch===version)note('delete-status',friendlyError(error)+' Deletion did not finish. '+(unpublished?'The profile is private; retry or contact SCOUTCARD.':'Check its sharing status, then retry or contact SCOUTCARD.'),'error');}
  finally{button.disabled=false;if(epoch===version)setBusy(false);}
 });

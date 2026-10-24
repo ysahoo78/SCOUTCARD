@@ -1,22 +1,13 @@
 import { db, mountAuth } from './scoutcard-client.js';
-import { canonicalOrigin, safeUrl, profileSlug, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
-import { getSportName, setSportName, getSportMetrics, setSportMetrics, resetSportPresets } from './sport-presets.js';
-import { headshot, loadHeadshot, resetHeadshot, acceptHeadshotSave } from './headshot-editor.js';
+import { canonicalOrigin, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
+import { createProfileOnboarding } from './profile-onboarding.js';
 const $ = id => document.getElementById(id);
 const form = $('athlete-form'), save = $('save-profile'), status = $('profile-status');
-const fields = { name:'display_name', grad:'graduation_year', position:'position', accolade:'accolade', highlight:'highlight_url' };
-const extraFields = ['team', 'club_team', 'stats', 'academics', 'events', 'bio'];
-const touched = new Set();
-let user = null, savedSlug = '', dirty = false, ready = false, revision = 0;
-form.addEventListener('input', event => {
-  if (event.target?.id) touched.add(event.target.id);
-  dirty = true; revision++;
-  status.dataset.state = 'neutral';
-  status.textContent = 'You have unsaved changes.';
-});
-window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
+let user = null;
+const editor=createProfileOnboarding({db,onPublished:profile=>{showLink(profile.slug,profile.is_public);loadCards(user.id);}});
+const builder=$('profile');builder.hidden=true;
 function showLink(slug, isPublic = false) {
-  $('profile-link-box').hidden = !slug;
+  $('profile-link-box').hidden = !slug || !isPublic;
   let action = $('saved-profile-action');
   if (!action) {
     action = document.createElement('a');
@@ -33,7 +24,7 @@ function showLink(slug, isPublic = false) {
   }
 }
 const listVersions = new Map();
-async function loadList(id, { target, table, columns, dateField, empty, render }) {
+async function loadList(id, { target, table, columns, dateField, empty, render, onPage=()=>{} }) {
   const container = $(target), version = (listVersions.get(target) || 0) + 1;
   listVersions.set(target, version);
   let cursor = null, busy = false;
@@ -55,6 +46,7 @@ async function loadList(id, { target, table, columns, dateField, empty, render }
       if (!current()) return;
       if (error) throw error;
       const page = data.slice(0, 20);
+      onPage(page);
       for (const item of page) items.append(render(item));
       if (page.length) {
         const last = page.at(-1);
@@ -95,6 +87,7 @@ async function loadCards(id) {
     target: 'cards-list', table: 'athlete_cards',
     columns: 'id,public_token,activated_at', dateField: 'activated_at',
     empty: 'No activated cards yet. Activate your card using the private code included with it.',
+    onPage(cards){const box=$('profile-link-box');if(box.hidden)return;box.querySelector('.saved-step').textContent=cards.length?'Profile published · Card connected. You’re ready to share.':'Profile published · No card connected yet.';const links=box.querySelectorAll('.next-links a');links[0].hidden=cards.length>0;links[0].textContent='Need a card? Buy one →';links[1].hidden=cards.length>0;box.querySelector('.next-note').textContent=cards.length?'Your connected card links are listed under Your cards below. Private draft edits do not change what coaches see until you publish again.':'Already bought a card online or in person? Do not pay again. Activate it using its private code when received. We cannot infer an unlinked cash purchase from your account.';},
     render(card) {
       const item = document.createElement('div'); item.className = 'card-item';
       const label = document.createElement('p'); label.textContent = 'Active card · ' + new Date(card.activated_at).toLocaleDateString();
@@ -105,81 +98,17 @@ async function loadCards(id) {
   });
 }
 mountAuth(async nextUser => {
-  const previousId = user?.id;
-  user = nextUser; ready = false; save.disabled = true; savedSlug = ''; showLink('');
-  if (previousId && previousId !== user?.id) resetHeadshot();
-  $('athlete-workspace').hidden = !user;
-  if (!user) {
-    if (previousId) { form.reset(); resetSportPresets(); dirty = false; touched.clear(); revision++; document.dispatchEvent(new Event('profile-loaded')); }
-    $('inbox').replaceChildren(); $('cards-list').replaceChildren();
-    save.textContent = 'Sign in to save';
-    status.textContent = 'Sign in above to save. Your email stays private.';
-    status.dataset.state = 'neutral';
-    return;
-  }
-  const id = user.id;
-  save.textContent = 'Loading your profile…';
-  status.textContent = 'Loading your saved profile…';
-  status.dataset.state = 'busy';
+  user=nextUser;editor.reset();showLink('');builder.hidden=!user;
+  $('athlete-workspace').hidden=!user;
+  if(!user){$('inbox').replaceChildren();$('cards-list').replaceChildren();return;}
+  const id=user.id;
   try {
-    const { data, error } = await withTimeout(db.from('athlete_profiles').select('slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,is_public,headshot_path').eq('id', id).maybeSingle());
-    if (user?.id !== id) return;
-    if (error) throw error;
-    if (data) {
-      savedSlug = data.slug;
-      for (const [field, key] of Object.entries(fields)) {
-        if (!touched.has(field)) $(field).value = data[key] || '';
-      }
-      if (!touched.has('sport') && !touched.has('sport-other')) setSportName(data.sport);
-      if (![...touched].some(field => field === 'sport' || field === 'sport-other' || field.startsWith('metric-'))) setSportMetrics(data.details?.sport_metrics);
-      for (const key of extraFields) {
-        if (!touched.has(key)) $(key).value = typeof data.details?.[key] === 'string' ? data.details[key] : '';
-      }
-      if (!touched.has('is-public')) $('is-public').checked = data.is_public === true;
-      showLink(savedSlug, data.is_public);
-      await loadHeadshot(db, data.headshot_path);
-      if (user?.id !== id) return;
-    }
-    ready = true;
-    status.textContent = dirty ? 'Your draft is still here. Review it, then save when ready.' : data ? 'Your saved profile is ready to edit.' : 'Start with your name and sport. Publish when you are ready.';
-    status.dataset.state = 'neutral';
-    document.dispatchEvent(new Event('profile-loaded'));
-  } catch (error) { if (user?.id === id) { status.textContent = friendlyError(error) + ' Refresh this page to retry loading your profile.'; status.dataset.state = 'error'; } }
-  finally { if (user?.id === id) { save.disabled = !ready; save.textContent = 'Save my profile →'; } }
-  if (user?.id === id) await Promise.allSettled([loadInbox(id), loadCards(id)]);
-});
-form.addEventListener('submit', async event => {
-  event.preventDefault();
-  if (!user || !ready || save.disabled || !form.reportValidity()) return;
-  const id = user.id, saveRevision = revision;
-  const name = $('name').value.trim(), sport = getSportName();
-  if (!name || !sport) { status.textContent = 'Add your name and sport before saving.'; status.dataset.state = 'error'; return; }
-  const highlight = safeUrl($('highlight').value);
-  if ($('highlight').value.trim() && !highlight) { status.textContent = 'Use a valid http or https highlight link.'; status.dataset.state = 'error'; $('highlight').focus(); return; }
-  const details = Object.fromEntries(extraFields.map(key => [key, $(key).value.trim()]));
-  details.sport_metrics = getSportMetrics();
-  const payload = { id, slug:savedSlug || profileSlug(name, id), display_name:name, sport,
-    graduation_year:$('grad').value.trim(), position:$('position').value.trim(),
-    accolade:$('accolade').value.trim(), highlight_url:highlight,
-    details,
-    is_public:$('is-public').checked, updated_at:new Date().toISOString() };
-  save.disabled = true; save.textContent = 'Saving…'; status.textContent = 'Saving your profile…';
-  status.dataset.state = 'busy'; form.setAttribute('aria-busy', 'true');
-  try {
-    const photo = await headshot.prepare(db, id);
-    if (user?.id !== id) return;
-    // Omit an untouched photo to avoid overwriting a change made in another tab.
-    if (photo.changed) payload.headshot_path = photo.path;
-    const { error } = await withTimeout(db.from('athlete_profiles').upsert(payload, { onConflict:'id' }));
-    if (error) throw error;
-    if (user?.id !== id) return;
-    savedSlug = payload.slug; dirty = revision !== saveRevision; showLink(savedSlug, payload.is_public);
-    if (!dirty) touched.clear();
-    status.textContent = dirty ? 'Saved. You also have newer unsaved changes.' : payload.is_public ? 'Profile saved and published. Open your link to see what coaches see.' : 'Profile saved privately. Check “Publish my profile” and save when you want to share it.';
-    status.dataset.state = 'success';
-    await acceptHeadshotSave(db, photo);
-  } catch (error) { if (user?.id === id) { status.textContent = friendlyError(error); status.dataset.state = 'error'; } }
-  finally { form.setAttribute('aria-busy', 'false'); if (user?.id === id) { save.disabled = false; save.textContent = 'Save my profile →'; } }
+    const {data,error}=await withTimeout(db.from('athlete_profiles').select('id,slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,is_public,headshot_path').eq('id',id).maybeSingle());
+    if(user?.id!==id)return;if(error)throw error;
+    if(data)showLink(data.slug,data.is_public);
+    await editor.open({user,profileId:id,profile:data});
+  } catch(error){if(user?.id===id){status.textContent=friendlyError(error)+' Refresh to retry. Your existing public profile has not changed.';status.dataset.state='error';}}
+  if(user?.id===id)await Promise.allSettled([loadInbox(id),loadCards(id)]);
 });
 $('copy-link').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($('public-link').href); status.textContent = 'Profile link copied.'; }

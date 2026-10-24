@@ -22,7 +22,7 @@ form.addEventListener('submit', async event => {
   try {
     const { data:profile, error:profileError } = await withTimeout(db.from('athlete_profiles').select('slug,is_public').eq('id', id).maybeSingle());
     if (profileError) throw profileError;
-    if (!profile) { note.textContent = 'Save your athlete profile on the Set up profile tab first, then return here.'; note.dataset.state = 'error'; return; }
+    if (!profile) { note.textContent = 'Your private draft is not a published profile yet. Open Set up profile, finish Basics, skip any optional sections, then review and publish. Return here with your card’s private activation code afterward. Signing in does not buy or activate a card.'; note.dataset.state = 'error'; return; }
     const { data, error } = await withTimeout(db.rpc('activate_athlete_card', { card_code:code }));
     if (error) throw error;
     if (user?.id !== id) return;

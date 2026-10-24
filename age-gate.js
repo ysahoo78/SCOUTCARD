@@ -2,6 +2,8 @@
 const key = 'scoutcard-age-group-v2';
 const legacyKey = 'scoutcard-age-session-v1';
 const lifetime = 30 * 24 * 60 * 60 * 1000;
+let currentChoice = null;
+export function accountEligibility() { return currentChoice || readChoice(); }
 
 function readChoice() {
   try {
@@ -26,12 +28,14 @@ function readChoice() {
 }
 
 function saveChoice(band, permission = false) {
+  currentChoice = {version:2, band, permission, expiresAt:Date.now()+lifetime};
   try { localStorage.setItem(key, JSON.stringify({ version: 2, band, permission,
     expiresAt: Date.now() + lifetime })); } catch { /* Ask again next visit if storage is disabled. */ }
 }
 
 export function requireAccountEligibility() {
   const stored = readChoice();
+  currentChoice = stored;
   document.querySelectorAll('[data-change-age]').forEach(button => {
     button.addEventListener('click', () => {
       try { localStorage.removeItem(key); sessionStorage.removeItem(legacyKey); } catch {}
@@ -64,7 +68,7 @@ export function requireAccountEligibility() {
   });
   if (stored?.band === 'blocked') {
     form.hidden = true; change.hidden = false;
-    status.textContent = 'Individual Individual SCOUTCARD accounts are not available for children under 13. Please do not enter personal information. Ask your adult parent or guardian to use the parent dashboard instead. Ask your adult parent or guardian to use the parent dashboard instead.';
+    status.textContent = 'Individual SCOUTCARD accounts are not available for children under 13. Please do not enter personal information. Ask your adult parent or guardian to use the parent dashboard instead.';
   }
   // Do not focus on initial load: focus scrolls visitors past the page introduction.
   // Explicit form actions below still move focus to the next relevant control.

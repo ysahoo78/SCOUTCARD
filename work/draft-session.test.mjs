@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {DraftSession} from '../draft-session.js';
+let checks=0;
+const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
+const record={profile_id:crypto.randomUUID(),version:1,last_request_id:crypto.randomUUID()};
+const ack=(op)=>({...record,version:op.expected_version+1,last_request_id:op.request_id,payload:op.payload});
+const events=[],calls=[];let text='One',failure=false,slow=null;
+const session=new DraftSession({delay:60000,read:async()=>({payload:{text}}),changed:state=>events.push(state),persist:async op=>{calls.push(structuredClone(op));if(failure)throw Error('Timed out');if(slow)await slow.promise;return ack(op);}});
+session.reset(record);session.edit();await session.flush();assert.equal(session.dirty,false);assert.equal(events.at(-1),'saved');checks++;
+failure=true;text='Two';session.edit();await assert.rejects(session.flush(),/Timed out/);assert.equal(session.dirty,true);assert.equal(events.at(-1),'error');checks++;
+const failed=calls.at(-1);failure=false;text='Three';session.edit();await session.flush();assert.equal(calls.at(-2).request_id,failed.request_id);assert.deepEqual(calls.at(-2).payload,failed.payload);assert.equal(calls.at(-1).payload.text,'Three');assert.notEqual(calls.at(-1).request_id,failed.request_id);checks++;
+slow=deferred();text='Four';session.edit();const first=session.flush(),duplicate=session.flush();await new Promise(r=>setTimeout(r,0));const during=calls.length;assert.equal(session.dirty,true);assert.equal(events.at(-1),'saving');slow.resolve();await Promise.all([first,duplicate]);assert.equal(calls.length,during);checks++;
+slow=deferred();text='Five';session.edit();const pending=session.flush();await new Promise(r=>setTimeout(r,0));text='Six';session.edit();slow.resolve();await pending;assert.equal(calls.at(-1).payload.text,'Six');assert.equal(session.dirty,false);checks++;
+slow=deferred();text='Old account';session.edit();const obsolete=session.flush();await new Promise(r=>setTimeout(r,0));const other={...record,profile_id:crypto.randomUUID()};session.reset(other);slow.resolve();await obsolete;assert.equal(session.record.profile_id,other.profile_id);assert.equal(session.dirty,false);checks++;
+const reading=deferred();let value='Before photo';const photoSession=new DraftSession({delay:60000,read:async()=>{const snapshot={payload:{value}};await reading.promise;return snapshot;},persist:async op=>ack(op)});photoSession.reset(record);photoSession.edit();const upload=photoSession.flush();value='While photo prepares';photoSession.edit();reading.resolve();await upload;assert.equal(photoSession.record.payload.value,'While photo prepares');assert.equal(photoSession.dirty,false);checks++;
+const invalid=new DraftSession({delay:60000,read:async()=>({payload:{}}),persist:async()=>null});invalid.reset(record);invalid.edit();await assert.rejects(invalid.flush(),/did not confirm/);assert.equal(invalid.dirty,true);checks++;
+session.reset();photoSession.reset();invalid.reset();console.log('PASS '+checks+' autosave queue checks');
