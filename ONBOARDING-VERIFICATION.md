@@ -61,3 +61,23 @@ the 31-browser-check result above includes those changes.
 
 Existing parent safeguards are preserved, not newly certified as legally
 compliant. No university marks, marketing claims or payment flows were rebuilt.
+
+## Highlight-link normalization fix — October 24, 2026
+
+Rechecking exposed a frontend/database mismatch: `safeUrl()` accepted a bare
+video address, but the draft still contained that raw address, while the profile
+validator correctly required an HTTP(S) URL. The shared athlete/parent editor
+now stores the normalized valid URL in private drafts and repairs an older bare
+draft value before publication, waiting for server acknowledgment first. Invalid
+links remain editable in drafts and cannot be published. Database validation,
+permissions, customer profiles, card links and integrations are unchanged.
+
+Verification after the fix: 36 synthetic browser checks, 50 local PostgreSQL
+draft checks, 8 queue checks, the existing 46 parent/card checks, and syntax/asset
+validation passed. Cases include bare www/short YouTube addresses, older saved
+drafts, HTTPS/HTTP links, query parameters, parent-managed publishing, failed
+saves, and rejecting unsafe schemes. Browser mocks now enforce the backend's
+HTTP(S) prefix requirement, so this mismatch cannot silently pass that suite.
+No live data, schema or email settings were changed, no customer email was sent,
+and no live test publication or charge was made. The real-account magic-link
+and cross-device smoke test remains outside these synthetic checks.

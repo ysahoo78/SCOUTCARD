@@ -31,6 +31,7 @@ createClient=function(){
    if(state.failPublish)return result(null,{message:'Publication unavailable'});
    if(!draft||draft.version!==args.expected_version||!args.sharing_ack)return result(null,{message:'Review draft and sharing permission.'});
    if(!draft.payload.display_name||!draft.payload.sport)return result(null,{message:'Name and sport required'});
+   if(draft.payload.highlight_url&&!/^https?:\/\//.test(draft.payload.highlight_url))return result(null,{message:'Please check your highlight URL.'});
    profile={...profile,...draft.payload,id:draft.profile_id,parent_managed:draft.parent_managed,slug:profile?.slug||'athlete-'+draft.profile_id.replaceAll('-',''),is_public:true,updated_at:new Date().toISOString(),parent_acknowledged_at:draft.parent_managed?new Date().toISOString():null};
    data.profiles=data.profiles.filter(p=>p.id!==profile.id).concat(profile);draft.published_version=draft.version;write(data);
    if(profile.parent_managed)state.family=data.profiles.filter(p=>p.parent_managed);else{state.profile=profile;sessionStorage.setItem('qa-profile',JSON.stringify(profile));}

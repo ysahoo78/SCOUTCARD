@@ -2,6 +2,7 @@ import {PGlite} from '../../pglite-runtime/package/dist/index.js';
 import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {randomUUID as uuid} from 'node:crypto';
+import {safeUrl} from '../scoutcard-utils.js';
 const db=await PGlite.create();let checks=0;
 const ok=(value,message)=>{assert.ok(value,message);checks++;};
 const denied=async(promise,re)=>{await assert.rejects(promise,re);checks++;};
@@ -45,7 +46,7 @@ try{
  let result=await publish(a,own.version);ok(result.profile.slug==='permanent-existing'&&result.profile.display_name==='Private edit','Explicit publication preserves existing permanent link');ok((await publish(a,own.version)).profile.slug==='permanent-existing','Repeated publication is idempotent');
  let kid=await save(child,true);await denied(save(child,true,minimal(),kid.version),/acknowledge/i);
  await denied(save(child,true,{...minimal(),details:{events:'Private child schedule'}},kid.version,uuid(),{band:'adult',parent_ack:true}),/private contact or child schedule/);
- kid=await save(child,true,{...minimal('Child A'),child_age_band:'under13'},kid.version,uuid(),{band:'adult',parent_ack:true});
+ kid=await save(child,true,{...minimal('Child A'),child_age_band:'under13',highlight_url:safeUrl('youtu.be/ixg8KKxrhsM')},kid.version,uuid(),{band:'adult',parent_ack:true});
  let kid2=await save(sibling,true);kid2=await save(sibling,true,{...minimal('Child B'),child_age_band:'teen'},kid2.version,uuid(),{band:'adult',parent_ack:true});
  ok(kid.profile_id!==kid2.profile_id&&kid.payload.display_name!==kid2.payload.display_name,'Multiple children have separate drafts');
  await denied(save(child,true,{...minimal(),headshot_path:b+'/'+uuid()+'.jpg'},kid.version,uuid(),{band:'adult',parent_ack:true}),/headshot belonging/);
@@ -53,8 +54,17 @@ try{
  await as('anon');ok((await db.query('select name from storage.objects where name=$1',[path])).rows.length===0,'Draft photo is not publicly readable');
  await as('authenticated',b);ok((await db.query('select name from storage.objects where name=$1',[path])).rows.length===0,'Other family cannot read draft photo');
  await as('authenticated',a);result=await publish(child,kid.version);ok(result.profile.parent_managed&&result.profile.child_age_band==='under13','Parent acknowledgment publishes correct child');
+ ok(result.profile.highlight_url==='https://youtu.be/ixg8KKxrhsM','Normalized parent highlight satisfies actual database publishing rules');
  await as('anon');ok((await db.query('select id from athlete_profiles where id=$1',[child])).rows.length===1,'Published child publicly readable');ok((await db.query('select id from athlete_profiles where id=$1',[sibling])).rows.length===0,'Sibling draft remains private');
- await as('authenticated',b);result=await publish(b,draft.version);ok(result.profile.is_public&&result.profile.graduation_year==='','Individual publication with optional graduation');
+ await as('authenticated',b);
+ draft=await save(b,false,{...minimal(),highlight_url:'www.youtube.com/watch?v=ixg8KKxrhsM'},draft.version);
+ await denied(publish(b,draft.version),/Please check your profile/);
+ draft=await save(b,false,{...minimal(),highlight_url:safeUrl(draft.payload.highlight_url)},draft.version);
+ result=await publish(b,draft.version);ok(result.profile.is_public&&result.profile.graduation_year==='','Individual publication with optional graduation');
+ ok(result.profile.highlight_url==='https://www.youtube.com/watch?v=ixg8KKxrhsM','Legacy bare highlight can be normalized and published without changing database rules');
+ for(const link of ['https://www.youtube.com/watch?v=ixg8KKxrhsM','http://example.test/highlight?season=2026','hudl.com/video/athlete?team=school&season=2026']){
+  const url=safeUrl(link);draft=await save(b,false,{...minimal(),highlight_url:url},draft.version);result=await publish(b,draft.version);ok(result.profile.highlight_url===url,'HTTPS, HTTP and query parameters survive normalization and publication');
+ }
  await as('authenticated',a);await rpc('unpublish_scoutcard_profile',[child],['uuid']);checks++;
  await denied(rpc('delete_scoutcard_draft',[child],['uuid']),/saved-profile deletion/);
  await rpc('delete_scoutcard_draft',[sibling],['uuid']);ok((await db.query('select profile_id from athlete_profile_drafts where profile_id=$1',[sibling])).rows.length===0,'Unfinished draft can be removed separately');
