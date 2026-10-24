@@ -125,7 +125,7 @@ async function reloadFamily() {
 }
 async function requestSwitch(id) {
  if(busy||!user)return;
- if(dirty){try{await editor.flush();}catch{pendingSwitch={id};$('unsaved-switch').hidden=false;return;}}
+ if(dirty){setBusy(true);try{await editor.flush();}catch{pendingSwitch={id};$('unsaved-switch').hidden=false;return;}finally{setBusy(false);}}
  await openChild(id);
 }
 async function openChild(id) {

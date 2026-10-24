@@ -2,12 +2,13 @@
 
 ## Confirmed
 
-- 30 synthetic browser checks passed at 390px iframe width: account first,
+- 31 synthetic browser checks passed at 390px iframe width: account first,
   duplicate sign-in/publish clicks, interrupted sign-in, blank draft creation,
   short Basics, skip/back/next, actual full reload/resume, optional YouTube link,
   failed saves and retries, ambiguous-response idempotency, explicit publication,
   private edits to published profiles, unpublish/republish, sign-out clearing,
-  multiple child drafts, guardian/age choice restoration, failed-save switching,
+  multiple child drafts, duplicate Add a child clicks during saving,
+  guardian/age choice restoration, failed-save switching,
   selected-child card activation and mobile overflow checks.
 - 44 checks using the actual migration in synthetic local PostgreSQL passed:
   grants/RLS, anonymous and cross-account denial, empty/partial drafts, confirmed
@@ -49,6 +50,14 @@ end-to-end result. No real sign-in email was requested, no charge was made, and
 no live test profile/card activation was published. One authorized real-account
 magic-link + cross-device draft-resume smoke test remains advisable. Public
 production asset/deployment verification is recorded separately in the handoff.
+
+The initial release `e29d416ee34bec7825144f76e2e538f64d95dffc` received Vercel’s
+“Deployment has completed” status for `yash-sahoo/scoutcard`. Its onboarding
+module was fetched successfully from `https://www.scoutcard.tech/`. Direct
+Vercel deployment-detail access returned a team-scope 403, so deployment status
+was checked through the existing GitHub/Vercel integration instead. A follow-up
+release adds a guarded parent switch during saves and clearer roadmap wording;
+the 31-browser-check result above includes those changes.
 
 Existing parent safeguards are preserved, not newly certified as legally
 compliant. No university marks, marketing claims or payment flows were rebuilt.
