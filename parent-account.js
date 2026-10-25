@@ -4,9 +4,11 @@ import { getSportName, resetSportPresets } from './sport-presets.js';
 import { resetHeadshot, refreshHeadshotPreview } from './headshot-editor.js';
 import { downloadProfile } from './privacy-tools.js';
 import { createProfileOnboarding } from './profile-onboarding.js';
+import { readPurchaseStatus } from './purchase-status.js';
 const $=id=>document.getElementById(id);
 const form=$('athlete-form'), status=$('profile-status'), list=$('profiles-list');
 let user=null, profiles=[], selected=null, draftId=null, epoch=0, busy=false, dirty=false, pendingSwitch=null, listVersion=0, familyReady=false;
+let purchased=null,accountVersion=0;
 const connections=new Map();
 const editor=createProfileOnboarding({db,parent:true,
  onDirty:value=>{dirty=value;},
@@ -61,7 +63,9 @@ function updateList(){
 function remember(profile) {
  const index=profiles.findIndex(p=>p.id===profile.id);
  if(index<0)profiles.push(profile);else profiles[index]=profile;
- selected=profile;draftId=profile.id;updateList();showSaved();
+ selected=profile;draftId=profile.id;
+ try{sessionStorage.setItem('scoutcard-family-selection',JSON.stringify({owner:user.id,child:profile.id}));}catch{/* Optional return-navigation convenience. */}
+ updateList();showSaved();
 }
 function showSaved() {
  $('child-link-box').hidden=!selected?.is_public;$('child-tools').hidden=!selected||selected._draftOnly;
@@ -80,12 +84,15 @@ function showSaved() {
 function showNext() {
  $('child-next').hidden=!selected;if(!selected)return;
  const connected=connections.get(selected.id);
+ editor.setCardConnected(connected===true);
+ $('child-buy-link').hidden=connected===true||purchased===true;
  $('child-next-title').textContent='Setup for '+selected.display_name;
  $('child-saved-state').textContent=selected._draftOnly?'Private draft · Not published · No card connected':'Profile saved · '+(selected.is_public?'Published':'Private')+' · '+(connected===true?'Card connected':connected===false?'No card connected':'Checking card connection');
  const action=$('child-next-action');action.removeAttribute('target');action.removeAttribute('rel');
  if(!selected.is_public){
-  $('child-next-copy').textContent='Your private draft is not visible through public or NFC links. Finish the short Basics step, skip optional sections if you like, then review and explicitly publish. No card has been purchased or activated by creating this draft.';
+  $('child-next-copy').textContent='You can buy this child’s card now or keep editing first. Their private draft is not visible through public or NFC links. Publish a basic profile when ready: display name, sport, child’s age group, guardian acknowledgment and public-sharing approval are required. Other details can wait. Each child needs a separate card; buying does not replace permissions or activate it.';
   action.href='#parent-public-choice';action.textContent='Review sharing choice ↓';
+  if(purchased===true)$('child-next-copy').textContent='A card purchase is confirmed for this parent account, but it is not automatically assigned to this child. Check which child it is for before buying another. Continue this child’s private draft, publish a basic profile when ready with the required guardian and sharing permissions, then activate their physical card using its separate private code.';
  }else if(connected===true){
   $('child-next-copy').textContent='Ready to share. Open the public profile to check it, then tap the physical card on an NFC-compatible phone to confirm it opens the right child’s page.';
   action.href=publicUrl(selected.slug);action.textContent='View published profile (opens a new tab) ↗';action.target='_blank';action.rel='noopener';
@@ -119,7 +126,8 @@ async function reloadFamily() {
   if(!Array.isArray(data))throw Error('The family list could not be read. Refresh to retry.');
   profiles=data;familyReady=true;updateList();
   note('family-status',profiles.length>=10?'Your 10 saved profiles are below. Contact SCOUTCARD if you need help adding more.':profiles.length?'Choose a profile to edit, activate its card, or read its messages.':'No child profiles yet. Select “Add a child” to begin.');
-  if(profiles.length===1&&!selected&&!dirty)await openChild(profiles[0].id);
+  let returning=null;try{const saved=JSON.parse(sessionStorage.getItem('scoutcard-family-selection'));if(saved?.owner===account&&profiles.some(p=>p.id===saved.child))returning=saved.child;}catch{/* Optional. */}
+  if(!selected&&!dirty&&(returning||profiles.length===1))await openChild(returning||profiles[0].id);
  }catch(error){if(user?.id===account)note('family-status',friendlyError(error)+' Use “Reload saved profiles” to retry.','error');}
  finally{if(user?.id===account){$('refresh-family').disabled=false;$('new-child').disabled=busy||!familyReady||profiles.length>=10;}}
 }
@@ -147,8 +155,9 @@ $('cancel-switch').onclick=()=>{pendingSwitch=null;$('unsaved-switch').hidden=tr
 form.addEventListener('input',preview);
 
 mountAuth(async next=>{
- const previous=user?.id;user=next;clearPrivate();
+ const previous=user?.id;user=next;purchased=null;const version=++accountVersion;clearPrivate();
  if(!user){if(previous)document.dispatchEvent(new Event('parent-signed-out'));return;}
+ readPurchaseStatus(db,user).then(value=>{if(version!==accountVersion)return;purchased=value;editor.setPurchased(value);showNext();});
  $('parent-workspace').hidden=false;await reloadFamily();
  if(user?.id!==next.id)return;
  if(!profiles.length)$('new-child').focus({preventScroll:true});

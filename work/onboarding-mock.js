@@ -2,6 +2,11 @@
 const originalClient=createClient;
 createClient=function(){
  const client=originalClient(),legacyRpc=client.rpc,legacyFrom=client.from;
+ state.purchaseKnown=new URLSearchParams(location.search).has('qa-purchased');
+ const session=client.auth.getSession;
+ client.auth.getSession=async()=>{const response=await session();if(response.data.session&&state.purchaseKnown)response.data.session.access_token='synthetic-token-not-a-real-secret';return response;};
+ const realFetch=window.fetch;
+ window.fetch=(url,options)=>url==='/api/purchase-status'?Promise.resolve(Response.json({purchased:state.purchaseKnown===true})):realFetch(url,options);
  const key='qa-onboarding-db';
  const read=()=>JSON.parse(localStorage.getItem(key)||'{"drafts":[],"profiles":[]}');
  const write=data=>localStorage.setItem(key,JSON.stringify(data));

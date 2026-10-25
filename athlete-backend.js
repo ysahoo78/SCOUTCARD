@@ -1,9 +1,17 @@
 import { db, mountAuth } from './scoutcard-client.js';
 import { canonicalOrigin, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
 import { createProfileOnboarding } from './profile-onboarding.js';
+import { readPurchaseStatus } from './purchase-status.js';
 const $ = id => document.getElementById(id);
 const form = $('athlete-form'), save = $('save-profile'), status = $('profile-status');
 let user = null;
+let connectedCard = false;
+let purchased = null, accountVersion = 0;
+function purchaseGuidance(){
+ document.querySelectorAll('[data-card-purchase]').forEach(link=>link.hidden=connectedCard||purchased===true);
+ const note=$('order-known-purchase');note.hidden=purchased!==true;
+ const box=$('profile-link-box');if(!box.hidden){box.querySelector('.next-links a').hidden=connectedCard||purchased===true;if(purchased===true&&!connectedCard)box.querySelector('.next-note').textContent='A card purchase is confirmed for this account. Don’t pay again for the same card. When the physical card arrives, activate it using its private code. Buying does not automatically activate it.';}
+}
 const editor=createProfileOnboarding({db,onPublished:profile=>{showLink(profile.slug,profile.is_public);loadCards(user.id);}});
 const builder=$('profile');builder.hidden=true;
 function showLink(slug, isPublic = false) {
@@ -87,7 +95,7 @@ async function loadCards(id) {
     target: 'cards-list', table: 'athlete_cards',
     columns: 'id,public_token,activated_at', dateField: 'activated_at',
     empty: 'No activated cards yet. Activate your card using the private code included with it.',
-    onPage(cards){const box=$('profile-link-box');if(box.hidden)return;box.querySelector('.saved-step').textContent=cards.length?'Profile published · Card connected. You’re ready to share.':'Profile published · No card connected yet.';const links=box.querySelectorAll('.next-links a');links[0].hidden=cards.length>0;links[0].textContent='Need a card? Buy one →';links[1].hidden=cards.length>0;box.querySelector('.next-note').textContent=cards.length?'Your connected card links are listed under Your cards below. Private draft edits do not change what coaches see until you publish again.':'Already bought a card online or in person? Do not pay again. Activate it using its private code when received. We cannot infer an unlinked cash purchase from your account.';},
+    onPage(cards){connectedCard=connectedCard||cards.length>0;editor.setCardConnected(connectedCard);purchaseGuidance();const box=$('profile-link-box');if(box.hidden)return;box.querySelector('.saved-step').textContent=connectedCard?'Profile published · Card connected. You’re ready to share.':'Profile published · No card connected yet.';const links=box.querySelectorAll('.next-links a');links[0].hidden=connectedCard;links[0].textContent='Need a card? Buy a SCOUTCARD →';links[1].hidden=connectedCard;box.querySelector('.next-note').textContent=connectedCard?'Your connected card links are listed under Your cards below. Private draft edits do not change what coaches see until you publish again.':'Already bought a card? Don’t pay again. Activate your physical card using its private code when received. No connected card does not mean you have not paid; unlinked online and cash purchases cannot be checked here.';purchaseGuidance();},
     render(card) {
       const item = document.createElement('div'); item.className = 'card-item';
       const label = document.createElement('p'); label.textContent = 'Active card · ' + new Date(card.activated_at).toLocaleDateString();
@@ -98,10 +106,11 @@ async function loadCards(id) {
   });
 }
 mountAuth(async nextUser => {
-  user=nextUser;editor.reset();showLink('');builder.hidden=!user;
+  user=nextUser;const version=++accountVersion;connectedCard=false;purchased=null;editor.reset();showLink('');builder.hidden=!user;purchaseGuidance();
   $('athlete-workspace').hidden=!user;
   if(!user){$('inbox').replaceChildren();$('cards-list').replaceChildren();return;}
   const id=user.id;
+  readPurchaseStatus(db,user).then(value=>{if(accountVersion!==version)return;purchased=value;editor.setPurchased(value);purchaseGuidance();});
   try {
     const {data,error}=await withTimeout(db.from('athlete_profiles').select('id,slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,is_public,headshot_path').eq('id',id).maybeSingle());
     if(user?.id!==id)return;if(error)throw error;

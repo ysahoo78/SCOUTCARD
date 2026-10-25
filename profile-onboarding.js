@@ -10,7 +10,7 @@ const labels={team:'School / primary team',club_team:'Club / travel team',stats:
 
 // Reuse the established fields, presets and photo editor rather than rebuilding them.
 export function createProfileOnboarding({db,parent=false,onPublished=()=>{},onSaved=()=>{},onDirty=()=>{}}){
- const form=$('athlete-form'),button=$('save-profile'),status=$('profile-status'),root=$('child-fields')||form;
+ const form=$('athlete-form'),button=$('save-profile'),status=$('profile-status'),root=$('child-fields')||form;status.tabIndex=-1;
  form.noValidate=true;form.classList.add('onboarding-editor');
  if(!document.querySelector('link[href="onboarding.css"]')){const link=document.createElement('link');link.rel='stylesheet';link.href='onboarding.css';document.head.append(link);}
  const intro=document.createElement('p');intro.className='wizard-intro';intro.textContent='Your account and your public profile are different. Start with a name and sport; everything else can wait. Changes autosave privately. Only “Publish profile” makes this version public.';
@@ -38,21 +38,29 @@ export function createProfileOnboarding({db,parent=false,onPublished=()=>{},onSa
  const unpublish=parent?null:document.createElement('button');if(unpublish){unpublish.type='button';unpublish.className='secondary';unpublish.textContent='Unpublish immediately';unpublish.hidden=true;controls.append(unpublish);}
  const recovery=document.createElement('div');recovery.className='wizard-recovery';const retry=document.createElement('button'),reload=document.createElement('button');
  for(const control of [retry,reload]){control.type='button';control.className='secondary';control.hidden=true;}retry.id='wizard-retry';reload.id='wizard-reload';retry.textContent='Retry save';reload.textContent='Reload saved draft';recovery.append(retry,reload);form.append(recovery);
- let context=null,step=0,generation=0,ready=false,busy=false,opening=false,published=null;
+ const purchase=document.createElement('aside');purchase.id='draft-purchase';purchase.className='draft-purchase';purchase.hidden=true;purchase.setAttribute('aria-labelledby','draft-purchase-title');
+ const purchaseTitle=document.createElement('h3');purchaseTitle.id='draft-purchase-title';
+ const purchaseCopy=document.createElement('p');purchaseCopy.textContent=parent?'You can order before finishing or publishing this child’s profile. Each child needs a separate card and private code. Buying does not replace guardian permissions. An adult must make the purchase.':'A finished or published profile is not required to order. Your draft stays private; add optional details later. An adult must make the purchase.';
+ const purchaseActions=document.createElement('div');purchaseActions.className='draft-purchase-actions';const buy=document.createElement('a');buy.id='draft-buy';buy.href=parent?'index.html#order':'#order';buy.textContent='Buy a SCOUTCARD';
+ const keep=document.createElement('button');keep.id='draft-keep-editing';keep.type='button';keep.className='secondary';keep.textContent='Keep editing';
+ const purchaseWarning=document.createElement('p');purchaseWarning.className='draft-purchase-warning';purchaseWarning.textContent='Already bought a card? Don’t pay again. Finish and publish a basic profile when ready, then activate your physical card using its private code.';
+ purchaseActions.append(buy,keep);purchase.append(purchaseTitle,purchaseCopy,purchaseActions,purchaseWarning);form.append(purchase);
+ let context=null,step=0,generation=0,ready=false,busy=false,opening=false,published=null,cardConnected=null,leaving=false,purchased=null;
+ function updatePurchase(){purchase.hidden=!ready||published?.is_public===true||cardConnected===true;purchaseTitle.textContent=queue.dirty?'Save your latest changes before ordering.':purchased===true?'Your draft is saved. A card purchase is confirmed for this account.':'Your draft is saved. You can order your card now.';buy.hidden=purchased===true;buy.setAttribute('aria-disabled',String(busy||leaving));purchaseWarning.textContent=purchased===true?(parent?'This order is not automatically assigned to a child. Check which child it is for before ordering another card. Each child needs a separate card and private code.':'Don’t pay again for the same card. Continue your profile, publish when ready, then activate the physical card using its private code.'):'Already bought a card? Don’t pay again. Finish and publish a basic profile when ready, then activate your physical card using its private code.';}
  const details=Object.keys(labels).filter(key=>!parent||key!=='events');
  const rpc=async(name,args)=>{const {data,error}=await withTimeout(db.rpc(name,args));if(error)throw error;return data;};
  const eligibility=()=>parent?{band:'adult',parent_ack:$('parent-save-ack').checked}:{band:accountEligibility()?.band,permission:accountEligibility()?.permission===true};
  function note(text,state='neutral'){status.textContent=text;status.dataset.state=state;}
- function lock(value){busy=value;form.setAttribute('aria-busy',String(value));root.disabled=value;for(const input of form.querySelectorAll('input,select,textarea,#remove-headshot'))input.disabled=value||!ready;for(const control of [button,back,next,skip,retry,reload])control.disabled=value||!ready;}
+ function lock(value){busy=value;form.setAttribute('aria-busy',String(value));root.disabled=value;for(const input of form.querySelectorAll('input,select,textarea,#remove-headshot'))input.disabled=value||!ready;for(const control of [button,back,next,skip,retry,reload,keep])control.disabled=value||!ready;updatePurchase();}
  function show(index,focus=false){step=Math.max(0,Math.min(4,index));panels.forEach((panel,i)=>panel.hidden=i!==step);[...steps.children].forEach((item,i)=>{if(i===step)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');});back.hidden=step===0;next.hidden=step===4;skip.hidden=step===0||step===4;button.hidden=step!==4;if(step===4)renderReview();if(focus)panels[step].querySelector('h3').focus();}
  function raw(){const value=Object.fromEntries(Object.entries(keys).map(([id,key])=>[key,$(id).value.trim()]));value.highlight_url=safeUrl(value.highlight_url)||value.highlight_url;value.sport=getSportName();value.details=Object.fromEntries(details.map(key=>[key,$(key).value.trim()]));value.details.sport_metrics=getSportMetrics();if(parent)value.child_age_band=$('child-age-band').value;return value;}
  function renderReview(){review.replaceChildren();const data=raw(),title=document.createElement('h4');title.textContent=data.display_name||'Your display name';review.append(title);const dl=document.createElement('dl');const values={Sport:data.sport,'Graduation year':data.graduation_year,'Position / event':data.position,...Object.fromEntries(details.map(key=>[labels[key],data.details[key]])),Accolade:data.accolade,'Highlight link':data.highlight_url,...data.details.sport_metrics};for(const [label,value]of Object.entries(values)){if(!value)continue;const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label.replaceAll('_',' ');dd.textContent=value;dl.append(dt,dd);}review.append(dl);}
  const queue=new DraftSession({
   read:async()=>{const payload=raw(),draftStep=step,eligible=eligibility(),id=context.profileId;if(parent&&!eligible.parent_ack)throw Error('Confirm the parent/guardian acknowledgment in Basics before child details can autosave.');const photo=await headshot.prepare(db,id);payload.headshot_path=photo.path;return {payload,step:draftStep,eligibility:eligible,photo};},
   persist:async(operation,record)=>{const ticket=generation;const result=await rpc('save_scoutcard_draft',{athlete_id:record.profile_id,managed:parent,draft_data:operation.payload,draft_step:operation.step,expected_version:operation.expected_version,operation_id:operation.request_id,eligibility:operation.eligibility});if(ticket===generation)await acceptHeadshotSave(db,operation.photo,{cleanup:false});return result;},
-  changed:(state,value)=>{onDirty(queue.dirty);retry.hidden=state!=='error';reload.hidden=state!=='error';if(state==='error'){note(friendlyError(value)+' Your edits are still here. Retry, or reload the saved draft if another device changed it.','error');return;}note(state==='saving'?'Saving private draft…':state==='saved'?'Saved privately. Publishing is a separate action.':'Changes waiting to save…',state==='saved'?'success':state==='saving'?'busy':'neutral');if(state==='saved')onSaved(value);}
+  changed:(state,value)=>{updatePurchase();onDirty(queue.dirty);retry.hidden=state!=='error';reload.hidden=state!=='error';if(state==='error'){note(friendlyError(value)+' Your edits are still here. Retry, or reload the saved draft if another device changed it.','error');return;}note(state==='saving'?'Saving private draft…':state==='saved'?'Saved privately. Publishing is a separate action.':'Changes waiting to save…',state==='saved'?'success':state==='saving'?'busy':'neutral');if(state==='saved')onSaved(value);}
  });
- async function open(options){context=options;const ticket=++generation;ready=false;opening=true;queue.reset();lock(true);retry.hidden=true;reload.hidden=true;resetHeadshot();form.reset();resetSportPresets();show(0);note('Creating or resuming your private draft…','busy');
+ async function open(options){context=options;const ticket=++generation;ready=false;opening=true;cardConnected=null;queue.reset();lock(true);retry.hidden=true;reload.hidden=true;resetHeadshot();form.reset();resetSportPresets();show(0);note('Creating or resuming your private draft…','busy');
   try{const record=await rpc('save_scoutcard_draft',{athlete_id:options.profileId,managed:parent,draft_data:{},draft_step:0,expected_version:null,operation_id:crypto.randomUUID(),eligibility:eligibility()});if(ticket!==generation)return;
    if(!record||record.profile_id!==options.profileId||!Number.isInteger(record.version))throw Error('The draft could not be loaded.');
    const payload=record.payload||{};for(const [id,key]of Object.entries(keys))$(id).value=payload[key]||'';setSportName(payload.sport);setSportMetrics(payload.details?.sport_metrics);for(const key of details)$(key).value=payload.details?.[key]||'';
@@ -61,8 +69,24 @@ export function createProfileOnboarding({db,parent=false,onPublished=()=>{},onSa
   }catch(error){if(ticket===generation){note(friendlyError(error)+' Your draft has not been opened. Retry loading; no public profile was created.','error');reload.hidden=false;reload.disabled=false;}}
   finally{if(ticket===generation){opening=false;lock(false);reload.disabled=false;}}
  }
- function reset(){generation++;context=null;ready=false;queue.reset();resetHeadshot();form.reset();resetSportPresets();show(0);if(unpublish)unpublish.hidden=true;onDirty(false);lock(false);note('Sign in first to create or resume a private draft.');}
+ function reset(){generation++;context=null;ready=false;purchased=null;queue.reset();resetHeadshot();form.reset();resetSportPresets();show(0);if(unpublish)unpublish.hidden=true;onDirty(false);lock(false);note('Sign in first to create or resume a private draft.');}
  async function flush(){if(!ready)throw Error('Load your draft before continuing.');return queue.flush();}
+ keep.onclick=()=>panels[step].querySelector('h3').focus();
+ // Save even a partial Basics step before leaving. Do not require publication,
+ // discard edits, or continue to checkout when a save fails or the user changes.
+ document.addEventListener('click',async event=>{
+  const link=event.target.closest?.('a[href]');if(!link||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||link.target==='_blank')return;
+  const destination=new URL(link.href,location.href),here=new URL(location.href);
+  const purchaseTarget=link.id==='checkout-resume'||(destination.origin===here.origin&&['#buy','#order'].includes(destination.hash)&&/(?:\/|\/index\.html)$/.test(destination.pathname));
+  if(!purchaseTarget||!ready)return;
+  event.preventDefault();if(busy||leaving)return;leaving=true;const ticket=generation;lock(true);
+  try{await flush();if(ticket===generation&&ready&&!queue.dirty)window.location.assign(destination.href);}
+  catch{note('Your latest changes could not be saved, so we kept you here. Retry save before going to purchase; your entered information is still in this tab.','error');status.focus();}
+  finally{leaving=false;if(ticket===generation)lock(false);}
+ },true);
+ // The purchase form can also be reached by changing the hash or using Back.
+ // Keep checkout from starting while edits in this document are still unsaved.
+ document.addEventListener('scoutcard-before-purchase',event=>{if(ready&&queue.dirty)event.detail.waitUntil(flush());});
  async function navigate(index){if(busy||!ready)return;if(step===0&&index>0&&!validateBasics())return;lock(true);try{await flush();show(index,true);queue.edit();await flush();}catch{}finally{lock(false);}}
  function invalid(id,message){show(Number($(id).closest('.wizard-step').dataset.step));note(message,'error');$(id).focus();return false;}
  function validateBasics(){if(parent&&!$('child-age-band').value)return invalid('child-age-band','Select this child’s age group. It stays private.');if(parent&&!$('parent-save-ack').checked)return invalid('parent-save-ack','Confirm that you are this child’s adult parent or guardian.');if(!$('name').value.trim())return invalid('name','Add a display name to continue.');if(!getSportName())return invalid('sport','Choose a sport to continue.');return true;}
@@ -88,5 +112,5 @@ export function createProfileOnboarding({db,parent=false,onPublished=()=>{},onSa
  async function unpublishProfile(){if(!context)throw Error('Load your profile first.');const ticket=generation;const result=await rpc('unpublish_scoutcard_profile',{athlete_id:context.profileId});if(ticket!==generation)return null;if(!result?.profile||result.profile.is_public!==false)throw Error('Unpublishing was not confirmed. Retry.');if(result.draft)queue.record={...queue.record,base_profile_updated_at:result.draft.base_profile_updated_at,published_version:null};published=result.profile;context.profile=result.profile;if(unpublish)unpublish.hidden=true;return published;}
  if(unpublish)unpublish.onclick=async()=>{if(busy)return;unpublish.disabled=true;try{const profile=await unpublishProfile();if(profile){await onPublished(profile);note('Unpublished. Your private draft remains. Previously issued photo links can last up to 5 minutes; copies others made cannot be recalled.','success');}}catch(error){note(friendlyError(error),'error');}finally{unpublish.disabled=false;}};
  show(0);reset();
- return {open,reset,flush,review:()=>navigate(4),get dirty(){return queue.dirty;},get record(){return queue.record;},get ready(){return ready&&!opening;},unpublish:unpublishProfile};
+ return {open,reset,flush,setPurchased(value){purchased=value;updatePurchase();},setCardConnected(value){cardConnected=value;updatePurchase();},review:()=>navigate(4),get dirty(){return queue.dirty;},get record(){return queue.record;},get ready(){return ready&&!opening;},unpublish:unpublishProfile};
 }

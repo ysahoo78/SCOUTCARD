@@ -31,6 +31,9 @@ form.addEventListener('submit', async event => {
   note.textContent = 'Saving your order reference before opening secure checkout…';
   note.dataset.state = 'busy';
   try {
+  const saves=[];
+  document.dispatchEvent(new CustomEvent('scoutcard-before-purchase',{detail:{waitUntil:promise=>saves.push(promise)}}));
+  await Promise.all(saves);
   // Keep a stable request ID on retries so a slow network cannot create duplicate orders.
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email));
   const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2,'0')).join('');
@@ -46,7 +49,7 @@ form.addEventListener('submit', async event => {
     pending.saved = true;
     try { sessionStorage.setItem('scoutcard-pending-checkout', JSON.stringify(pending)); } catch { /* Optional. */ }
     resumeLink();
-    note.textContent = 'Order started. Opening Stripe for payment and shipping details.';
+    note.textContent = 'Order started—not paid yet. Opening Stripe. After Stripe confirms payment, continue your private profile, publish when ready, then activate your physical card using its private code. No activation-code email is promised.';
     note.dataset.state = 'success';
     window.location.assign(checkoutUrl(paymentLink, pending.id, email));
   } catch (error) { note.textContent = friendlyError(error); note.dataset.state = 'error'; }

@@ -6,7 +6,7 @@ const input=(id,value)=>{const field=$(id);field.value=value;field.dispatchEvent
 const click=async id=>{const button=$(id);if(button.disabled)throw Error(id+' disabled');button.click();await wait(()=>!$('athlete-form')||$('athlete-form').getAttribute('aria-busy')!=='true','form ready');};
 const step=()=>Number(doc().querySelector('.wizard-step:not([hidden])')?.dataset.step);
 const saved=()=>$('profile-status').textContent.includes('Saved privately');
-const load=async page=>{const url=new URL('/__qa/'+page,location.origin);url.searchParams.set('qa-run',crypto.randomUUID());await new Promise(resolve=>{frame.onload=resolve;frame.src=url.href;});await wait(()=>$('signin-form')&&(page.startsWith('family')||win().testState),'page ready');};
+const load=async page=>{const url=new URL('/__qa/'+page,location.origin);url.searchParams.set('qa-run',crypto.randomUUID());await new Promise(resolve=>{frame.onload=resolve;frame.src=url.href;});await wait(()=>$('signin-form')&&(page.startsWith('family')||win().testState),'page ready');if(page.startsWith('index')&&win().testState?.signedIn)await wait(()=>$('wizard-next')&&!$('name').disabled&&$('profile-status').dataset.state==='success','server draft ready');};
 const database=()=>JSON.parse(localStorage.getItem('qa-onboarding-db')||'{"drafts":[],"profiles":[]}');
 document.getElementById('run').onclick=async()=>{
  out.textContent='Running isolated synthetic onboarding checks…\n';count=0;
@@ -21,6 +21,26 @@ document.getElementById('run').onclick=async()=>{
   win().testSignIn();await wait(()=>$('name')&&!$('name').disabled,'private draft loaded');
   ok(database().drafts.length===1&&database().profiles.length===0,'Successful authentication creates one empty private draft, not a public profile');
   ok(step()===0&&!$('grad').required,'Short Basics with optional graduation year');
+  ok($('draft-purchase-title').textContent==='Your draft is saved. You can order your card now.'&&!$('draft-purchase').hidden,'Server-confirmed empty private draft can order without finishing Basics');
+  ok($('draft-purchase').textContent.includes('Already bought a card? Don’t pay again.'),'Unknown purchase status includes a clear duplicate-payment warning');
+  win().testState.slowSave=true;input('name','Partial before purchase');$('draft-buy').click();$('draft-buy').click();
+  ok(!win().location.hash.includes('order')&&!$('draft-purchase-title').textContent.includes('Your draft is saved.'),'Dirty draft does not claim Saved or navigate before acknowledgment');
+  await wait(()=>win().location.hash==='#order');win().testState.slowSave=false;
+  ok(database().drafts[0].payload.display_name==='Partial before purchase'&&!database().profiles.length,'Purchase navigation confirms even an incomplete draft without publishing');
+  doc().querySelector('[data-mode="setup"]').click();await wait(()=>win().location.hash==='#setup');ok($('name').value==='Partial before purchase','Buying and back preserves partial form and step');
+  win().testState.failSave=true;input('name','Unsaved before purchase');$('draft-buy').click();await wait(()=>$('profile-status').dataset.state==='error');
+  ok(win().location.hash==='#setup'&&$('name').value==='Unsaved before purchase'&&!$('draft-purchase-title').textContent.includes('Your draft is saved.'),'Failed purchase-navigation save retains edits and never claims Saved');
+  win().testState.failSave=false;await click('wizard-retry');await wait(saved);
+  // Even if the user reaches Buy through browser history rather than the link,
+  // checkout waits for the hidden editor's latest changes to save.
+  win().location.hash='#order';win().__qaCheckout=url=>win().checkoutObserved=url;
+  input('order-email','synthetic@example.test');$('order-form').querySelector('[name="terms_acknowledgment"]').checked=true;$('order-form').querySelector('[name="adult_purchaser"]').checked=true;
+  win().testState.failSave=true;input('name','Checkout must preserve this');$('order-form').requestSubmit();await wait(()=>$('order-note').dataset.state==='error');
+  ok(!win().testState.calls.some(c=>c[0]==='reserve_scoutcard_order_email_only')&&!win().checkoutObserved,'Failed hidden-editor save prevents checkout reservation and redirect');
+  win().testState.failSave=false;$('order-form').requestSubmit();$('order-form').requestSubmit();await wait(()=>win().checkoutObserved);
+  ok(win().testState.calls.filter(c=>c[0]==='reserve_scoutcard_order_email_only').length===1&&database().drafts[0].payload.display_name==='Checkout must preserve this','Duplicate checkout clicks reserve once, after private draft acknowledgment');
+  ok($('order-note').textContent.includes('not paid yet')&&$('order-known-purchase').hidden,'Checkout redirect does not invent payment confirmation');
+  doc().querySelector('[data-mode="setup"]').click();await wait(()=>win().location.hash==='#setup');
   input('name','Synthetic Athlete');input('sport','Track & field');if(!$('sport').value)input('sport','Soccer');
   await click('wizard-next');await wait(()=>step()===1);ok(database().drafts[0].payload.display_name==='Synthetic Athlete','Next confirms server save before moving forward');
   input('team','Synthetic School');await click('wizard-back');await wait(()=>step()===0);await click('wizard-next');await wait(()=>step()===1);ok($('team').value==='Synthetic School','Back and Next preserve entered optional information');
@@ -44,15 +64,25 @@ document.getElementById('run').onclick=async()=>{
   ok(database().profiles.length===1&&win().testState.calls.filter(c=>c[0]==='publish_scoutcard_draft').length===2,'Duplicate successful publish clicks issue one request (plus prior failed request)');
   const slug=database().profiles[0].slug;ok($('public-link').href.includes(slug),'Publication exposes permanent public link and next steps');
   ok(database().profiles[0].highlight_url==='https://www.youtube.com/watch?v=ixg8KKxrhsM','Published highlight uses the normalized URL');
+  ok($('draft-purchase').hidden,'Published profiles do not get another draft purchase prompt');
   input('bio','Unpublished replacement');await wait(saved);ok(database().profiles[0].details.bio==='Ambiguous timeout','Edits to published profile remain private until republished');
   await load('index.html#setup');await wait(()=>$('name')&&!$('name').disabled);ok($('bio').value==='Unpublished replacement'&&$('public-link').href.includes(slug),'Returning published athlete resumes private edits without changing public link');
   doc().querySelector('.wizard-controls').querySelector('button:last-child').click();await wait(()=>!database().profiles[0].is_public);ok(database().drafts[0].payload.details.bio==='Unpublished replacement','Unpublish stops public access without deleting private edits');
   $('is-public').checked=true;await click('save-profile');await wait(()=>$('profile-status').textContent.startsWith('Published.'));ok(database().profiles[0].slug===slug,'Republishing retains existing permanent link');
+  win().testState.cards=[{id:'00000000-1111-4222-8333-000000000099',profile_id:database().profiles[0].id,public_token:'synthetic-card',activated_at:'2026-10-25T12:00:00Z'}];
+  doc().querySelector('.wizard-controls').querySelector('button:last-child').click();await wait(()=>!database().profiles[0].is_public&&$('cards-list').textContent.includes('Active card'));
+  ok($('draft-purchase').hidden&&[...doc().querySelectorAll('[data-card-purchase]')].every(link=>link.hidden),'Known cardholder receives no repeat draft, roadmap or Gameplan purchase prompts');
+  await load('index.html?qa-purchased=1#setup');await wait(()=>$('name')&&!$('name').disabled&&!$('order-known-purchase').hidden);
+  ok($('draft-buy').hidden&&$('draft-purchase-title').textContent.includes('purchase is confirmed')&&[...doc().querySelectorAll('[data-card-purchase]')].every(link=>link.hidden),'Confirmed online purchaser gets continuation guidance, not repeated draft or roadmap purchase links');
   await click('signout');await wait(()=>$('profile').hidden);ok(!$('name').value&&$('athlete-workspace').hidden,'Sign-out clears private fields and inbox');
   await load('family.html');await wait(()=>$('parent-adult-entry'));
   $('parent-adult-entry').checked=true;$('parent-entry-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await wait(()=>win().testState&&$('signin-form'),'parent auth');win().testSignIn();await wait(()=>$('new-child')&&!$('new-child').disabled);
   await click('new-child');await wait(()=>$('name')&&!$('name').disabled);input('child-age-band','under13');input('parent-save-ack',true);$('parent-save-ack').checked=true;$('parent-save-ack').dispatchEvent(new Event('input',{bubbles:true}));input('name','Synthetic Child A');input('sport','Soccer');await click('wizard-next');await wait(()=>step()===1);
   const kidA=database().drafts.find(d=>d.payload.display_name==='Synthetic Child A').profile_id;
+  ok(!$('draft-purchase').hidden&&$('draft-purchase').textContent.includes('Each child needs a separate card'),'Parent private draft can buy early with separate-child and permission guidance');
+  input('team','Parent purchase navigation');$('draft-buy').click();await wait(()=>!!$('order-form'));
+  ok(database().drafts.find(d=>d.profile_id===kidA).payload.details.team==='Parent purchase navigation','Parent purchase link saves selected child before cross-page navigation');
+  await load('family.html');await wait(()=>$('name')?.value==='Synthetic Child A'&&!$('name').disabled);ok($('team').value==='Parent purchase navigation','Parent returns to same saved child after visiting buying page');
   win().testState.slowSave=true;input('team','Before adding sibling');$('new-child').click();$('new-child').click();await wait(()=>$('name')&&!$('name').disabled&&$('name').value==='');win().testState.slowSave=false;ok(database().drafts.filter(d=>d.parent_managed).length===2,'Duplicate Add a child clicks during saving create only one new child draft');ok($('name').value===''&&!$('parent-save-ack').checked,'New child begins separately with a fresh guardian acknowledgment');
   input('child-age-band','teen');$('parent-save-ack').checked=true;$('parent-save-ack').dispatchEvent(new Event('input',{bubbles:true}));input('name','Synthetic Child B');input('sport','Basketball');await click('wizard-next');await wait(()=>step()===1);
   const kidB=database().drafts.find(d=>d.payload.display_name==='Synthetic Child B').profile_id;
@@ -61,12 +91,17 @@ document.getElementById('run').onclick=async()=>{
   const childButton=[...$('profiles-list').querySelectorAll('button')].find(b=>b.textContent.includes('Synthetic Child A'));childButton.click();await wait(()=>$('name').value==='Synthetic Child A'&&!$('name').disabled);
   ok($('child-age-band').value==='under13'&&$('parent-save-ack').checked,'Returning to a child restores private age group and guardian acknowledgment without reasking');
   ok(database().drafts.find(d=>d.profile_id===kidB).payload.display_name==='Synthetic Child B','Sibling drafts do not overwrite each other');
+  await load('family.html');await wait(()=>$('name')?.value==='Synthetic Child A'&&!$('name').disabled);ok($('name').value==='Synthetic Child A','Multiple-child dashboard restores the last selected child, not a sibling');
   await click('wizard-skip');await wait(()=>step()===2);await click('wizard-skip');await wait(()=>step()===3);input('highlight','youtu.be/ixg8KKxrhsM');await click('wizard-skip');await wait(()=>step()===4);$('is-public').checked=true;await click('save-profile');await wait(()=>$('profile-status').textContent.startsWith('Published.'));
   ok(database().profiles.find(p=>p.id===kidA)?.is_public&&!database().profiles.find(p=>p.id===kidB),'Parent publishes only the reviewed child');
   ok(database().profiles.find(p=>p.id===kidA).highlight_url==='https://youtu.be/ixg8KKxrhsM','Parent-managed profiles normalize short YouTube links too');
   input('activation-code','VALID-FAMILY-CARD');$('activation-child-confirm').checked=true;$('parent-activate-form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await wait(()=>$('activation-status').textContent.startsWith('Card connected'));
   ok(win().testState.cards[0].profile_id===kidA,'Activation associates card with the selected published child');
+  ok($('child-buy-link').hidden&&$('draft-purchase').hidden,'Connected child card suppresses purchase prompts only for that child');
   ok(doc().documentElement.scrollWidth<=frame.clientWidth+1,'Parent wizard fits phone-width layout');
+  await load('family.html?qa-purchased=1');await wait(()=>$('profiles-list')?.textContent.includes('Synthetic Child B')&&$('name').value==='Synthetic Child A'&&!$('name').disabled);
+  [...$('profiles-list').querySelectorAll('button')].find(b=>b.textContent.includes('Synthetic Child B')).click();await wait(()=>$('name').value==='Synthetic Child B'&&!$('name').disabled&&$('draft-purchase-title').textContent.includes('purchase is confirmed'));
+  ok($('draft-buy').hidden&&$('child-next-copy').textContent.includes('not automatically assigned to this child'),'Parent paid-order hint does not assign one order/card to every sibling');
   out.textContent+='COMPLETE: '+count+' browser checks passed. No customer emails, charges or live profiles were created.\n';
  }catch(error){out.textContent+='FAIL '+error.message+'\n'+error.stack;}
 };
