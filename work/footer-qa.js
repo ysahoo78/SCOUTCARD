@@ -13,7 +13,8 @@ document.getElementById('run').onclick=async()=>{
       check(doc.querySelectorAll('body>footer').length===1,'Duplicate footer: '+path);
       check(!doc.querySelector('header .header-utility,header a[href="about.html"]'),'Secondary links remain in header');
       if(doc.querySelector('header .primary-actions'))check(doc.querySelectorAll('header .primary-actions a').length===4,'Four primary actions must remain');
-      for(const href of ['about.html','index.html#parents','family.html','privacy.html','terms.html','refunds.html','cookies.html','parent-privacy.html','data-request.html','safety.html'])check(links.some(a=>a.getAttribute('href')===href),'Missing footer destination: '+href);
+      for(const href of ['about.html','index.html#parents','family.html','privacy.html','terms.html','refunds.html','cookies.html','parent-privacy.html','data-request.html','safety.html'])check(links.some(a=>a.href===new URL(href,doc.baseURI).href),'Missing footer destination: '+href);
+      if(doc.querySelector('header .primary-actions'))check([...footer.querySelectorAll('.footer-start a')].every((a,index)=>a.href===doc.querySelectorAll('header .primary-actions a')[index].href),'Footer shortcuts must preserve header context');
       check(links.some(a=>a.getAttribute('href')==='mailto:scout.card26@gmail.com'),'Missing support email');
       check(footer.textContent.includes('Yash Sahoo and Toryn Ibarra')&&footer.textContent.includes('Virginia, United States'),'Missing business details');
       check(footer.querySelectorAll('.footer-social-link svg').length===2,'Social logos missing');

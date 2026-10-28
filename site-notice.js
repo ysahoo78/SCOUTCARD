@@ -36,6 +36,8 @@
   const grid = document.createElement('div'); grid.className = 'footer-grid';
   const brandColumn = document.createElement('div'); brandColumn.className = 'footer-brand';
   const brand = document.createElement('a'); brand.className = 'brand'; brand.href = 'index.html#buy'; brand.setAttribute('aria-label','SCOUTCARD home');
+  const onHome = location.pathname === '/' || location.pathname.endsWith('/index.html');
+  if (onHome) brand.href = '#buy';
   const logo = document.createElement('img'); logo.src = 'assets/scoutcard-logo.svg'; logo.alt = ''; logo.width = 38; logo.height = 40;
   const wordmark = document.createElement('span'); wordmark.textContent = 'SCOUTCARD'; brand.append(logo,wordmark);
   const tagline = document.createElement('p'); tagline.className = 'footer-tagline'; tagline.textContent = 'Your game. One connection.';
@@ -61,8 +63,14 @@
     const column = document.createElement('div'); column.className = 'footer-column ' + id;
     const heading = document.createElement('h2'); heading.id = id + '-title'; heading.textContent = title;
     const nav = document.createElement('nav'); nav.setAttribute('aria-labelledby',heading.id);
-    for (const [label,href] of links) {
-      const link = document.createElement('a'); link.href = href; link.textContent = label; nav.append(link);
+    for (const [index,[label,href]] of links.entries()) {
+      const link = document.createElement('a'); link.href = onHome && href.startsWith('index.html#') ? href.slice('index.html'.length) : href;
+      // Reuse the contextual header destinations, especially for selected children.
+      if (id === 'footer-start') {
+        const primary = document.querySelectorAll('header .primary-actions a')[index];
+        if (primary) link.href = primary.getAttribute('href');
+      }
+      link.textContent = label; nav.append(link);
     }
     column.append(heading,nav); grid.append(column);
   }

@@ -45,6 +45,9 @@ document.getElementById('run').onclick=async()=>{
   ok($('email-body').value==='Manually edited email for this athlete.'&&doc().querySelector('header [data-action="email"]').getAttribute('aria-current')==='page','Send An Email preserves edited text and marks only the email action current');
   doc().querySelector('header [data-action="setup"]').click();await wait(()=>!doc().body.classList.contains('email-mode'));
   ok($('name').value==='Synthetic Athlete'&&$('email-body').value==='Manually edited email for this athlete.','Returning to setup keeps both athlete details and in-tab email edits');
+  doc().querySelector('footer .footer-start a[href="#email"]').click();await wait(()=>doc().body.classList.contains('email-mode'));
+  doc().querySelector('footer .footer-start a[href="#setup"]').click();await wait(()=>!doc().body.classList.contains('email-mode'));
+  ok($('email-body').value==='Manually edited email for this athlete.'&&$('name').value==='Synthetic Athlete','Footer shortcuts stay in the same document and preserve profile and email edits');
   $('email-copy-body').click();ok($('email-status').textContent.includes('Review the email'),'Sharing requires an explicit review acknowledgment');
   const copied=[];Object.defineProperty(win().navigator,'clipboard',{value:{writeText:async text=>{copied.push(text);}},configurable:true});$('email-reviewed').checked=true;$('email-copy-body').click();await wait(()=>copied.length===1);
   ok(copied[0]==='Manually edited email for this athlete.','Copy email copies only the reviewed, edited body without sending');
