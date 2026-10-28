@@ -27,15 +27,17 @@ function setMode() {
   const fragment = location.hash;
   const authReturn = /access_token=|error_description=|refresh_token=/.test(fragment) || location.search.includes('code=');
   const preserveSetup = fragment === '#main' && document.body.classList.contains('setup-mode');
-  const mode = preserveSetup || ['#setup', '#profile', '#account', '#athlete-workspace'].includes(fragment) || authReturn ? 'setup' : 'buy';
-  document.body.classList.toggle('setup-mode', mode === 'setup');
+  const email = ['#email', '#recruiting-email'].includes(fragment) || (preserveSetup && document.body.classList.contains('email-mode'));
+  const mode = email ? 'email' : preserveSetup || ['#setup', '#profile', '#account', '#athlete-workspace'].includes(fragment) || authReturn ? 'setup' : 'buy';
+  document.body.classList.toggle('setup-mode', mode !== 'buy');
   document.body.classList.toggle('buy-mode', mode === 'buy');
+  document.body.classList.toggle('email-mode', mode === 'email');
   document.querySelectorAll('[data-mode]').forEach(link => {
     const active = link.dataset.mode === mode;
     link.classList.toggle('active', active);
     if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
   });
-  if (['#buy', '#setup'].includes(fragment)) window.scrollTo({ top: 0 });
+  if (['#buy', '#setup', '#email'].includes(fragment)) window.scrollTo({ top: 0 });
   else if (['#profile', '#account'].includes(fragment)) {
     const target = $(fragment.slice(1));
     const visibleTarget = target?.hidden ? document.querySelector('.scoutcard-age-gate') : target;

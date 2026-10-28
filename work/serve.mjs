@@ -7,6 +7,8 @@ const types = {'.html':'text/html', '.css':'text/css', '.js':'text/javascript', 
 http.createServer(async (request, response) => {
   try {
     let name = decodeURIComponent(new URL(request.url,'http://localhost').pathname).slice(1) || 'index.html';
+    if(name==='navigation-qa.html'){response.writeHead(200,{'content-type':'text/html','cache-control':'no-store'});response.end('<!doctype html><title>Four-action navigation verification</title><button id="run">Run navigation checks</button><pre id="results"></pre><iframe id="preview" style="width:390px;height:844px;border:0"></iframe><script type="module" src="navigation-qa.js"></script>');return;}
+    if(name==='navigation-qa.js'){response.writeHead(200,{'content-type':'text/javascript','cache-control':'no-store'});response.end(await readFile(resolve(root,'work/navigation-qa.js')));return;}
     // Local synthetic integration only: real handler, fixture-only upstream. Never deployed.
     if(name==='__qa-email-api'&&request.method==='POST'){
       let raw='';for await(const chunk of request){raw+=chunk;if(raw.length>100000)throw Error('Fixture too large');}

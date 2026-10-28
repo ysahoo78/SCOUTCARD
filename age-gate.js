@@ -52,7 +52,7 @@ export function requireAccountEligibility() {
   const setupAnchor = document.querySelector('#account');
   const standaloneAnchor = document.querySelector('.auth-panel');
   const placeGate = () => {
-    const setupHash = ['#setup', '#profile', '#account', '#athlete-workspace'].includes(location.hash) ||
+    const setupHash = ['#setup', '#profile', '#account', '#athlete-workspace', '#email', '#recruiting-email'].includes(location.hash) ||
       /access_token=|error_description=|refresh_token=/.test(location.hash) || location.search.includes('code=');
     if (orderForm && !setupHash) orderForm.before(gate);
     else (setupAnchor || standaloneAnchor)?.before(gate);

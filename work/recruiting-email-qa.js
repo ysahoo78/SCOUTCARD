@@ -17,6 +17,10 @@ document.getElementById('run').onclick=async()=>{
   await load('index.html#setup');ok($('recruiting-email').hidden,'Signed-out visitors cannot see the email builder');
   win().testSignIn();await wait(()=>!$('recruiting-email').hidden&&!$('name').disabled,'signed-in draft ready');await open();
   ok($('email-workspace').hidden&&!$('email-payment-help').hidden&&$('email-load-status').textContent.includes('locked'),'Unpaid accounts see a locked state with cash-sale support, not the builder');
+  doc().querySelector('header [data-action="email"]').click();await wait(()=>doc().body.classList.contains('email-mode'));
+  ok(!$('email-entry').hidden&&win().getComputedStyle($('profile')).display==='none'&&$('email-workspace').hidden,'Top email action opens a dedicated view without bypassing payment or showing the long profile form');
+  ok([...doc().querySelectorAll('header .primary-actions a')].map(a=>a.textContent).join('|')==='Set Up Profile|Buy The Card|Activate The Card|Send An Email','Header has exactly the four requested primary actions in order');
+  doc().querySelector('header [data-action="setup"]').click();await wait(()=>!doc().body.classList.contains('email-mode'));
   win().testState.purchaseKnown=true;win().testState.failPurchaseRead=true;await open();
   ok($('email-workspace').hidden&&$('email-load-status').textContent.includes('couldn’t verify'),'Unknown payment status fails closed with retry guidance');
   win().testState.failPurchaseRead=false;await open();
@@ -35,8 +39,12 @@ document.getElementById('run').onclick=async()=>{
   ok($('email-status').dataset.state==='error'&&$('email-body').value===previous,'Server failures do not generate a free client-side fallback');win().testState.failEmailRequest=false;
   input('email-body','Manually edited email for this athlete.');input('email-subject','My custom subject');$('email-close').click();await open();
   ok($('email-body').value==='Manually edited email for this athlete.'&&$('email-subject').value==='My custom subject','Manual edits survive closing and reopening the inline builder');
-  doc().querySelector('[data-mode="buy"]').click();await wait(()=>win().location.hash==='#buy'&&doc().body.classList.contains('buy-mode'));doc().querySelector('[data-mode="setup"]').click();await wait(()=>doc().body.classList.contains('setup-mode'));
+  doc().querySelector('[data-mode="buy"]').click();await wait(()=>win().location.hash==='#order'&&doc().body.classList.contains('buy-mode'));doc().querySelector('[data-mode="setup"]').click();await wait(()=>doc().body.classList.contains('setup-mode'));
   ok($('email-body').value==='Manually edited email for this athlete.','Switching Buy/setup tabs does not lose the email');
+  doc().querySelector('header [data-action="email"]').click();await wait(()=>doc().body.classList.contains('email-mode'));
+  ok($('email-body').value==='Manually edited email for this athlete.'&&doc().querySelector('header [data-action="email"]').getAttribute('aria-current')==='page','Send An Email preserves edited text and marks only the email action current');
+  doc().querySelector('header [data-action="setup"]').click();await wait(()=>!doc().body.classList.contains('email-mode'));
+  ok($('name').value==='Synthetic Athlete'&&$('email-body').value==='Manually edited email for this athlete.','Returning to setup keeps both athlete details and in-tab email edits');
   $('email-copy-body').click();ok($('email-status').textContent.includes('Review the email'),'Sharing requires an explicit review acknowledgment');
   const copied=[];Object.defineProperty(win().navigator,'clipboard',{value:{writeText:async text=>{copied.push(text);}},configurable:true});$('email-reviewed').checked=true;$('email-copy-body').click();await wait(()=>copied.length===1);
   ok(copied[0]==='Manually edited email for this athlete.','Copy email copies only the reviewed, edited body without sending');
@@ -76,6 +84,8 @@ document.getElementById('run').onclick=async()=>{
   [...$('profiles-list').querySelectorAll('button')].find(button=>button.textContent.includes('Synthetic Child A')).click();await wait(()=>!$('name').disabled&&$('name').value==='Synthetic Child A');await open();
   ok($('email-body').value==='Custom email only for Child A.'&&$('email-subject').value==='Child A custom subject','Returning to a sibling restores only that child’s in-tab email');
   ok(!doc().querySelector('#email-detail-options input[value="profile"]')&&database().profiles.length===0,'Parent-managed private drafts stay unpublished and have no public link inclusion');
+  doc().querySelector('header [data-action="email"]').click();await wait(()=>!$('family-action-entry').hidden);
+  ok($('family-action-copy').textContent.includes('correct child')&&$('email-body').value==='Custom email only for Child A.','Parent top email action gives child-selection guidance and preserves the selected sibling’s email');
   ok(doc().documentElement.scrollWidth<=frame.clientWidth+1,'Parent email builder fits the mobile viewport');
   out.textContent+='COMPLETE: '+count+' browser checks passed. Synthetic local data only; no customer email, charge, publication or database migration.\n';
  }catch(error){out.textContent+='FAIL '+error.message+'\n'+error.stack;}

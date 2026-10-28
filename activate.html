@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Activate your SCOUTCARD</title><link rel="stylesheet" href="activate.css"><link rel="stylesheet" href="experience.css">
-</head>
+<link rel="stylesheet" href="navigation.css"></head>
 <body class="activation-page">
-<header><a class="brand" href="index.html">SCOUT<span>CARD</span></a><a href="index.html#setup">My profile ↗</a></header>
+<header class="action-header"><a class="brand" href="index.html">SCOUT<span>CARD</span></a><nav class="primary-actions" aria-label="Main navigation"><a data-action="setup" href="index.html#setup">Set Up Profile</a><a data-action="buy" href="index.html#order">Buy The Card</a><a data-action="activate" href="activate.html" aria-current="page">Activate The Card</a><a data-action="email" href="index.html#email">Send An Email</a></nav><div class="header-utility"><a href="family.html">For parents</a><a href="about.html">About us</a></div></header>
 <main>
   <p class="eyebrow">STEP 3 OF 3 / ACTIVATE YOUR CARD</p>
   <h1>Make the<br>connection.</h1>
@@ -25,6 +25,6 @@
   <div id="activation-links" hidden><a id="activated-profile">View your profile →</a><a href="index.html#athlete-workspace">Manage your cards →</a></div>
   <p class="small">No saved profile yet? <a href="index.html#profile">Set it up first</a>. You can keep it private until you are ready to publish it. Missing your code? <a href="mailto:scout.card26@gmail.com?subject=SCOUTCARD%20activation%20help">Contact SCOUTCARD</a>; do not share a code publicly.</p>
 </main>
-<script type="module" src="page-loader.js"></script><script src="site-notice.js" defer></script>
+<script type="module" src="page-loader.js"></script><script type="module" src="navigation.js"></script><script src="site-notice.js" defer></script>
 </body>
 </html>

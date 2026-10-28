@@ -1,5 +1,24 @@
 # Recruiting email builder
 
+## Top navigation
+
+The four primary header actions are Set Up Profile, Buy The Card, Activate The
+Card and Send An Email. The last action opens `index.html#email`: a focused
+introduction, existing sign-in controls and the authenticated builder, without
+the long profile editor. Profile form fields remain mounted so same-page
+navigation does not discard entered data. Set Up Profile restores the editor.
+This route is not payment evidence and never sends an email automatically.
+
+Parents use `family.html#email`, sign in as the adult and select the correct
+child before opening the builder. Parent activation stays in the selected
+child's dashboard, not the individual-athlete activation form. Existing Auth
+return URLs and age/guardian eligibility requirements are unchanged. After a
+magic-link return, users can select Send An Email again from the same header.
+
+Navigation verification: 16 layouts across 320/390/768/1280px and the four core
+pages passed, with four visible 44px+ keyboard links and no horizontal overflow.
+All 38 recruiting-email, 54 onboarding browser and 45 automated tests passed.
+
 ## Scope
 
 The authenticated athlete dashboard and parent dashboard offer “Write a recruiting
