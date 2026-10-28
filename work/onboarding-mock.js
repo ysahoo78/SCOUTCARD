@@ -2,6 +2,10 @@
 const originalClient=createClient;
 createClient=function(){
  const client=originalClient(),legacyRpc=client.rpc,legacyFrom=client.from;
+ // Let the isolated runner inspect beforeunload warnings without leaving a
+ // native navigation dialog blocking an iframe reload. Production is unchanged.
+ const addListener=window.addEventListener.bind(window);
+ window.addEventListener=(name,callback,options)=>addListener(name,name==='beforeunload'?event=>{if(!state.allowTestNavigation)callback(event);}:callback,options);
  state.purchaseKnown=new URLSearchParams(location.search).has('qa-purchased');
  const session=client.auth.getSession;
  client.auth.getSession=async()=>{const response=await session();if(response.data.session&&state.purchaseKnown)response.data.session.access_token='synthetic-token-not-a-real-secret';return response;};
@@ -11,9 +15,21 @@ createClient=function(){
  const read=()=>JSON.parse(localStorage.getItem(key)||'{"drafts":[],"profiles":[]}');
  const write=data=>localStorage.setItem(key,JSON.stringify(data));
  const stored=read();state.profile=stored.profiles.find(p=>!p.parent_managed)||state.profile;state.family=stored.profiles.filter(p=>p.parent_managed);
- client.from=table=>table!=='athlete_profile_drafts'?legacyFrom(table):new class{
+ client.from=table=>table==='athlete_profiles'?new class{
+  constructor(){this.filters=[];}select(){return this;}eq(k,v){this.filters.push([k,v]);return this;}maybeSingle(){return this;}
+  then(resolve,reject){return Promise.resolve().then(()=>{
+   const rows=read().profiles.concat(state.profile?[state.profile]:[]);
+   const row=rows.find(p=>this.filters.every(([k,v])=>p[k]===v));
+   return result(row||null);
+  }).then(resolve,reject);}
+ }():table!=='athlete_profile_drafts'?legacyFrom(table):new class{
   constructor(){this.filters=[];this.max=10;}select(){return this;}eq(k,v){this.filters.push([k,v]);return this;}order(){return this;}limit(n){this.max=n;return this;}
-  then(resolve,reject){return Promise.resolve().then(()=>result(read().drafts.filter(d=>state.signedIn&&d.owner_id===user.id&&this.filters.every(([k,v])=>d[k]===v)).slice(0,this.max))).then(resolve,reject);}
+  maybeSingle(){this.single=true;return this;}
+  then(resolve,reject){return Promise.resolve().then(async()=>{
+   if(this.single){state.emailReads=(state.emailReads||0)+1;if(state.slowEmailRead)await new Promise(r=>setTimeout(r,250));if(state.failEmailRead)return result(null,{message:'Email source network timeout'});}
+   const rows=read().drafts.filter(d=>state.signedIn&&d.owner_id===user.id&&this.filters.every(([k,v])=>d[k]===v)).slice(0,this.max);
+   return result(this.single?(rows[0]||null):rows);
+  }).then(resolve,reject);}
  }();
  client.rpc=async(name,args)=>{
   if(!['save_scoutcard_draft','publish_scoutcard_draft','unpublish_scoutcard_profile','delete_scoutcard_draft'].includes(name))return legacyRpc(name,args);

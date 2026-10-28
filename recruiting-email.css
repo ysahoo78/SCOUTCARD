@@ -1,0 +1,26 @@
+.recruiting-email{grid-column:1/-1;min-width:0;padding:clamp(20px,4vw,36px);border:1px solid #cbd5e5;border-radius:16px;background:#fff;color:#172139;text-align:left}
+.recruiting-email[hidden],.recruiting-email [hidden]{display:none!important}
+.recruiting-email h2{font-family:'Barlow Condensed','DM Sans',sans-serif;font-size:clamp(30px,5vw,42px);line-height:1.1;margin:8px 0 14px;letter-spacing:-.015em}
+.recruiting-email h3{font:700 23px/1.25 'DM Sans',sans-serif;margin:25px 0 12px}
+.recruiting-email p{font:400 14px/1.7 'DM Sans',sans-serif;color:#43516a;max-width:850px;overflow-wrap:anywhere}
+.recruiting-email .email-eyebrow{font-size:11px;letter-spacing:.13em;color:#174cab;font-weight:700}
+.recruiting-email #email-selected-athlete{color:#172139;font-weight:700}
+.recruiting-email .email-notice{padding:14px 0;border-bottom:1px solid #dce3ee}
+.recruiting-email form{display:block;max-width:none;padding:0;border:0;background:none;box-shadow:none}
+.recruiting-email fieldset{min-width:0;margin:24px 0;padding:0 0 20px;border:0;border-bottom:1px solid #dce3ee}
+.recruiting-email legend{font:700 20px/1.4 'DM Sans',sans-serif;color:#172139;padding:0}
+.recruiting-email label:not(.email-check){display:block;margin:18px 0 7px;font:600 14px/1.5 'DM Sans',sans-serif;color:#172139}
+.recruiting-email label small,.recruiting-email label>span{font-weight:400}
+.recruiting-email input:not([type=checkbox]),.recruiting-email textarea,.recruiting-email select{display:block;box-sizing:border-box;width:100%;max-width:100%;min-height:46px;border:1px solid #8395af;border-radius:8px;background:#fff;color:#172139;padding:12px;font:400 16px/1.5 'DM Sans',sans-serif}
+.recruiting-email textarea{resize:vertical;min-height:110px}.recruiting-email #email-body{min-height:340px}
+.recruiting-email .email-check{display:flex;align-items:flex-start;gap:12px;margin:14px 0;padding:12px;border:1px solid #cbd5e5;border-radius:8px;cursor:pointer;font:400 14px/1.6 'DM Sans',sans-serif;color:#172139}
+.recruiting-email .email-check input{appearance:auto;flex:0 0 20px;width:20px;height:20px;min-height:20px;margin:2px 0 0;accent-color:#1859e8}
+.recruiting-email .email-detail strong,.recruiting-email .email-detail small{display:block;overflow-wrap:anywhere}
+.recruiting-email .email-detail small{font-size:13px;color:#43516a;margin-top:3px;white-space:pre-wrap}
+.recruiting-email button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;max-width:100%;padding:12px 18px;border:1px solid #1859e8;border-radius:8px;background:#1859e8;color:#fff;cursor:pointer;font:700 14px/1.4 'DM Sans',sans-serif;letter-spacing:0;text-transform:none;white-space:normal;text-align:center}
+.recruiting-email button.secondary{background:#fff;border-color:#8395af;color:#173e80}
+.recruiting-email button:disabled{opacity:.6;cursor:wait}.recruiting-email input:disabled{opacity:.65}
+.recruiting-email .email-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+.recruiting-email :is(input,select,textarea,button,a):focus-visible{outline:3px solid #174cab;outline-offset:3px}
+.recruiting-email [role=status]{min-height:1.6em;white-space:pre-wrap}.recruiting-email [data-state=error]{color:#9e1f22;font-weight:600}
+@media(max-width:600px){.recruiting-email .email-actions>*{width:100%}.recruiting-email legend{font-size:18px}}

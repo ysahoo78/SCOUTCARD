@@ -2,9 +2,10 @@ import { db, mountAuth } from './scoutcard-client.js';
 import { canonicalOrigin, publicUrl, friendlyError, withTimeout } from './scoutcard-utils.js';
 import { createProfileOnboarding } from './profile-onboarding.js';
 import { readPurchaseStatus } from './purchase-status.js';
+import { createRecruitingEmailBuilder } from './recruiting-email-builder.js';
 const $ = id => document.getElementById(id);
 const form = $('athlete-form'), save = $('save-profile'), status = $('profile-status');
-let user = null;
+let user = null, emailBuilder = null;
 let connectedCard = false;
 let purchased = null, accountVersion = 0;
 function purchaseGuidance(){
@@ -12,7 +13,11 @@ function purchaseGuidance(){
  const note=$('order-known-purchase');note.hidden=purchased!==true;
  const box=$('profile-link-box');if(!box.hidden){box.querySelector('.next-links a').hidden=connectedCard||purchased===true;if(purchased===true&&!connectedCard)box.querySelector('.next-note').textContent='A card purchase is confirmed for this account. Don’t pay again for the same card. When the physical card arrives, activate it using its private code. Buying does not automatically activate it.';}
 }
-const editor=createProfileOnboarding({db,onPublished:profile=>{showLink(profile.slug,profile.is_public);loadCards(user.id);}});
+const editor=createProfileOnboarding({db,
+ onSaved:record=>{if(user&&record.owner_id===user.id&&record.profile_id===user.id)emailBuilder?.setContext({ownerId:user.id,profileId:record.profile_id,name:record.payload.display_name});},
+ onPublished:profile=>{showLink(profile.slug,profile.is_public);loadCards(user.id);}
+});
+emailBuilder=createRecruitingEmailBuilder({host:$('athlete-workspace'),getSnapshot:()=>editor.emailSnapshot()});
 const builder=$('profile');builder.hidden=true;
 function showLink(slug, isPublic = false) {
   $('profile-link-box').hidden = !slug || !isPublic;
@@ -106,7 +111,7 @@ async function loadCards(id) {
   });
 }
 mountAuth(async nextUser => {
-  user=nextUser;const version=++accountVersion;connectedCard=false;purchased=null;editor.reset();showLink('');builder.hidden=!user;purchaseGuidance();
+  user=nextUser;const version=++accountVersion;connectedCard=false;purchased=null;emailBuilder.clear();editor.reset();showLink('');builder.hidden=!user;purchaseGuidance();
   $('athlete-workspace').hidden=!user;
   if(!user){$('inbox').replaceChildren();$('cards-list').replaceChildren();return;}
   const id=user.id;

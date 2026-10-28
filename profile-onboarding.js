@@ -3,6 +3,7 @@ import {accountEligibility} from './age-gate.js';
 import {friendlyError, safeUrl, withTimeout} from './scoutcard-utils.js';
 import {getSportName,setSportName,getSportMetrics,setSportMetrics,resetSportPresets} from './sport-presets.js';
 import {headshot,resetHeadshot,loadHeadshot,acceptHeadshotSave} from './headshot-editor.js';
+import {readRecruitingSnapshot} from './recruiting-email-source.js';
 const $=id=>document.getElementById(id);
 const names=['Basics','Teams','Stats','Highlights','Review'];
 const keys={name:'display_name',grad:'graduation_year',position:'position',accolade:'accolade',highlight:'highlight_url'};
@@ -112,5 +113,11 @@ export function createProfileOnboarding({db,parent=false,onPublished=()=>{},onSa
  async function unpublishProfile(){if(!context)throw Error('Load your profile first.');const ticket=generation;const result=await rpc('unpublish_scoutcard_profile',{athlete_id:context.profileId});if(ticket!==generation)return null;if(!result?.profile||result.profile.is_public!==false)throw Error('Unpublishing was not confirmed. Retry.');if(result.draft)queue.record={...queue.record,base_profile_updated_at:result.draft.base_profile_updated_at,published_version:null};published=result.profile;context.profile=result.profile;if(unpublish)unpublish.hidden=true;return published;}
  if(unpublish)unpublish.onclick=async()=>{if(busy)return;unpublish.disabled=true;try{const profile=await unpublishProfile();if(profile){await onPublished(profile);note('Unpublished. Your private draft remains. Previously issued photo links can last up to 5 minutes; copies others made cannot be recalled.','success');}}catch(error){note(friendlyError(error),'error');}finally{unpublish.disabled=false;}};
  show(0);reset();
- return {open,reset,flush,setPurchased(value){purchased=value;updatePurchase();},setCardConnected(value){cardConnected=value;updatePurchase();},review:()=>navigate(4),get dirty(){return queue.dirty;},get record(){return queue.record;},get ready(){return ready&&!opening;},unpublish:unpublishProfile};
+ async function emailSnapshot(){
+  if(!ready||opening||busy||!context)throw Error('Wait for your profile to finish loading or saving, then retry.');
+  const ticket=generation,ownerId=context.user.id,profileId=context.profileId;
+  const record=await flush();
+  return readRecruitingSnapshot({db,ownerId,profileId,parent,record,isCurrent:()=>ticket===generation&&ready&&context?.user.id===ownerId&&context?.profileId===profileId&&!queue.dirty});
+ }
+ return {open,reset,flush,emailSnapshot,setPurchased(value){purchased=value;updatePurchase();},setCardConnected(value){cardConnected=value;updatePurchase();},review:()=>navigate(4),get dirty(){return queue.dirty;},get record(){return queue.record;},get ready(){return ready&&!opening;},unpublish:unpublishProfile};
 }

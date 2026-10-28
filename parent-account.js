@@ -5,10 +5,12 @@ import { resetHeadshot, refreshHeadshotPreview } from './headshot-editor.js';
 import { downloadProfile } from './privacy-tools.js';
 import { createProfileOnboarding } from './profile-onboarding.js';
 import { readPurchaseStatus } from './purchase-status.js';
+import { createRecruitingEmailBuilder } from './recruiting-email-builder.js';
 const $=id=>document.getElementById(id);
 const form=$('athlete-form'), status=$('profile-status'), list=$('profiles-list');
 let user=null, profiles=[], selected=null, draftId=null, epoch=0, busy=false, dirty=false, pendingSwitch=null, listVersion=0, familyReady=false;
 let purchased=null,accountVersion=0;
+let emailBuilder=null;
 const connections=new Map();
 const editor=createProfileOnboarding({db,parent:true,
  onDirty:value=>{dirty=value;},
@@ -19,9 +21,11 @@ const editor=createProfileOnboarding({db,parent:true,
   item._draft=record;
   if(item._draftOnly){item.display_name=record.payload.display_name||'Untitled private draft';item.sport=record.payload.sport||'Choose a sport';}
   remember(item);
+  if(user&&record.owner_id===user.id)emailBuilder?.setContext({ownerId:user.id,profileId:record.profile_id,name:record.payload.display_name});
  },
  onPublished:async profile=>{remember({...profile,_draftOnly:false});await Promise.all([loadPage('cards',true),loadPage('messages',true)]);}
 });
+emailBuilder=createRecruitingEmailBuilder({host:$('parent-workspace'),before:$('child-editor'),parent:true,getSnapshot:()=>editor.emailSnapshot()});
 const cursors={cards:null,messages:null}, loading={cards:false,messages:false};
 const tickets={cards:0,messages:0};
 const deleteDraft=document.createElement('button');deleteDraft.id='delete-draft';deleteDraft.type='button';deleteDraft.className='secondary';deleteDraft.textContent='Delete this unfinished private draft';deleteDraft.hidden=true;$('child-editor').append(deleteDraft);
@@ -35,7 +39,7 @@ deleteDraft.onclick=async()=>{
    const removed=await withTimeout(db.storage.from('athlete-headshots').remove(files.data.map(file=>id+'/'+file.name)));if(removed.error)throw removed.error;
   }
   await rpc('delete_scoutcard_draft',{athlete_id:id});if(user?.id!==account)return;
-  editor.reset();selected=null;draftId=null;$('child-editor').hidden=true;await reloadFamily();note('family-status','Private draft deleted. No published profile or card was changed.','success');
+  emailBuilder.forget(id);editor.reset();selected=null;draftId=null;$('child-editor').hidden=true;await reloadFamily();note('family-status','Private draft deleted. No published profile or card was changed.','success');
  }catch(error){note('profile-status',friendlyError(error),'error');}finally{setBusy(false);}
 };
 function note(target,text,state='neutral'){const node=$(target);node.textContent=text;node.dataset.state=state;}
@@ -102,6 +106,7 @@ function showNext() {
  }
 }
 function clearPrivate() {
+ emailBuilder?.clear();
  editor.reset();epoch++;profiles=[];selected=null;draftId=null;dirty=false;pendingSwitch=null;listVersion++;familyReady=false;connections.clear();
  list.replaceChildren();form.reset();resetSportPresets();resetHeadshot();preview();
  $('parent-workspace').hidden=true;$('child-editor').hidden=true;$('child-tools').hidden=true;$('child-link-box').hidden=true;$('unsaved-switch').hidden=true;
@@ -137,6 +142,7 @@ async function requestSwitch(id) {
  await openChild(id);
 }
 async function openChild(id) {
+ emailBuilder.setContext(null);
  const version=++epoch;selected=id?profiles.find(p=>p.id===id)||null:null;draftId=selected?.id||crypto.randomUUID();dirty=false;
  $('parent-activate-form').reset();$('delete-child-form').reset();
  $('child-inbox').replaceChildren();$('child-cards').replaceChildren();
@@ -235,7 +241,7 @@ $('delete-child-form').addEventListener('submit',async event=>{
   }
   if(user?.id!==account||epoch!==version)return;await rpc('delete_parent_athlete',{athlete_id:id});
   if(user?.id!==account||epoch!==version)return;
-  dirty=false;editor.reset();selected=null;draftId=null;$('child-editor').hidden=true;await reloadFamily();note('family-status','Child profile and inbox deleted, stored photos removed, and connected cards disabled.','success');
+  emailBuilder.forget(id);dirty=false;editor.reset();selected=null;draftId=null;$('child-editor').hidden=true;await reloadFamily();note('family-status','Child profile and inbox deleted, stored photos removed, and connected cards disabled.','success');
  }catch(error){if(epoch===version)note('delete-status',friendlyError(error)+' Deletion did not finish. '+(unpublished?'The profile is private; retry or contact SCOUTCARD.':'Check its sharing status, then retry or contact SCOUTCARD.'),'error');}
  finally{button.disabled=false;if(epoch===version)setBusy(false);}
 });
