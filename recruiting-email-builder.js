@@ -1,7 +1,9 @@
-import {cleanText, emailDetails, generateRecruitingEmail, mailtoUrl, EmailDraftBook} from './recruiting-email.js';
+import {cleanText, emailDetails, mailtoUrl, EmailDraftBook} from './recruiting-email.js';
+import {requestRecruitingEmail} from './recruiting-email-source.js';
+import {readPurchaseStatus} from './purchase-status.js';
 import {friendlyError} from './scoutcard-utils.js';
 
-export function createRecruitingEmailBuilder({host, before = null, parent = false, getSnapshot}) {
+export function createRecruitingEmailBuilder({host, before = null, parent = false, getSnapshot, db}) {
   if (!document.querySelector('link[href="recruiting-email.css"]')) {
     const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'recruiting-email.css'; document.head.append(css);
   }
@@ -10,9 +12,11 @@ export function createRecruitingEmailBuilder({host, before = null, parent = fals
   root.innerHTML = `<p class="email-eyebrow">MAKE THE INTRODUCTION</p>
     <h2 id="recruiting-email-title">Your next conversation starts here.</h2>
     <p>Turn selected saved profile details into a personal email. Review it, then send it yourself. No AI service, automatic sending or email tracking.</p>
+    <p class="email-notice">Included with a confirmed SCOUTCARD purchase. Your profile can still be a private draft.</p>
     <p id="email-selected-athlete"></p>
     <button id="email-open" type="button" aria-expanded="false" aria-controls="email-workspace">Write a recruiting email</button>
     <p id="email-load-status" role="status" aria-live="polite"></p>
+    <p id="email-payment-help" class="email-notice" hidden>Already bought a card? Don’t pay again. Cash/Zelle sales or purchases under another email need to be matched to your sign-in email by SCOUTCARD. <a href="mailto:hello@scoutcard.tech">Contact SCOUTCARD</a>, then retry the button above. Profile setup remains available without buying a card.</p>
     <div id="email-workspace" hidden>
       <p id="email-storage-note" class="email-notice"><strong>Email edits stay in this tab only—not saved online.</strong> Switching setup steps or children keeps them here. Refreshing, closing this page, or signing out removes them. Copy your email before leaving.</p>
       <p id="email-source-note" class="email-notice"></p>
@@ -93,7 +97,7 @@ export function createRecruitingEmailBuilder({host, before = null, parent = fals
     snapshot = null; $('email-workspace').hidden = true; $('email-output').hidden = true;
     $('email-open').setAttribute('aria-expanded', 'false'); $('email-detail-options').replaceChildren();
     for (const key of fields) $('email-' + key).value = key === 'purpose' ? 'introduction' : '';
-    $('email-child-confirm').checked = false; reviewReset(); status(''); $('email-load-status').textContent = '';
+    $('email-child-confirm').checked = false; reviewReset(); status(''); $('email-load-status').textContent = ''; $('email-payment-help').hidden = true;
   }
   function setContext(value) {
     const changed = context?.ownerId !== value?.ownerId || context?.profileId !== value?.profileId;
@@ -105,8 +109,16 @@ export function createRecruitingEmailBuilder({host, before = null, parent = fals
   async function open() {
     if (loading || !context) return;
     loading = true; $('email-open').disabled = true; root.setAttribute('aria-busy', 'true');
-    const ticket = version; $('email-load-status').textContent = 'Checking your sign-in and saved athlete details…';
+    const ticket = version; $('email-load-status').textContent = 'Checking your confirmed purchase…'; $('email-payment-help').hidden = true;
     try {
+      const paid = await readPurchaseStatus(db, {id:context.ownerId});
+      if (ticket !== version || !context) return;
+      if (paid !== true) {
+        $('email-workspace').hidden = true; $('email-open').setAttribute('aria-expanded','false'); $('email-payment-help').hidden = false;
+        $('email-load-status').textContent = paid === false ? 'Recruiting Email Builder is locked until a purchase is confirmed for this account.' : 'We couldn’t verify payment right now. Access stays locked; please retry. Don’t pay again.';
+        return;
+      }
+      $('email-load-status').textContent = 'Purchase confirmed. Loading your saved athlete details…';
       const fresh = await getSnapshot();
       if (ticket !== version || !context) return;
       if (fresh.ownerId !== context.ownerId || fresh.profileId !== context.profileId || fresh.parent !== parent) throw Error('The selected athlete changed. Reopen the builder.');
@@ -131,11 +143,13 @@ export function createRecruitingEmailBuilder({host, before = null, parent = fals
       const fresh = await getSnapshot(); if (ticket !== version || !context) return;
       if (fresh.profileId !== context.profileId || fresh.ownerId !== context.ownerId || fresh.parent !== parent) throw Error('The selected athlete changed.');
       const options = {...model(), childConfirmed:$('email-child-confirm').checked};
-      const generated = generateRecruitingEmail(fresh, options); snapshot = fresh;
+      const generated = await requestRecruitingEmail(db, fresh, options);
+      if (ticket !== version || !context) return;
+      snapshot = fresh;
       paintOptions(options.include); $('email-subject').value = generated.subject; $('email-body').value = generated.body;
       $('email-output').hidden = false; $('email-generate').textContent = 'Generate again — replaces subject and body'; reviewReset(); controls(); remember();
       status('Email generated in this tab—not saved online and not sent. Edit it and review every fact before sharing.'); $('email-review-title').focus();
-    } catch (error) { if (ticket === version) { status(friendlyError(error) + ' Your existing email text has not been replaced.', true); $('email-status').focus(); } }
+    } catch (error) { if (ticket === version) { if(error.code==='payment_required')$('email-payment-help').hidden=false; status(friendlyError(error) + ' Your existing email text has not been replaced.', true); $('email-status').focus(); } }
     finally { loading = false; $('email-generate').disabled = false; }
   });
   function approved() {

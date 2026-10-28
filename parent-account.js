@@ -25,7 +25,7 @@ const editor=createProfileOnboarding({db,parent:true,
  },
  onPublished:async profile=>{remember({...profile,_draftOnly:false});await Promise.all([loadPage('cards',true),loadPage('messages',true)]);}
 });
-emailBuilder=createRecruitingEmailBuilder({host:$('parent-workspace'),before:$('child-editor'),parent:true,getSnapshot:()=>editor.emailSnapshot()});
+emailBuilder=createRecruitingEmailBuilder({db,host:$('parent-workspace'),before:$('child-editor'),parent:true,getSnapshot:()=>editor.emailSnapshot()});
 const cursors={cards:null,messages:null}, loading={cards:false,messages:false};
 const tickets={cards:0,messages:0};
 const deleteDraft=document.createElement('button');deleteDraft.id='delete-draft';deleteDraft.type='button';deleteDraft.className='secondary';deleteDraft.textContent='Delete this unfinished private draft';deleteDraft.hidden=true;$('child-editor').append(deleteDraft);

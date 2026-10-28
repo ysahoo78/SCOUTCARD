@@ -8,9 +8,17 @@ createClient=function(){
  window.addEventListener=(name,callback,options)=>addListener(name,name==='beforeunload'?event=>{if(!state.allowTestNavigation)callback(event);}:callback,options);
  state.purchaseKnown=new URLSearchParams(location.search).has('qa-purchased');
  const session=client.auth.getSession;
- client.auth.getSession=async()=>{const response=await session();if(response.data.session&&state.purchaseKnown)response.data.session.access_token='synthetic-token-not-a-real-secret';return response;};
+ client.auth.getSession=async()=>{const response=await session();if(response.data.session)response.data.session.access_token='synthetic-token-not-a-real-secret';return response;};
  const realFetch=window.fetch;
- window.fetch=(url,options)=>url==='/api/purchase-status'?Promise.resolve(Response.json({purchased:state.purchaseKnown===true})):realFetch(url,options);
+ window.fetch=async(url,options)=>{
+  if(url==='/api/purchase-status')return state.failPurchaseRead?new Response('',{status:503}):Response.json({purchased:state.purchaseKnown===true});
+  if(url==='/api/recruiting-email'){
+   state.emailRequests=(state.emailRequests||0)+1;
+   const input=JSON.parse(options.body),data=read(),account=(await session()).data.session?.user;
+   return realFetch('/__qa-email-api',{...options,body:JSON.stringify({input,fixture:{user:account,paid:state.purchaseKnown===true,fail:state.failEmailRequest,draft:data.drafts.find(d=>d.profile_id===input.profileId)||null,published:data.profiles.find(p=>p.id===input.profileId)||state.profile||null}})});
+  }
+  return realFetch(url,options);
+ };
  const key='qa-onboarding-db';
  const read=()=>JSON.parse(localStorage.getItem(key)||'{"drafts":[],"profiles":[]}');
  const write=data=>localStorage.setItem(key,JSON.stringify(data));

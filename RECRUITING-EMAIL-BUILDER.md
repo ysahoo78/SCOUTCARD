@@ -4,8 +4,33 @@
 
 The authenticated athlete dashboard and parent dashboard offer “Write a recruiting
 email.” This is a deterministic, template-based writing tool, not an email sender.
-No AI dependency, API credential, telemetry, coach scraping, bulk sending, tracking
-pixel, payment change, Auth redirect change or database migration is added.
+No AI dependency, new API credential, telemetry, coach scraping, bulk sending,
+tracking pixel, payment mutation, Auth redirect change or database migration is added.
+
+## Paid access
+
+The UI checks `/api/purchase-status` before opening. Generation itself now runs
+only in `api/recruiting-email.js`, not in the browser. Every generation request
+verifies the bearer token with Supabase Auth, requires a confirmed nonanonymous
+email account, then checks trusted `card_orders` for that verified email, status
+`paid`, `shipped` or `fulfilled`, and a non-null `paid_at`. The browser cannot
+supply an email, payment flag, owner ID or profile snapshot to bypass this check.
+Unknown payment status fails closed. Auth and order responses are not cached.
+
+Cash/Zelle sales must be verified by an operator and recorded as settled orders
+under the customer's normalized verified sign-in email before access works.
+Neither owning/activating a card nor claiming to have paid grants access. Buyers
+using another checkout email need operator matching; they must not pay again.
+This release does not create or alter any actual order or payment record.
+
+Access is account-level: a paid parent can select each child they manage, with
+existing per-child isolation and guardian acknowledgments. This does not assign
+a physical card to every child; each card/profile association remains separate.
+
+Refunded/canceled orders do not qualify **when recorded with those statuses**.
+The existing checkout webhook does not automatically synchronize later Stripe
+refunds/disputes; operators must update the trusted order status when applicable.
+Automating that separate payment-lifecycle integration is not part of this change.
 
 The shared editor flushes pending profile changes through its existing checked
 autosave path. The builder then checks the matching signed-in account, reads the
@@ -13,7 +38,11 @@ same profile's private draft through existing owner-only RLS, checks its version
 and reads only `id,slug,is_public` from the public-profile table. Private ownership
 and age columns on public profiles deliberately remain API-restricted. Failed
 reads, stale versions, changed accounts/selections and missing parent permission
-fail closed. This feature adds no write or privileged API endpoint.
+fail closed. The generation API independently reads the selected owner's draft
+with the user bearer token (existing RLS), verifies its version and age/guardian
+eligibility, and rechecks publication. Only the order lookup uses service-role
+authorization. No profile/order writes are performed. The existing server key
+stays in Vercel environment settings and is never returned to the browser.
 
 Only allowlisted, explicitly selected athlete details enter generated text.
 Basics are selected initially; teams, up to three strengths, academic details,
@@ -59,9 +88,11 @@ either. The user must send in their own mail app. No live email is sent by tests
 
 ## Verification
 
-Local unit/transport checks: `node --test work/recruiting-email.test.mjs`.
+Local unit/transport checks: `node --test work/recruiting-email.test.mjs work/recruiting-paid.test.mjs work/purchase-status.test.mjs`.
 Browser harness: run `node work/serve.mjs`, open `/email-qa.html`, then select Run.
 Only `/__qa/` mocked services and synthetic local fixtures are used by that page.
+The local harness calls the real generation handler with fixture-only upstream
+responses; it never connects to the live database.
 Existing private-draft, parent, autosave, purchase-status and onboarding suites
 must continue to pass. A local mock is not proof of a real authenticated session,
 actual device email-app compatibility, email sending, or deliverability. Those
@@ -80,8 +111,14 @@ account, customer email, payment or public test profile was used for this releas
 
 ## Rollback
 
-Revert this release's three integration changes in `athlete-backend.js`,
-`parent-account.js`, and `profile-onboarding.js`, then remove its four new runtime
-files. No database rollback is required. Existing public/private profiles, cards,
-links, permissions, payments and account data are unaffected. Remind users to copy
-any in-tab email drafts before refreshing for a rollback or new deployment.
+For the paid-gate update, revert its changed files to the preceding release;
+no database rollback is required. Doing so makes generation free again, so prefer
+temporarily disabling the builder rather than removing payment enforcement.
+Existing public/private profiles, cards, links, permissions, payments and account
+data are unaffected. Remind users to copy any in-tab email drafts before refreshing.
+
+Paid-gate verification, October 27: 45 automated tests and 33 synthetic mobile
+browser checks passed. These cover paid/unpaid accounts, cash-order records,
+expired sign-in, unknown payment status, server failures, direct-call bypasses,
+stale versions, parent permissions, sibling isolation and payment revocation.
+No real charge, customer email, public test profile or live database write was used.

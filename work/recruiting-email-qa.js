@@ -7,7 +7,7 @@ const check=(selector,value=true)=>{const field=doc().querySelector(selector);fi
 const saved=()=>$('profile-status').textContent.includes('Saved privately');
 const database=()=>JSON.parse(localStorage.getItem('qa-onboarding-db')||'{"drafts":[],"profiles":[]}');
 const load=async page=>{if(win()){win().confirm=()=>true;if(win().testState)win().testState.allowTestNavigation=true;}let loaded=false;frame.onload=()=>{loaded=true;};frame.src='/__qa/'+page;await wait(()=>loaded,'frame navigation');await wait(()=>page.startsWith('family')?$('parent-entry-form'):win().testState&&$('email-open'),'builder module mounted');win().confirm=()=>true;};
-const open=async()=>{$('email-open').click();await wait(()=>$('recruiting-email').getAttribute('aria-busy')==='false'&&(!$('email-workspace').hidden||$('email-load-status').textContent.includes('Retry')),'email opened or failed');};
+const open=async()=>{$('email-open').click();await wait(()=>$('recruiting-email').getAttribute('aria-busy')==='false','email opened or failed');};
 const generate=async()=>{$('email-builder-form').requestSubmit();await wait(()=>$('email-status').textContent.startsWith('Email generated')||$('email-status').dataset.state==='error','email generated or failed');};
 document.getElementById('run').onclick=async()=>{
  out.textContent='Running isolated synthetic recruiting email checks…\n';count=0;
@@ -16,6 +16,10 @@ document.getElementById('run').onclick=async()=>{
   localStorage.setItem('scoutcard-age-group-v2',JSON.stringify({version:2,band:'teen',permission:true,expiresAt:Date.now()+86400000}));
   await load('index.html#setup');ok($('recruiting-email').hidden,'Signed-out visitors cannot see the email builder');
   win().testSignIn();await wait(()=>!$('recruiting-email').hidden&&!$('name').disabled,'signed-in draft ready');await open();
+  ok($('email-workspace').hidden&&!$('email-payment-help').hidden&&$('email-load-status').textContent.includes('locked'),'Unpaid accounts see a locked state with cash-sale support, not the builder');
+  win().testState.purchaseKnown=true;win().testState.failPurchaseRead=true;await open();
+  ok($('email-workspace').hidden&&$('email-load-status').textContent.includes('couldn’t verify'),'Unknown payment status fails closed with retry guidance');
+  win().testState.failPurchaseRead=false;await open();
   ok(!$('email-workspace').hidden&&$('email-detail-options').textContent.includes('saved draft is empty'),'Authenticated empty draft has an actionable empty state, not a long-form requirement');
   $('email-close').click();input('name','Synthetic Athlete');input('sport','Soccer');input('position','Forward');input('grad','2028');input('team','Synthetic School');input('club_team','Synthetic Club');input('accolade','All-district selection');input('stats','12 goals in the season');input('academics','3.7 GPA');input('highlight','www.youtube.com/watch?v=ixg8KKxrhsM');input('events','Spring showcase');await wait(saved);await open();
   ok(doc().querySelectorAll('#email-detail-options input:checked').length===1&&doc().querySelector('#email-detail-options input:checked').value==='basics','Only Basics selected by default; optional saved data requires a choice');
@@ -25,6 +29,10 @@ document.getElementById('run').onclick=async()=>{
   ok($('email-body').value.includes('My name is Synthetic Athlete')&&$('email-body').value.includes('Synthetic Club')&&$('email-body').value.includes('watch?v=ixg8KKxrhsM'),'Introduction uses selected saved athlete details and complete YouTube link');
   ok(!$('email-body').value.includes('profile.html')&&database().profiles.length===0,'Drafting neither publishes a private profile nor inserts a nonworking public link');
   ok($('email-storage-note').textContent.includes('not saved online')&&$('email-status').textContent.includes('not sent'),'Storage and non-sending limitations are explicit');
+  const previous=$('email-body').value;win().testState.purchaseKnown=false;await generate();
+  ok($('email-status').dataset.state==='error'&&$('email-body').value===previous&&$('email-status').textContent.includes('confirmed SCOUTCARD purchase'),'Server denies generation after payment status changes, preserving previous text');
+  win().testState.purchaseKnown=true;win().testState.failEmailRequest=true;await generate();
+  ok($('email-status').dataset.state==='error'&&$('email-body').value===previous,'Server failures do not generate a free client-side fallback');win().testState.failEmailRequest=false;
   input('email-body','Manually edited email for this athlete.');input('email-subject','My custom subject');$('email-close').click();await open();
   ok($('email-body').value==='Manually edited email for this athlete.'&&$('email-subject').value==='My custom subject','Manual edits survive closing and reopening the inline builder');
   doc().querySelector('[data-mode="buy"]').click();await wait(()=>win().location.hash==='#buy'&&doc().body.classList.contains('buy-mode'));doc().querySelector('[data-mode="setup"]').click();await wait(()=>doc().body.classList.contains('setup-mode'));
@@ -51,12 +59,12 @@ document.getElementById('run').onclick=async()=>{
   ok(!$('email-body').value.includes('profile.html')&&!doc().querySelector('#email-detail-options input[value="profile"]'),'Re-generation rechecks publication and removes a now-private profile link');
   const cleaned=database();cleaned.profiles=[];localStorage.setItem('qa-onboarding-db',JSON.stringify(cleaned));win().testState.profile=null;
   const leaving=new Event('beforeunload',{cancelable:true});win().dispatchEvent(leaving);ok(leaving.defaultPrevented,'Leaving with in-tab email edits requests an unsaved-changes warning');
-  const before=database().profiles.length;await load('index.html?email-refresh=1#setup');await wait(()=>!$('recruiting-email').hidden&&!$('name').disabled);await open();
+  const before=database().profiles.length;await load('index.html?qa-purchased=1&email-refresh=1#setup');await wait(()=>!$('recruiting-email').hidden&&!$('name').disabled);await open();
   ok($('email-body').value===''&&database().profiles.length===before,'Refresh clears tab-only email without changing saved athlete profiles');
   input('email-program','Example College');input('email-why','An academic interest.');await generate();$('signout').click();await wait(()=>$('recruiting-email').hidden);
   ok($('email-body').value===''&&$('email-detail-options').childElementCount===0,'Sign-out clears private email text, details and output');
   // Parent route: fresh adult entry and two explicitly separate children.
-  await load('family.html');$('parent-adult-entry').checked=true;$('parent-entry-form').requestSubmit();await wait(()=>win().testState&&$('new-child'),'parent modules ready');win().testSignIn();await wait(()=>!$('new-child').disabled);$('new-child').click();await wait(()=>!$('name').disabled);
+  await load('family.html?qa-purchased=1');$('parent-adult-entry').checked=true;$('parent-entry-form').requestSubmit();await wait(()=>win().testState&&$('new-child'),'parent modules ready');win().testSignIn();await wait(()=>!$('new-child').disabled);$('new-child').click();await wait(()=>!$('name').disabled);
   input('child-age-band','under13');$('parent-save-ack').checked=true;$('parent-save-ack').dispatchEvent(new Event('input',{bubbles:true}));input('name','Synthetic Child A');input('sport','Soccer');await wait(saved);await open();
   input('email-program','Example Academy');input('email-why','We are interested in its training program.');$('email-builder-form').requestSubmit();
   ok($('email-child-confirm').required&&!$('email-child-confirm').checked&&$('email-output').hidden,'Parent must explicitly confirm the selected child before generating');

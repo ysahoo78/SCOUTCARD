@@ -1,6 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {cleanText,emailDetails,generateRecruitingEmail,mailtoUrl,recipientEmail,EmailDraftBook} from '../recruiting-email.js';
+import {cleanText,emailDetails,mailtoUrl,recipientEmail,EmailDraftBook} from '../recruiting-email.js';
+import {generateRecruitingEmail} from '../api/_lib/recruiting-template.js';
 import {readRecruitingSnapshot} from '../recruiting-email-source.js';
 const fixture=()=>({ownerId:'owner',profileId:'athlete',parent:false,payload:{display_name:'Alex Test',sport:'Soccer',position:'Forward',graduation_year:'2028',accolade:'All-district selection',highlight_url:'https://www.youtube.com/watch?v=ixg8KKxrhsM',details:{team:'School team',club_team:'Travel club',stats:'12 goals',academics:'3.7 GPA',events:'Spring showcase',sport_metrics:{goals:'12 this season'},bio:'PRIVATE BIO',email:'PRIVATE EMAIL',address:'PRIVATE ADDRESS'},child_age_band:'PRIVATE AGE',parent_acknowledged_at:'PRIVATE CONSENT',headshot_path:'PRIVATE PHOTO'},published:{id:'athlete',owner_id:'owner',slug:'alex-test',is_public:true}});
 const options=()=>({coach:'Coach Rivera',program:'Example College',why:'I am interested in the program’s academic options.',purpose:'introduction',include:['basics','team','club_team','metric:goals','academics','accolade','highlight','events','profile']});

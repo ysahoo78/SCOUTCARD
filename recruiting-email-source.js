@@ -24,5 +24,23 @@ export async function readRecruitingSnapshot({db, ownerId, profileId, parent, re
   if (result.error) throw result.error;
   if (!valid()) throw Error('Your account or selected athlete changed. Reopen the email builder.');
   if (result.data && result.data.id !== profileId) throw Error('The selected profile could not be verified.');
-  return {ownerId, profileId, parent, payload:structuredClone(draft.data.payload || {}), published:result.data || null};
+  return {ownerId, profileId, parent, version:record.version, payload:structuredClone(draft.data.payload || {}), published:result.data || null};
+}
+
+// The server rechecks payment, ownership, saved version and guardian permissions.
+// Only recipient personalization and selected keys leave the browser—not a profile snapshot.
+export async function requestRecruitingEmail(db, snapshot, options, send = fetch) {
+  const response = await withTimeout(db.auth.getSession());
+  const session = response.data?.session;
+  if (response.error || session?.user?.id !== snapshot.ownerId || !session.access_token) throw Error('Sign in again before generating an email.');
+  const {coach,program,recipient,purpose,why,context,include,childConfirmed} = options;
+  const result = await send('/api/recruiting-email', {
+    method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},
+    cache:'no-store', credentials:'omit', signal:AbortSignal.timeout(15000),
+    body:JSON.stringify({profileId:snapshot.profileId,version:snapshot.version,options:{coach,program,recipient,purpose,why,context,include,childConfirmed}})
+  });
+  const data = await result.json();
+  if (!result.ok) { const error = Error(data.message || 'Email generation unavailable. Please retry.'); error.code=data.code; throw error; }
+  if (typeof data.subject !== 'string' || typeof data.body !== 'string' || data.subject.length>250 || data.body.length>12000) throw Error('The email response was incomplete. Please retry.');
+  return data;
 }

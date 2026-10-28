@@ -17,7 +17,7 @@ const editor=createProfileOnboarding({db,
  onSaved:record=>{if(user&&record.owner_id===user.id&&record.profile_id===user.id)emailBuilder?.setContext({ownerId:user.id,profileId:record.profile_id,name:record.payload.display_name});},
  onPublished:profile=>{showLink(profile.slug,profile.is_public);loadCards(user.id);}
 });
-emailBuilder=createRecruitingEmailBuilder({host:$('athlete-workspace'),getSnapshot:()=>editor.emailSnapshot()});
+emailBuilder=createRecruitingEmailBuilder({db,host:$('athlete-workspace'),getSnapshot:()=>editor.emailSnapshot()});
 const builder=$('profile');builder.hidden=true;
 function showLink(slug, isPublic = false) {
   $('profile-link-box').hidden = !slug || !isPublic;

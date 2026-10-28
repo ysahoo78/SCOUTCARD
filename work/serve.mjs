@@ -1,11 +1,27 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
+import {handleRecruitingEmail} from '../api/recruiting-email.js';
 const root = resolve(import.meta.dirname, '..');
 const types = {'.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.sql':'text/plain', '.jpg':'image/jpeg', '.png':'image/png', '.svg':'image/svg+xml', '.woff2':'font/woff2'};
 http.createServer(async (request, response) => {
   try {
     let name = decodeURIComponent(new URL(request.url,'http://localhost').pathname).slice(1) || 'index.html';
+    // Local synthetic integration only: real handler, fixture-only upstream. Never deployed.
+    if(name==='__qa-email-api'&&request.method==='POST'){
+      let raw='';for await(const chunk of request){raw+=chunk;if(raw.length>100000)throw Error('Fixture too large');}
+      const {input,fixture}=JSON.parse(raw);
+      const result=await handleRecruitingEmail(new Request('http://localhost/api/recruiting-email',{method:'POST',headers:{'Content-Type':'application/json',Authorization:request.headers.authorization||''},body:JSON.stringify(input)}),{SUPABASE_URL:'https://fixture.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'fixture-server-only'},async value=>{
+        if(fixture.fail)throw Error('Synthetic upstream timeout');
+        const url=new URL(value);
+        if(url.pathname==='/auth/v1/user')return fixture.user?Response.json({...fixture.user,email:'synthetic@example.test',email_confirmed_at:'2026-10-27'}):new Response('',{status:401});
+        if(url.pathname==='/rest/v1/card_orders')return Response.json(fixture.paid?[{id:'fixture-paid-order'}]:[]);
+        if(url.pathname==='/rest/v1/athlete_profile_drafts')return Response.json(fixture.draft?[fixture.draft]:[]);
+        if(url.pathname==='/rest/v1/athlete_profiles')return Response.json(fixture.published?[fixture.published]:[]);
+        throw Error('Unexpected fixture read');
+      });
+      response.writeHead(result.status,{'content-type':'application/json','cache-control':'no-store'});response.end(await result.text());return;
+    }
     if(name==='email-qa.html'){response.writeHead(200,{'content-type':'text/html','cache-control':'no-store'});response.end('<!doctype html><title>Recruiting email verification</title><button id="run">Run recruiting email checks</button><pre id="results" style="white-space:pre-wrap"></pre><iframe id="preview" style="width:390px;height:844px;border:1px solid #ccc"></iframe><script type="module" src="email-qa.js"></script>');return;}
     if(name==='email-qa.js'){response.writeHead(200,{'content-type':'text/javascript','cache-control':'no-store'});response.end(await readFile(resolve(root,'work/recruiting-email-qa.js')));return;}
     if(name==='onboarding-qa.html'){response.writeHead(200,{'content-type':'text/html','cache-control':'no-store'});response.end('<!doctype html><title>Private onboarding checks</title><button id="run">Run onboarding checks</button><pre id="results"></pre><iframe id="preview" style="width:390px;height:844px;border:1px solid #ccc"></iframe><script type="module" src="onboarding-qa.js"></script>');return;}
