@@ -28,40 +28,59 @@
   });
   const style = document.createElement('link');
   style.rel = 'stylesheet'; style.href = 'site-notice.css'; document.head.append(style);
-  const nav = document.createElement('nav');
-  nav.id = 'scoutcard-policy-links'; nav.setAttribute('aria-label', 'Policies and social accounts');
-  for (const [label, href] of [['Privacy','privacy.html'],['Terms','terms.html'],['Refunds','refunds.html'],['Cookies','cookies.html'],['Request data deletion','data-request.html'],['Safety / report a concern','safety.html']]) {
-    const link = document.createElement('a'); link.href = href; link.textContent = label; nav.append(link);
-  }
-  const socials = document.createElement('div'); socials.className = 'scoutcard-socials';
-  const intro = document.createElement('div'); intro.className = 'scoutcard-social-intro';
-  const kicker = document.createElement('span'); kicker.textContent = 'OFF THE FIELD. IN YOUR FEED.';
-  const title = document.createElement('strong'); title.textContent = 'Follow the next chapter.';
-  intro.append(kicker,title); socials.append(intro);
+  // Keep secondary navigation in one shared footer, not beside the four actions.
+  document.querySelectorAll('header .header-utility,header a[href="about.html"]').forEach(link => link.remove());
+  const footer = document.createElement('footer'); footer.id = 'scoutcard-footer';
+  footer.setAttribute('aria-label','SCOUTCARD footer');
+  const inner = document.createElement('div'); inner.id = 'scoutcard-policy-links';
+  const grid = document.createElement('div'); grid.className = 'footer-grid';
+  const brandColumn = document.createElement('div'); brandColumn.className = 'footer-brand';
+  const brand = document.createElement('a'); brand.className = 'brand'; brand.href = 'index.html#buy'; brand.setAttribute('aria-label','SCOUTCARD home');
+  const logo = document.createElement('img'); logo.src = 'assets/scoutcard-logo.svg'; logo.alt = ''; logo.width = 38; logo.height = 40;
+  const wordmark = document.createElement('span'); wordmark.textContent = 'SCOUTCARD'; brand.append(logo,wordmark);
+  const tagline = document.createElement('p'); tagline.className = 'footer-tagline'; tagline.textContent = 'Your game. One connection.';
+  const description = document.createElement('p'); description.className = 'footer-description'; description.textContent = 'One athlete profile. Shared with a tap.';
+  const socials = document.createElement('div'); socials.className = 'footer-socials';
   for (const [platform, href, icon] of [
     ['Instagram','https://www.instagram.com/scoutcard26/','<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.25"/>'],
     ['TikTok','https://www.tiktok.com/@scoutcard26','<path d="M16.7 2H13v13.5a3.1 3.1 0 1 1-2.6-3.1V8.7a6.8 6.8 0 1 0 6.3 6.8V8.6a9.1 9.1 0 0 0 5.3 1.7V6.6A5.3 5.3 0 0 1 16.7 2Z"/>']
   ]) {
-    const link = document.createElement('a'); link.href = href; link.className = 'scoutcard-social-card ' + platform.toLowerCase();
-    const badge = document.createElement('span'); badge.className = 'scoutcard-social-icon';
-    // Static decorative SVG; the link's accessible name supplies the platform and handle.
-    badge.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true" focusable="false">' + icon + '</svg>';
-    const copy = document.createElement('span'); copy.className = 'scoutcard-social-copy';
-    const name = document.createElement('strong'); name.textContent = platform;
-    const handle = document.createElement('span'); handle.textContent = '@scoutcard26'; copy.append(name,handle);
-    const arrow = document.createElement('span'); arrow.textContent = '↗'; arrow.className = 'scoutcard-social-arrow'; arrow.setAttribute('aria-hidden','true');
-    link.append(badge,copy,arrow);
-    link.target = '_blank'; link.rel = 'noopener noreferrer'; link.setAttribute('aria-label', platform + ' @scoutcard26 (opens a new tab)'); socials.append(link);
+    const link = document.createElement('a'); link.className = 'footer-social-link'; link.href = href;
+    link.target = '_blank'; link.rel = 'noopener noreferrer'; link.setAttribute('aria-label',platform + ' @scoutcard26 (opens a new tab)');
+    const badge = document.createElement('span');
+    badge.innerHTML = '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true" focusable="false">' + icon + '</svg>';
+    link.append(badge,platform); socials.append(link);
   }
-  nav.prepend(socials);
-  const business = document.createElement('p');
-  business.style.cssText = 'flex-basis:100%;margin:8px 0;color:inherit;font-size:14px;line-height:1.6';
-  business.append('Operated by Yash Sahoo and Toryn Ibarra · Virginia, United States. ');
+  brandColumn.append(brand,tagline,description,socials); grid.append(brandColumn);
+  const sections = [
+    ['Company','footer-company',[['About Us','about.html'],['For Parents','index.html#parents'],['Parent Dashboard','family.html'],['Contact Us','mailto:scout.card26@gmail.com']]],
+    ['Get Started','footer-start',[['Set Up Profile','index.html#setup'],['Buy The Card','index.html#order'],['Activate The Card','activate.html'],['Send An Email','index.html#email']]],
+    ['Legal & Safety','footer-legal',[['Privacy Policy','privacy.html'],['Terms of Service','terms.html'],['Refund Policy','refunds.html'],['Cookie Policy','cookies.html'],['Parent Privacy Notice','parent-privacy.html'],['Request Data Deletion','data-request.html'],['Safety / Report a Concern','safety.html']]]
+  ];
+  for (const [title,id,links] of sections) {
+    const column = document.createElement('div'); column.className = 'footer-column ' + id;
+    const heading = document.createElement('h2'); heading.id = id + '-title'; heading.textContent = title;
+    const nav = document.createElement('nav'); nav.setAttribute('aria-labelledby',heading.id);
+    for (const [label,href] of links) {
+      const link = document.createElement('a'); link.href = href; link.textContent = label; nav.append(link);
+    }
+    column.append(heading,nav); grid.append(column);
+  }
+  const lower = document.createElement('div'); lower.className = 'footer-lower';
+  const business = document.createElement('div'); business.className = 'footer-business';
+  const copyright = document.createElement('p'); copyright.textContent = '© ' + new Date().getFullYear() + ' SCOUTCARD.';
+  const operators = document.createElement('p'); operators.textContent = 'Operated by Yash Sahoo and Toryn Ibarra · Virginia, United States.';
   const contact = document.createElement('a'); contact.href = 'mailto:scout.card26@gmail.com'; contact.textContent = 'scout.card26@gmail.com';
-  business.append(contact, ' — Contact us for order, privacy, or accessibility help.');
-  nav.append(business);
-  const settings = document.createElement('button'); settings.type = 'button'; settings.textContent = 'Cookie settings';
-  nav.append(settings); document.body.append(nav);
+  business.append(copyright,operators,contact);
+  const settings = document.createElement('button'); settings.type = 'button'; settings.className = 'footer-cookie-settings'; settings.textContent = 'Cookie Settings';
+  lower.append(business,settings);
+  const finePrint = document.createElement('p'); finePrint.className = 'footer-fine-print';
+  finePrint.textContent = 'SCOUTCARD does not guarantee recruiting opportunities, offers or scholarships.';
+  if (document.getElementById('profile-page')) finePrint.append(' Profile information is supplied by the athlete or their parent/guardian.');
+  inner.append(grid,lower,finePrint); footer.append(inner);
+  const existingFooter = document.querySelector('body > footer');
+  if (existingFooter) existingFooter.replaceWith(footer); else document.body.append(footer);
+  const footerStyle = document.createElement('link'); footerStyle.rel = 'stylesheet'; footerStyle.href = 'footer.css'; document.head.append(footerStyle);
   for (const id of ['signin-form','order-form']) {
     const form = document.getElementById(id); if (!form) continue;
     const group = document.createElement('div'); group.className = 'scoutcard-form-disclosure';

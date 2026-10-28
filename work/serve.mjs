@@ -7,6 +7,8 @@ const types = {'.html':'text/html', '.css':'text/css', '.js':'text/javascript', 
 http.createServer(async (request, response) => {
   try {
     let name = decodeURIComponent(new URL(request.url,'http://localhost').pathname).slice(1) || 'index.html';
+    if(name==='footer-qa.html'){response.writeHead(200,{'content-type':'text/html','cache-control':'no-store'});response.end('<!doctype html><title>Shared footer verification</title><button id="run">Run footer checks</button><pre id="results"></pre><iframe id="preview" style="width:390px;height:844px;border:0"></iframe><script type="module" src="footer-qa.js"></script>');return;}
+    if(name==='footer-qa.js'){response.writeHead(200,{'content-type':'text/javascript','cache-control':'no-store'});response.end(await readFile(resolve(root,'work/footer-qa.js')));return;}
     if(name==='navigation-qa.html'){response.writeHead(200,{'content-type':'text/html','cache-control':'no-store'});response.end('<!doctype html><title>Four-action navigation verification</title><button id="run">Run navigation checks</button><pre id="results"></pre><iframe id="preview" style="width:390px;height:844px;border:0"></iframe><script type="module" src="navigation-qa.js"></script>');return;}
     if(name==='navigation-qa.js'){response.writeHead(200,{'content-type':'text/javascript','cache-control':'no-store'});response.end(await readFile(resolve(root,'work/navigation-qa.js')));return;}
     // Local synthetic integration only: real handler, fixture-only upstream. Never deployed.

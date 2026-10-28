@@ -1,0 +1,27 @@
+/* Shared footer: secondary navigation, support and policies in one place. */
+body>footer#scoutcard-footer{display:block;box-sizing:border-box;width:100%;max-width:none;height:auto;min-height:0;margin:0;padding:56px max(24px,calc((100vw - 1240px)/2)) 26px;background:#14171d;color:#eaf0fb;border-top:1px solid #323c4d;text-align:left;font:400 14px/1.65 'DM Sans',system-ui,sans-serif}
+#scoutcard-footer #scoutcard-policy-links{display:block;box-sizing:border-box;padding:0;margin:0;max-width:none;background:none;color:inherit;font:inherit}
+#scoutcard-footer .footer-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.85fr) minmax(0,1fr) minmax(0,1.2fr);gap:42px}
+#scoutcard-footer .brand{display:inline-flex;gap:10px;align-items:center;width:max-content;max-width:100%;font:800 23px/1.2 'DM Sans',system-ui,sans-serif;letter-spacing:-.7px;color:#fff;text-decoration:none}
+#scoutcard-footer .brand img{display:block;flex:none;width:38px;height:40px;object-fit:contain}
+#scoutcard-footer p{margin:0}
+#scoutcard-footer .footer-tagline{font-size:17px;font-weight:600;color:#fff;margin:20px 0 6px}
+#scoutcard-footer .footer-description{max-width:245px;color:#b5c1d4;font-size:13px;line-height:1.8}
+#scoutcard-footer .footer-socials{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+#scoutcard-footer .footer-social-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;box-sizing:border-box;padding:9px 12px;border:1px solid #485366;border-radius:8px;font-size:12px;font-weight:600;background:#202631;color:#eef4ff;text-decoration:none}
+#scoutcard-footer .footer-social-link span{display:flex}
+#scoutcard-footer .footer-column h2{font:700 12px/1.5 'DM Sans',system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;margin:5px 0 17px;color:#fff}
+#scoutcard-footer .footer-column nav{display:grid;gap:2px}
+#scoutcard-footer .footer-column a{display:flex;align-items:center;min-height:36px;width:fit-content;max-width:100%;color:#bcc8dc;font-size:13px;line-height:1.5;text-decoration:none;padding:5px 0}
+#scoutcard-footer a:hover{color:#fff;text-decoration:underline;text-underline-offset:4px}
+#scoutcard-footer .footer-lower{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-top:36px;padding-top:24px;border-top:1px solid #394253}
+#scoutcard-footer .footer-business{display:grid;gap:5px;color:#b5c1d4;font-size:12px;line-height:1.7}
+#scoutcard-footer .footer-business p{color:inherit!important;font:inherit}
+#scoutcard-footer .footer-business a{color:#c5d9ff;overflow-wrap:anywhere;width:fit-content;text-decoration:none;padding-block:5px}
+#scoutcard-footer button.footer-cookie-settings{display:inline-flex;align-items:center;justify-content:center;flex:none;min-height:44px;border:1px solid #536076;border-radius:7px;padding:10px 16px;margin:0;background:transparent;color:#e9f1ff;font:600 12px/1.5 'DM Sans',system-ui,sans-serif;cursor:pointer;text-decoration:none}
+#scoutcard-footer button.footer-cookie-settings:hover{background:#273246}
+#scoutcard-footer .footer-fine-print{max-width:850px;font-size:11px;line-height:1.8;color:#aab8ce;margin-top:18px}
+#scoutcard-footer :is(a,button):focus-visible{outline:3px solid #a8c6ff;outline-offset:4px;box-shadow:0 0 0 2px #14171d}
+@media(max-width:960px){#scoutcard-footer .footer-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}#scoutcard-footer .footer-brand{grid-column:1/-1}#scoutcard-footer .footer-description{max-width:none}}
+@media(max-width:600px){body>footer#scoutcard-footer{padding:36px 20px 24px}#scoutcard-footer .footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 20px}#scoutcard-footer .footer-legal{grid-column:1/-1}#scoutcard-footer .footer-legal nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 20px}#scoutcard-footer .footer-column a{min-height:44px}#scoutcard-footer .footer-column h2{margin-bottom:10px}#scoutcard-footer .footer-lower{flex-direction:column;gap:18px;margin-top:28px}#scoutcard-footer .footer-business a{min-height:34px;display:flex;align-items:center}#scoutcard-footer .footer-tagline{margin-top:16px}#scoutcard-footer .footer-fine-print{font-size:11px}}
+@media print{#scoutcard-footer{display:none!important}}
