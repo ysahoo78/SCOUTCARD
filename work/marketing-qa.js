@@ -28,7 +28,7 @@ document.querySelector('#run').onclick = async () => {
     localStorage.removeItem('scoutcard-age-group-v2');
     sessionStorage.removeItem('scoutcard-age-session-v1');
     for (const width of [320, 332, 375, 768, 1280]) {
-      for (const path of ['index.html', 'index.html#setup', 'activate.html', 'about.html', 'example-profile.html','family.html','parent-privacy.html','data-request.html','safety.html']) {
+      for (const path of ['index.html', 'index.html#setup', 'activate.html', 'about.html', 'parents.html', 'example-profile.html','family.html','parent-privacy.html','data-request.html','safety.html']) {
         const doc = await load(path, width);
         const win = frame.contentWindow;
         assert(doc.documentElement.scrollWidth <= win.innerWidth, path + ' overflows at ' + width);
@@ -58,10 +58,8 @@ document.querySelector('#run').onclick = async () => {
     }
     const doc = await load('index.html', 375);
     assert(doc.querySelector('.hero .button').getAttribute('href') === '#setup', 'Primary CTA must start setup');
-    assert(doc.querySelector('.hero .parent-hero-button').getAttribute('href') === 'family.html', 'Parent hero action must open the parent dashboard');
-    assert(doc.querySelector('#parents a.button').getAttribute('href') === 'family.html', 'Parent section must use the parent setup path');
-    assert(doc.querySelector('#parents').textContent.includes('published profile'), 'Parent sharing must explain publishing');
-    assert(doc.querySelector('#parents').textContent.includes('does not automatically save a contact'), 'Do not imply automatic contact saving');
+    assert(doc.querySelector('.hero .parent-hero-button').getAttribute('href') === 'parents.html', 'Parent hero action must open the separate information page');
+    assert(!doc.querySelector('#parents,.parent-play'), 'Parent section must not remain on the landing page');
     assert(!doc.querySelector('.page-jumps'), 'Redundant section-navigation bar should be removed');
     assert(doc.querySelector('.hero .lede').textContent.split(/\s+/).length <= 16, 'Hero copy should stay concise');
     assert(doc.querySelectorAll('.share-grid article').length === 6, 'All six profile features must remain');
@@ -98,6 +96,30 @@ document.querySelector('#run').onclick = async () => {
       }
     }
     assert(!doc.querySelector('.college-strip'), 'Non-customer college strip must not appear as proof');
+    const parentDoc = await load('parents.html', 375);
+    assert(parentDoc.querySelector('#parents a.button').getAttribute('href') === 'family.html', 'Separate parent page must reach the existing dashboard');
+    assert(parentDoc.querySelector('#parents').textContent.includes('published profile'), 'Parent sharing must explain publishing');
+    assert(parentDoc.querySelector('#parents').textContent.includes('does not automatically save a contact'), 'Do not imply automatic contact saving');
+    localStorage.setItem('scoutcard-age-group-v2', JSON.stringify({version:2,band:'adult',permission:false,expiresAt:Date.now()+86400000}));
+    for (const width of [320,390,768,1280]) {
+      const checkout = await load('index.html#order', width), win = frame.contentWindow;
+      for(let attempt=0;attempt<80 && (!checkout.querySelector('#order-form .scoutcard-form-disclosure') || checkout.querySelector('#order-form').hidden);attempt++) await pause();
+      const form = checkout.querySelector('#order-form');
+      assert(!form.hidden, 'Eligible adult must still see the purchase form');
+      const checks = [...form.querySelectorAll('.scoutcard-form-disclosure input[type="checkbox"]')];
+      assert(checks.length===2 && checks.every(input=>input.required && !input.checked), 'Keep both explicit, required, unchecked purchase consents');
+      for(const input of checks) {
+        const box=input.getBoundingClientRect(),label=input.closest('label'),text=label.querySelector('span').getBoundingClientRect();
+        assert(box.width>=18 && box.width<=22 && box.height>=18 && box.height<=22, 'Consent checkbox must not stretch at '+width);
+        assert(text.left>=box.right+8 && Math.abs(text.top-box.top)<=6, 'Consent text must align beside its checkbox at '+width);
+        assert(label.getBoundingClientRect().height>=44, 'Consent label needs a comfortable click target');
+        label.click(); assert(input.checked,'Clicking the label must select consent');label.click();assert(!input.checked,'Consent can be deselected');
+      }
+      assert(form.querySelector('[type="submit"]').getBoundingClientRect().height>=48,'Payment action must remain easy to tap');
+      assert(checkout.documentElement.scrollWidth<=win.innerWidth,'Checkout must not overflow at '+width);
+      output.textContent+='PASS checkout consent alignment / '+width+'px (no submission)\n';
+    }
+    localStorage.removeItem('scoutcard-age-group-v2');
     output.textContent += '\n' + count + ' responsive page checks plus athlete/parent paths, section navigation, CTA, portrait, rating and disclosure checks passed. No live customer data or payments used.';
   } catch (error) { output.textContent += '\nFAIL ' + error.message; }
   finally { button.disabled = false; }

@@ -3,7 +3,7 @@ const wait=async check=>{const end=Date.now()+8000;while(Date.now()<end){if(chec
 document.getElementById('run').onclick=async()=>{
   let count=0;out.textContent='Running four-action navigation checks…\n';
   try{
-    for(const width of [320,390,768,1280])for(const path of ['index.html#email','about.html','activate.html','family.html#email']){
+    for(const width of [320,390,768,1280])for(const path of ['index.html#email','about.html','parents.html','activate.html','family.html#email']){
       frame.style.width=width+'px';let loaded=false;frame.onload=()=>loaded=true;frame.src='/__qa/'+path;await wait(()=>loaded);
       const doc=frame.contentDocument,win=frame.contentWindow;
       await wait(()=>doc.querySelectorAll('header .primary-actions a').length===4);

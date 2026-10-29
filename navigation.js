@@ -1,6 +1,11 @@
 // Navigation only: no identity, payments, email sending or profile writes.
 const family=document.body.classList.contains('family-page');
 function updateNavigation(){
+  // Preserve old shared parent links after moving the section to its own page.
+  if ((location.pathname === '/' || location.pathname.endsWith('/index.html')) && location.hash === '#parents') {
+    location.replace(new URL('parents.html', location.href).href);
+    return;
+  }
   const email=['#email','#recruiting-email'].includes(location.hash);
   const entry=document.getElementById('email-entry');
   if(entry)entry.hidden=!email;

@@ -1,1 +1,16 @@
 .order{margin-top:85px;background:#e2eff5;border-radius:6px;padding:55px 9%;display:grid;grid-template-columns:1fr 1fr;gap:65px;align-items:center}.order h2{font:600 48px/.98 Fraunces;letter-spacing:-2px;margin:12px 0}.order>div>p:not(.eyebrow){font-size:13px;line-height:1.6;color:#647278}.order form{padding:24px;background:#fffefa;border-radius:5px}.order label{display:block;font-size:11px;font-weight:600;margin:10px 0 5px}.order input{width:100%;border:1px solid #d9e0df;padding:11px;border-radius:3px;font:12px 'DM Sans'}.order button{width:100%;justify-content:center;margin-top:17px}.order form p{font-size:10px;color:#758289;line-height:1.45}@media(max-width:760px){.order{grid-template-columns:1fr;gap:22px;padding:45px 8%;margin-top:65px}.order h2{font-size:40px}}
+/* Checkout-only layout: consent controls must not inherit full-width text-input styles. */
+.order #order-form{display:flex;flex-direction:column;align-items:stretch;padding:28px}
+.order #order-form>.order-profile-note{margin:0 0 24px}
+.order #order-form>label[for="order-email"]{margin:0 0 8px;font-size:13px;line-height:1.5}
+.order #order-form>input[type="email"]{box-sizing:border-box;width:100%;min-height:48px;padding:12px;margin:0;font-size:16px}
+.order #order-form>p{margin:12px 0 0;font-size:12px;line-height:1.65}
+.order #order-form .scoutcard-form-disclosure{display:grid;gap:12px;margin:20px 0 0;padding-top:18px;border-top:1px solid #dce1e9}
+.order #order-form .scoutcard-form-disclosure>label{display:flex;align-items:flex-start;gap:12px;min-height:44px;margin:0;padding:0;font-size:12px;line-height:1.6;cursor:pointer}
+.order #order-form .scoutcard-form-disclosure input[type="checkbox"]{appearance:auto;box-sizing:border-box;flex:0 0 20px;width:20px;min-width:20px;height:20px;min-height:20px;padding:0;margin:2px 0 0;accent-color:#0751d6}
+.order #order-form .scoutcard-form-disclosure>label>span{flex:1;min-width:0}
+.order #order-form .scoutcard-form-disclosure>p{margin:0;font-size:12px;line-height:1.65}
+.order #order-form .scoutcard-form-disclosure>a{font-size:12px;line-height:1.65}
+.order #order-form>button[type="submit"]{min-height:48px;margin:22px 0 0}
+.order #order-form>#order-note{margin:12px 0 0;font-size:12px;line-height:1.65}
+@media(max-width:760px){.order #order-form{padding:20px}}

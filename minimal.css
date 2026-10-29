@@ -5,6 +5,10 @@
 .minimal-page .hero-benefits{margin-top:18px}
 .minimal-page .parent-play{padding-block:48px;gap:56px}
 .minimal-page .parent-play h2{font-size:clamp(42px,5vw,64px)}
+.parents-page .parent-play{min-height:520px}
+.parents-page .parent-play h1{font:800 clamp(48px,6vw,76px)/1.02 'Barlow Condensed',Impact,sans-serif;letter-spacing:-.02em;margin:18px 0;color:#15181e}
+.parents-page .parent-play h1 em{font-style:normal;color:#0751d6}
+.minimal-page .order{align-items:start}
 .minimal-page .parent-lede{max-width:460px}
 .minimal-page .parent-account-note{color:#52616b;font-size:14px;line-height:1.7;margin:20px 0}
 .minimal-page .parent-play-visual{background:transparent;box-shadow:none;border:1px solid #d4dce8;padding:26px}

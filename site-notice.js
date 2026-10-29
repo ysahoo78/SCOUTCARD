@@ -55,7 +55,7 @@
   }
   brandColumn.append(brand,tagline,description,socials); grid.append(brandColumn);
   const sections = [
-    ['Company','footer-company',[['About Us','about.html'],['For Parents','index.html#parents'],['Parent Dashboard','family.html'],['Contact Us','mailto:scout.card26@gmail.com']]],
+    ['Company','footer-company',[['About Us','about.html'],['For Parents','parents.html'],['Parent Dashboard','family.html'],['Contact Us','mailto:scout.card26@gmail.com']]],
     ['Get Started','footer-start',[['Set Up Profile','index.html#setup'],['Buy The Card','index.html#order'],['Activate The Card','activate.html'],['Send An Email','index.html#email']]],
     ['Legal & Safety','footer-legal',[['Privacy Policy','privacy.html'],['Terms of Service','terms.html'],['Refund Policy','refunds.html'],['Cookie Policy','cookies.html'],['Parent Privacy Notice','parent-privacy.html'],['Request Data Deletion','data-request.html'],['Safety / Report a Concern','safety.html']]]
   ];
