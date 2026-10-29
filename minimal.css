@@ -24,7 +24,8 @@
 .minimal-page .gameplan-step>a{color:#124fc5;border-color:#d4dce8;font-size:13px}
 .minimal-page .gameplan-step>a:hover{color:#00388d}
 .minimal-page .gameplan-step>a:focus-visible{outline-color:#124fc5}
-.minimal-page .share-section{display:block;padding-block:42px}
+.minimal-page .share-section{padding-block:42px}
+.minimal-page.buy-mode .share-section{display:block}
 .minimal-page .share-section h2{font-size:clamp(40px,4.5vw,58px)}
 .minimal-page .share-section>div:first-child{margin-bottom:26px}
 .minimal-page .share-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px}

@@ -11,6 +11,11 @@ async function load(path, width) {
   frame.src = url.href;
   await new Promise(resolve => frame.onload = resolve);
   await frame.contentDocument.fonts.ready;
+  // Module imports can finish after the load event; check the settled route.
+  if (path === 'index.html#setup') {
+    for (let attempt=0; attempt<80 && !frame.contentDocument.body.classList.contains('setup-mode'); attempt++) await pause();
+    assert(frame.contentDocument.body.classList.contains('setup-mode'), 'Setup route did not initialize');
+  }
   await pause();
   return frame.contentDocument;
 }
@@ -33,6 +38,7 @@ document.querySelector('#run').onclick = async () => {
         await Promise.all([...doc.images].map(async image => { image.loading = 'eager'; await image.decode(); }));
         assert([...doc.images].every(image => image.complete && image.naturalWidth > 0), path + ' has a broken image');
         if (path === 'index.html#setup') {
+          assert([...doc.querySelectorAll('.buy-only')].every(node => win.getComputedStyle(node).display === 'none'), 'Buying content must not clutter setup: '+[...doc.querySelectorAll('.buy-only')].filter(node=>win.getComputedStyle(node).display!=='none').map(node=>node.className).join(', '));
           const gate = doc.querySelector('.scoutcard-age-gate');
           const roadmap = doc.querySelector('.setup-roadmap');
           assert(gate && roadmap.compareDocumentPosition(gate) & Node.DOCUMENT_POSITION_FOLLOWING, 'Gate must follow the setup introduction');
