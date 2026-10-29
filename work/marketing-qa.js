@@ -56,8 +56,12 @@ document.querySelector('#run').onclick = async () => {
     assert(doc.querySelector('#parents a.button').getAttribute('href') === 'family.html', 'Parent section must use the parent setup path');
     assert(doc.querySelector('#parents').textContent.includes('published profile'), 'Parent sharing must explain publishing');
     assert(doc.querySelector('#parents').textContent.includes('does not automatically save a contact'), 'Do not imply automatic contact saving');
-    const jumps = [...doc.querySelectorAll('.page-jumps a')];
-    assert(jumps.every(link => doc.querySelector(link.getAttribute('href'))), 'Section navigation must have real destinations');
+    assert(!doc.querySelector('.page-jumps'), 'Redundant section-navigation bar should be removed');
+    assert(doc.querySelector('.hero .lede').textContent.split(/\s+/).length <= 16, 'Hero copy should stay concise');
+    assert(doc.querySelectorAll('.share-grid article').length === 6, 'All six profile features must remain');
+    assert(doc.querySelector('#order').textContent.includes('20-day returns'), 'Keep the return summary');
+    assert(doc.querySelector('#order').textContent.includes('30 days of payment'), 'Keep the shipping timeframe');
+    assert(doc.querySelector('#buy-at-your-pace'), 'Keep the buy-before-publishing explanation');
     assert(doc.querySelector('.hero').nextElementSibling.matches('.athlete-perspective'), 'Raymond testimonial must stay immediately below the hero');
     assert(doc.querySelectorAll('.athlete-perspective').length === 1, 'Testimonial must not be duplicated');
     const portraits = [...doc.querySelectorAll('.perspective-photo img')];

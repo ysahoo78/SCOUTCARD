@@ -1,0 +1,81 @@
+/* Concise copy and lighter sections; essential notices and controls remain visible. */
+.minimal-page .hero{padding-block:48px;gap:48px}
+.minimal-page .hero .lede{font-size:17px;line-height:1.65;max-width:400px}
+.minimal-page .hero h1{margin-block:18px 24px}
+.minimal-page .hero-benefits{margin-top:18px}
+.minimal-page .parent-play{padding-block:48px;gap:56px}
+.minimal-page .parent-play h2{font-size:clamp(42px,5vw,64px)}
+.minimal-page .parent-lede{max-width:460px}
+.minimal-page .parent-account-note{color:#52616b;font-size:14px;line-height:1.7;margin:20px 0}
+.minimal-page .parent-play-visual{background:transparent;box-shadow:none;border:1px solid #d4dce8;padding:26px}
+.minimal-page .parent-visual-label,.minimal-page .parent-sharing-line{color:#52616b}
+.minimal-page .parent-sharing-line svg{color:#1758de}
+.minimal-page .parent-footnote{max-width:450px}
+.minimal-page .how.gameplan{padding-block:48px}
+.minimal-page .gameplan-heading{align-items:center;margin-bottom:26px}
+.minimal-page .gameplan-heading h2{font-size:clamp(40px,4.5vw,58px)}
+.minimal-page .gameplan-intro{font-size:14px;max-width:330px}
+.minimal-page .gameplan-step{background:transparent;border:1px solid #d4dce8;color:#15181e;padding:24px;border-radius:10px}
+.minimal-page .gameplan-number{font-size:30px;color:#1758de}
+.minimal-page .gameplan-icon{position:absolute;right:24px;top:22px;width:42px;height:42px;margin:0;background:#eaf0fc;color:#1758de;border:0;border-radius:10px}
+.minimal-page .gameplan-icon svg{width:28px;height:28px}
+.minimal-page .gameplan-step h3{color:#15181e;font-size:32px;margin:24px 0 12px;padding:0}
+.minimal-page .gameplan-step>p{font-size:14px;line-height:1.7;color:#52616b;margin:0 0 20px;max-width:none}
+.minimal-page .gameplan-step>a{color:#124fc5;border-color:#d4dce8;font-size:13px}
+.minimal-page .gameplan-step>a:hover{color:#00388d}
+.minimal-page .gameplan-step>a:focus-visible{outline-color:#124fc5}
+.minimal-page .share-section{display:block;padding-block:42px}
+.minimal-page .share-section h2{font-size:clamp(40px,4.5vw,58px)}
+.minimal-page .share-section>div:first-child{margin-bottom:26px}
+.minimal-page .share-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px}
+.minimal-page .share-grid article{padding:22px 0;min-height:0;border:0;border-top:1px solid #d4dce8;border-radius:0;background:transparent}
+.minimal-page .share-grid h3{font-size:16px;margin:12px 0 0}
+.minimal-page .share-grid p{font-size:12px;margin:6px 0 0;color:#52616b}
+.minimal-page .order{margin-block:42px}
+.minimal-page .order>div>h2{font-size:clamp(44px,5vw,66px)}
+.minimal-page .order .order-profile-note{background:transparent;border:0;border-left:3px solid #1758de;padding:0 0 0 15px;margin-bottom:22px}
+.minimal-page .order .order-profile-note h3{font-size:22px}
+.minimal-page .faq{padding-block:40px 56px}
+.minimal-page .faq h2{font-size:clamp(40px,4.5vw,58px);letter-spacing:-1px}
+.minimal-page .setup-intro{min-height:0;padding-block:38px;grid-template-columns:minmax(0,1fr)}
+body.minimal-page.setup-mode .setup-intro{min-height:0}
+.minimal-page .setup-intro h1{font-size:clamp(44px,5vw,66px)}
+.minimal-page .setup-card{display:none}
+.minimal-page .setup-intro p{max-width:620px}
+.minimal-page .setup-choices{padding-top:0}
+.minimal-page .setup-choice{padding:24px}
+.minimal-page .setup-choice h3{font-size:32px}
+.minimal-page .family-gameday summary{font:700 15px/1.5 'DM Sans',system-ui,sans-serif;cursor:pointer;padding-block:12px;color:#173e80}
+.minimal-page .family-gameday p{font-size:14px;line-height:1.8}
+.minimal-page .family-gameday :focus-visible{outline:3px solid #1758de;outline-offset:4px}
+.minimal-page .about-hero{padding-block:42px}
+.minimal-page .about-story{padding-block:40px}
+.minimal-page .about-values{padding-block:28px}
+.minimal-page .founders{padding-block:42px}
+.minimal-page .about-story p,.minimal-page .founder-grid p:not(.eyebrow){max-width:640px;line-height:1.8}
+.minimal-page .cta{margin-top:34px;padding-block:40px}
+@media(max-width:760px){
+.minimal-page .hero{padding-block:30px;gap:28px}
+.minimal-page .hero .lede{font-size:16px}
+.minimal-page .parent-play{padding-block:34px;gap:24px}
+.minimal-page .parent-play-visual{padding:22px}
+.minimal-page .gameplan-heading{display:block}
+.minimal-page .gameplan-intro{margin-top:16px;max-width:none}
+.minimal-page .how.gameplan{padding-block:34px}
+.minimal-page .gameplan-steps{grid-template-columns:1fr;gap:12px}
+.minimal-page .gameplan-step{padding:22px}
+.minimal-page .gameplan-step h3{font-size:30px;margin-top:18px}
+.minimal-page .gameplan-icon{top:18px;right:22px}
+.minimal-page .share-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
+.minimal-page .share-section{padding-block:34px}
+.minimal-page .order{margin-block:28px}
+.minimal-page .setup-intro{text-align:left;padding-block:28px}
+.minimal-page .setup-intro p{margin-inline:0}
+.minimal-page .about-story,.minimal-page .founders{padding-block:28px}
+}
+@media(max-width:420px){
+.minimal-page .hero-showcase .product-stage{margin-top:8px}
+.minimal-page .hero-showcase .product-back{display:none}
+.minimal-page .share-grid h3{font-size:15px}
+.minimal-page .hero h1{font-size:58px}
+}

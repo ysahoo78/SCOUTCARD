@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Activate your SCOUTCARD</title><link rel="stylesheet" href="activate.css"><link rel="stylesheet" href="experience.css">
-<link rel="stylesheet" href="navigation.css"></head>
-<body class="activation-page">
+<link rel="stylesheet" href="navigation.css"><link rel="stylesheet" href="minimal.css"></head>
+<body class="activation-page minimal-page">
 <header class="action-header"><a class="brand" href="index.html">SCOUT<span>CARD</span></a><nav class="primary-actions" aria-label="Main navigation"><a data-action="setup" href="index.html#setup">Set Up Profile</a><a data-action="buy" href="index.html#order">Buy The Card</a><a data-action="activate" href="activate.html" aria-current="page">Activate The Card</a><a data-action="email" href="index.html#email">Send An Email</a></nav></header>
 <main>
   <p class="eyebrow">STEP 3 OF 3 / ACTIVATE YOUR CARD</p>
   <h1>Make the<br>connection.</h1>
-  <p>Your card is ready to share your profile only after you connect it. Use the same email account you used to save your athlete profile.</p>
+  <p>Connect your physical card to a published profile. Sign in with the same email you used for that profile.</p>
   <nav class="activation-roadmap" aria-label="The three SCOUTCARD steps">
     <ol>
       <li><a href="index.html#profile">1. Save your profile ↗</a></li>
@@ -17,8 +17,8 @@
       <li aria-current="step"><strong>3. Activate it here</strong></li>
     </ol>
   </nav>
-  <p class="activation-explain">Have your card and private activation code? Sign in below, enter that code, and select “Activate my card.” The code is provided with the physical card; it is not your public profile link. Bought in person? You do not need to pay online again.</p>
-  <p class="activation-explain">Connecting a card for your child? <a href="https://www.scoutcard.tech/family.html">Use the parent dashboard</a> so you can choose the correct child before activation. Do not use the individual activation form below for a child’s parent-managed profile.</p>
+  <p class="activation-explain">Sign in, enter the private code supplied with your card, and select “Activate my card.” It is not your profile link or sign-in email. Already paid in person? Don’t pay again.</p>
+  <p class="activation-explain">For your child’s card, <a href="https://www.scoutcard.tech/family.html">use the parent dashboard</a> and choose the correct child—not this individual form.</p>
   <section class="auth-panel"><p id="account-email">Checking your sign-in…</p><form id="signin-form"><label for="signin-email">Email address</label><input id="signin-email" type="email" autocomplete="email" required maxlength="254" placeholder="you@gmail.com"><button type="submit">Email me a sign-in link</button></form><button id="signout" type="button" class="secondary" hidden>Sign out</button><button type="button" class="secondary" data-change-age>Change age group</button><p id="auth-note" role="status"></p></section>
   <form id="activate-form" hidden><label for="activation-code">Private activation code</label><input id="activation-code" required minlength="8" maxlength="100" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Enter the code supplied with your card"><button type="submit">Activate my card →</button></form>
   <p id="note" role="status" aria-live="polite"></p>
