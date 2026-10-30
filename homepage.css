@@ -1,0 +1,54 @@
+/* Homepage-only night-game palette. Setup, parent pages and checkout controls keep their own themes. */
+body.minimal-page.buy-mode{background:#090e18;color:#f3f6fc}
+body.minimal-page.buy-mode .action-header{background:#0c121e;border-bottom-color:#2a354a}
+body.minimal-page.buy-mode .hero::before{background:radial-gradient(ellipse at 78% 25%,#173e776b,transparent 60%),linear-gradient(120deg,#0b1019,#101c30)}
+body.minimal-page.buy-mode .hero::after{opacity:.055}
+body.minimal-page.buy-mode .hero h1 em{color:#8db5ff}
+body.minimal-page.buy-mode .athlete-perspective{background:#111c2e;border-color:#293a54;padding-block:40px}
+body.minimal-page.buy-mode .perspective-heading{color:#a9bedc}
+body.minimal-page.buy-mode .perspective-person h3,
+body.minimal-page.buy-mode .recommendation{color:#f3f6fc}
+body.minimal-page.buy-mode .perspective-person p:last-child,
+body.minimal-page.buy-mode .perspective-score,
+body.minimal-page.buy-mode .perspective-rating-note{color:#c0cee2}
+body.minimal-page.buy-mode .perspective-photo{border:1px solid #455b7b;box-shadow:0 10px 24px #0003}
+body.minimal-page.buy-mode .perspective-rating{background:#172943;border:1px solid #344a68;border-radius:16px}
+body.minimal-page.buy-mode .perspective-stars{color:#f4cf71}
+body.minimal-page.buy-mode .perspective-disclosure{color:#b8c7dc;border-top-color:#34435a}
+body.minimal-page.buy-mode .how.gameplan{border-bottom:0;padding-block:54px}
+body.minimal-page.buy-mode .gameplan-heading .eyebrow{color:#9cbfff}
+body.minimal-page.buy-mode .gameplan-heading h2{color:#f3f6fc}
+body.minimal-page.buy-mode .gameplan-heading h2 em{color:#8db5ff}
+body.minimal-page.buy-mode .gameplan-intro{color:#b9c8dd}
+body.minimal-page.buy-mode .gameplan-step{background:#141f31;border-color:#30415d;border-radius:14px;box-shadow:inset 0 1px 0 #ffffff06}
+body.minimal-page.buy-mode .gameplan-number{color:#92b8ff}
+body.minimal-page.buy-mode .gameplan-icon{background:#203958;color:#accfff}
+body.minimal-page.buy-mode .gameplan-step h3{color:#f3f6fc}
+body.minimal-page.buy-mode .gameplan-step>p{color:#bfccde}
+body.minimal-page.buy-mode .gameplan-step>a{color:#bad4ff;border-color:#344761}
+body.minimal-page.buy-mode .gameplan-step>a:hover{color:#fff}
+body.minimal-page.buy-mode .share-section{background-color:#11294c;background-image:radial-gradient(ellipse at 95% 0,#28529366,transparent 65%);border:1px solid #32517b;border-radius:18px;padding:36px 40px}
+body.minimal-page.buy-mode .share-section .eyebrow{color:#b4cefa}
+body.minimal-page.buy-mode .share-section h2{color:#f3f6fc}
+body.minimal-page.buy-mode .share-section h2 em{color:#9fc6ff}
+body.minimal-page.buy-mode .share-grid article{border-color:#547099}
+body.minimal-page.buy-mode .share-grid h3{color:#f3f6fc}
+body.minimal-page.buy-mode .share-grid p{color:#c2d3eb}
+body.minimal-page.buy-mode .share-grid .feature-icon{background:#234675;border-color:#5d83b0;color:#c0daff}
+body.minimal-page.buy-mode .order{background:#121c2c;border:1px solid #30415b;border-radius:18px;box-shadow:0 20px 60px #0002}
+body.minimal-page.buy-mode .order>div>h2{color:#f3f6fc}
+body.minimal-page.buy-mode .order>div>h2 em{color:#8db5ff}
+body.minimal-page.buy-mode .order #order-form{border-radius:12px;box-shadow:0 8px 30px #0002}
+body.minimal-page.buy-mode .faq{border-top:1px solid #2a3950;padding-top:38px}
+body.minimal-page.buy-mode .faq h2{color:#f3f6fc}
+body.minimal-page.buy-mode .faq details{border-color:#30415b}
+body.minimal-page.buy-mode .faq summary{color:#e8f0fc}
+body.minimal-page.buy-mode .faq summary:hover{color:#afceff}
+body.minimal-page.buy-mode .faq details p{color:#bfccde}
+body.minimal-page.buy-mode :is(.gameplan-step>a,.faq summary,.hero-example):focus-visible{outline-color:#a9caff;box-shadow:0 0 0 4px #090e18}
+@media(max-width:760px){
+body.minimal-page.buy-mode .share-section{padding:26px 24px;border-radius:14px}
+body.minimal-page.buy-mode .share-grid{column-gap:18px}
+body.minimal-page.buy-mode .how.gameplan{padding-block:36px}
+body.minimal-page.buy-mode .athlete-perspective{padding-block:30px}
+}

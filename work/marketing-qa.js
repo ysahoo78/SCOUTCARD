@@ -2,6 +2,15 @@
 const frame = document.querySelector('#preview');
 const output = document.querySelector('#results');
 const assert = (test, text) => { if (!test) throw new Error(text); };
+function contrast(foreground, background) {
+  const luminance = css => {
+    const rgb = css.match(/[0-9.]+/g).slice(0,3).map(Number).map(value=>value/255);
+    const linear = rgb.map(value=>value<=0.04045?value/12.92:((value+0.055)/1.055)**2.4);
+    return linear[0]*0.2126+linear[1]*0.7152+linear[2]*0.0722;
+  };
+  const a=luminance(foreground),b=luminance(background);
+  return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+}
 const pause = () => new Promise(resolve => setTimeout(resolve, 30));
 let navigation = 0;
 async function load(path, width) {
@@ -37,7 +46,23 @@ document.querySelector('#run').onclick = async () => {
         // Exercise off-screen lazy images too, without scrolling past the setup choice.
         await Promise.all([...doc.images].map(async image => { image.loading = 'eager'; await image.decode(); }));
         assert([...doc.images].every(image => image.complete && image.naturalWidth > 0), path + ' has a broken image');
+        if (path === 'index.html') {
+          assert(win.getComputedStyle(doc.body).backgroundColor==='rgb(9, 14, 24)', 'Homepage must use the night-game palette');
+          for(const [text,panel] of [
+            ['.recommendation','.athlete-perspective'],
+            ['.perspective-disclosure','.athlete-perspective'],
+            ['.perspective-rating-note','.perspective-rating'],
+            ['.gameplan-step>p','.gameplan-step'],
+            ['.gameplan-step>a','.gameplan-step'],
+            ['.share-grid p','.share-section'],
+            ['.faq summary','body'],
+            ['.faq details p','body']
+          ]) {
+            assert(contrast(win.getComputedStyle(doc.querySelector(text)).color,win.getComputedStyle(doc.querySelector(panel)).backgroundColor)>=4.5, 'Text contrast below 4.5:1 for '+text);
+          }
+        }
         if (path === 'index.html#setup') {
+          assert(win.getComputedStyle(doc.body).backgroundColor==='rgb(244, 243, 239)', 'Homepage colors must not bleed into account setup');
           assert([...doc.querySelectorAll('.buy-only')].every(node => win.getComputedStyle(node).display === 'none'), 'Buying content must not clutter setup: '+[...doc.querySelectorAll('.buy-only')].filter(node=>win.getComputedStyle(node).display!=='none').map(node=>node.className).join(', '));
           const gate = doc.querySelector('.scoutcard-age-gate');
           const roadmap = doc.querySelector('.setup-roadmap');
