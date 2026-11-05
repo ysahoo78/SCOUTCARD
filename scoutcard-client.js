@@ -19,6 +19,12 @@ export function mountAuth(onSession, returnPath = '/') {
   const signout = document.querySelector('#signout');
   const identity = document.querySelector('#account-email');
   const parentDashboard = !!document.querySelector('#parent-entry');
+  const receipt=document.createElement('aside');receipt.className='signin-help';receipt.hidden=true;receipt.setAttribute('aria-label','Check your email');
+  const receiptTitle=document.createElement('strong'),instructions=document.createElement('p'),changeEmail=document.createElement('button');
+  changeEmail.type='button';changeEmail.className='secondary';changeEmail.textContent='Use a different email';
+  instructions.textContent='Open the newest SCOUTCARD email and tap its sign-in link. Continue in the page that opens. If it’s missing, check Spam or Junk. Older links may have expired.';
+  receipt.append(receiptTitle,instructions,changeEmail);note.after(receipt);
+  changeEmail.onclick=()=>{receipt.hidden=true;email.focus();email.select();};
   let currentId;
   let initialized = false;
   let cooldown = 0;
@@ -27,6 +33,9 @@ export function mountAuth(onSession, returnPath = '/') {
 
   const apply = session => {
     const user = session?.user || null;
+    document.body.classList.toggle('authenticated',!!user);
+    document.dispatchEvent(new CustomEvent('scoutcard-auth-state'));
+    if(user)receipt.hidden=true;
     const legacyReturn = !!user && /access_token=|refresh_token=/.test(location.hash);
     form.hidden = !!user;
     signout.hidden = !user;
@@ -90,6 +99,7 @@ export function mountAuth(onSession, returnPath = '/') {
         options: { emailRedirectTo: new URL(returnPath, siteOrigin).href }
       }));
       if (error) throw error;
+      receiptTitle.textContent='Check your email: '+email.value.trim();receipt.hidden=false;
       note.textContent = parentDashboard
         ? 'Link sent. Open the newest email link in this browser. Continue on the parent dashboard that opens, then select “Add a child” or choose a saved profile. No child information needs to be entered before signing in.'
         : document.querySelector('#athlete-form')

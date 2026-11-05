@@ -1,0 +1,54 @@
+/* Shared, compact task screens. Public marketing content keeps its own theme. */
+body [hidden]{display:none!important}
+.account-shortcut{grid-column:1/-1;justify-self:end;color:#c6d8ff;font:600 13px/1.5 'DM Sans',system-ui,sans-serif;min-height:32px;display:flex;align-items:center;text-underline-offset:4px;margin-top:-4px}
+.activation-page .skip-link{position:absolute;left:16px;top:-100px;z-index:10;background:#fff;color:#1748ae;padding:12px}
+.activation-page .skip-link:focus{top:10px}
+body.authenticated .task-help{display:none}
+body header.action-header:has(.account-shortcut){row-gap:8px}
+body.checkout-mode .hero,body.checkout-mode .athlete-perspective,body.checkout-mode .gameplan,body.checkout-mode .share-section{display:none!important}
+body.checkout-mode .order{margin-top:28px}
+body.authenticated.setup-mode .setup-intro,body.authenticated.setup-mode .setup-choices,body.authenticated.setup-mode .setup-roadmap{display:none!important}
+body.athlete-entry .setup-intro,body.athlete-entry .setup-choices,body.athlete-entry .setup-roadmap{display:none!important}
+body.authenticated #account{grid-template-columns:1fr;gap:0;margin-block:16px;padding-block:18px;border-radius:12px}
+body.authenticated #account>div:nth-child(2):has(#auth-note:empty){display:none}
+body.authenticated #account button{margin:4px 8px 0 0}
+.account .task-help{grid-column:1/-1}
+body.authenticated #account h2,body.authenticated #account .eyebrow,body.authenticated #account>div>p:not(#account-email){display:none}
+body.authenticated #account-email{margin:0 0 8px;overflow-wrap:anywhere}
+body.authenticated.family-page .family-intro,body.authenticated.family-page .family-gameday,body.authenticated.family-page #parent-auth>h2,body.authenticated.family-page #parent-auth>p:not([id]){display:none}
+.athlete-dashboard{margin-block:28px 12px;padding:26px;border:1px solid #cad6e8;border-radius:16px;background:#fff;color:#17233b}
+.athlete-dashboard h1{font:800 clamp(30px,4vw,44px)/1.15 'Barlow Condensed',Impact,sans-serif;margin:6px 0 12px;letter-spacing:0}
+.athlete-dashboard>p{font-size:15px;line-height:1.6;margin:8px 0;color:#46556b}
+.dashboard-statuses{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.dashboard-statuses span{background:#edf3ff;border-radius:6px;padding:7px 10px;font-size:12px;font-weight:700;line-height:1.5;color:#244779}
+.dashboard-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.dashboard-actions a,.dashboard-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border:1px solid #a9bbd7;border-radius:8px;background:#fff;color:#1748ae;font:700 14px/1.4 'DM Sans',system-ui,sans-serif;text-decoration:none;cursor:pointer}
+.dashboard-actions button{background:#174fc8;color:#fff;border-color:#174fc8}
+body.email-mode .athlete-dashboard{display:none}
+body.authenticated .builder{grid-template-columns:minmax(0,1fr);gap:20px;padding-block:16px 30px}
+body.authenticated .builder-copy>h2,body.authenticated .builder-copy>.eyebrow,body.authenticated .builder-copy>p,body.authenticated .builder-copy>.privacy{display:none}
+body.authenticated .builder-copy:has(.link-box[hidden]){display:none}
+body.authenticated .builder-copy .link-box{margin:0}
+body.authenticated .profile-box{grid-template-columns:minmax(0,1fr);max-width:850px;width:100%;margin-inline:auto}
+body.authenticated .profile-box>.live{display:none}
+body.authenticated #athlete-form{min-width:0}
+.signin-help{border:1px solid #c5d6ef;border-radius:10px;background:#edf3ff;color:#17233b;padding:16px;margin-block:16px;line-height:1.6}
+.signin-help p{font-size:14px!important;line-height:1.65!important;color:#344257!important;margin:6px 0!important}
+.signin-help strong{overflow-wrap:anywhere}
+.signin-help button{min-height:44px;margin-top:10px}
+.signin-help a,.task-help a{color:#1748ae;text-underline-offset:3px}
+.task-help{margin-block:20px;padding:15px 18px;border:1px solid #bdcce1;border-radius:10px;background:#f5f8ff;color:#273954;font:400 14px/1.6 'DM Sans',system-ui,sans-serif}
+.task-help summary{cursor:pointer;font-weight:700;min-height:32px;display:list-item}
+.task-help p{font-size:14px!important;color:#344257!important;line-height:1.65!important}
+.activation-next{display:inline-flex;min-height:44px;align-items:center;margin-block:8px;padding:10px 16px;background:#eaf1ff;border:1px solid #bacff6;border-radius:8px;color:#1748ae;font-weight:700}
+:is(.dashboard-actions a,.dashboard-actions button,.account-shortcut,.task-help summary,.signin-help button,.activation-next):focus-visible{outline:3px solid #467ee8;outline-offset:3px}
+@media(max-width:600px){
+ .athlete-dashboard{padding:20px}
+ .dashboard-actions{display:grid;grid-template-columns:1fr 1fr}
+ .dashboard-actions button{grid-column:1/-1}
+ .dashboard-actions a{text-align:center;font-size:13px;padding-inline:8px}
+ body.authenticated #account{padding:16px}
+ body.authenticated .builder{padding-top:4px}
+ body.authenticated .profile-box{display:block}
+ body input:not([type=checkbox]):not([type=radio]),body select,body textarea{font-size:16px!important}
+}

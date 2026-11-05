@@ -1,4 +1,15 @@
 .onboarding-editor [hidden]{display:none!important}
+.wizard-steps li{padding:0!important}
+.wizard-steps button{width:100%;min-height:48px;padding:10px 4px!important;background:transparent!important;color:inherit!important;border:0!important;font:inherit;cursor:pointer;border-radius:6px;letter-spacing:0!important}
+.wizard-steps button:disabled{opacity:.6;cursor:wait}
+.wizard-steps button:hover:not(:disabled){background:#edf3ff!important}
+.wizard-extras{margin:18px 0;border:1px solid #c9d4e5;border-radius:10px;padding:14px}
+.wizard-extras summary{cursor:pointer;min-height:44px;align-content:center;font:700 14px/1.5 'DM Sans',system-ui,sans-serif;color:#1748ae}
+.wizard-extras[open] summary{margin-bottom:18px}
+.wizard-extras :is(input,textarea){width:100%;box-sizing:border-box}
+.wizard-extras label{display:block;margin:16px 0 8px}
+.onboarding-editor [aria-invalid=true]{border:2px solid #aa3030!important}
+.onboarding-editor .wizard-controls #wizard-review-now{font-size:13px}
 .wizard-intro{padding:18px;border:1px solid #c8d7f8;border-radius:12px;background:#edf3ff;color:#152442;line-height:1.6}
 .wizard-steps{display:flex;list-style:none;padding:0!important;margin:24px 0!important;gap:8px;counter-reset:steps;flex-wrap:wrap}
 .wizard-steps li{flex:1;min-width:68px;padding:10px 5px;text-align:center;border-bottom:3px solid #d3d6dc;color:#485366;font-size:13px;font-weight:700}

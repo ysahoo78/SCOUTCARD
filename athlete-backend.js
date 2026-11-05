@@ -3,19 +3,23 @@ import { canonicalOrigin, publicUrl, friendlyError, withTimeout } from './scoutc
 import { createProfileOnboarding } from './profile-onboarding.js';
 import { readPurchaseStatus } from './purchase-status.js';
 import { createRecruitingEmailBuilder } from './recruiting-email-builder.js';
+import { createAthleteDashboard } from './athlete-dashboard.js';
 const $ = id => document.getElementById(id);
 const form = $('athlete-form'), save = $('save-profile'), status = $('profile-status');
 let user = null, emailBuilder = null;
-let connectedCard = false;
+let connectedCard = false, cardsChecked = false;
 let purchased = null, accountVersion = 0;
+const dashboard=createAthleteDashboard({review:()=>editor.review()});
 function purchaseGuidance(){
+ dashboard.update({connected:cardsChecked?connectedCard:null,purchased});
  document.querySelectorAll('[data-card-purchase]').forEach(link=>link.hidden=connectedCard||purchased===true);
  const note=$('order-known-purchase');note.hidden=purchased!==true;
  const box=$('profile-link-box');if(!box.hidden){box.querySelector('.next-links a').hidden=connectedCard||purchased===true;if(purchased===true&&!connectedCard)box.querySelector('.next-note').textContent='A card purchase is confirmed for this account. Don’t pay again for the same card. When the physical card arrives, activate it using its private code. Buying does not automatically activate it.';}
 }
 const editor=createProfileOnboarding({db,
- onSaved:record=>{if(user&&record.owner_id===user.id&&record.profile_id===user.id)emailBuilder?.setContext({ownerId:user.id,profileId:record.profile_id,name:record.payload.display_name});},
- onPublished:profile=>{showLink(profile.slug,profile.is_public);loadCards(user.id);}
+ onDirty:dirty=>dashboard.update({dirty}),
+ onSaved:record=>{if(user&&record.owner_id===user.id&&record.profile_id===user.id){dashboard.update({record});emailBuilder?.setContext({ownerId:user.id,profileId:record.profile_id,name:record.payload.display_name});}},
+ onPublished:profile=>{dashboard.update({profile,record:editor.record,dirty:false});showLink(profile.slug,profile.is_public);loadCards(user.id);}
 });
 emailBuilder=createRecruitingEmailBuilder({db,host:$('athlete-workspace'),getSnapshot:()=>editor.emailSnapshot()});
 const builder=$('profile');builder.hidden=true;
@@ -100,18 +104,21 @@ async function loadCards(id) {
     target: 'cards-list', table: 'athlete_cards',
     columns: 'id,public_token,activated_at', dateField: 'activated_at',
     empty: 'No activated cards yet. Activate your card using the private code included with it.',
-    onPage(cards){connectedCard=connectedCard||cards.length>0;editor.setCardConnected(connectedCard);purchaseGuidance();const box=$('profile-link-box');if(box.hidden)return;box.querySelector('.saved-step').textContent=connectedCard?'Profile published · Card connected. You’re ready to share.':'Profile published · No card connected yet.';const links=box.querySelectorAll('.next-links a');links[0].hidden=connectedCard;links[0].textContent='Need a card? Buy a SCOUTCARD →';links[1].hidden=connectedCard;box.querySelector('.next-note').textContent=connectedCard?'Your connected card links are listed under Your cards below. Private draft edits do not change what coaches see until you publish again.':'Already bought a card? Don’t pay again. Activate your physical card using its private code when received. No connected card does not mean you have not paid; unlinked online and cash purchases cannot be checked here.';purchaseGuidance();},
+    onPage(cards){cardsChecked=true;connectedCard=connectedCard||cards.length>0;editor.setCardConnected(connectedCard);purchaseGuidance();const box=$('profile-link-box');if(box.hidden)return;box.querySelector('.saved-step').textContent=connectedCard?'Profile published · Card connected. You’re ready to share.':'Profile published · No card connected yet.';const links=box.querySelectorAll('.next-links a');links[0].hidden=connectedCard;links[0].textContent='Need a card? Buy a SCOUTCARD →';links[1].hidden=connectedCard;box.querySelector('.next-note').textContent=connectedCard?'Your connected card links are listed under Your cards below. Private draft edits do not change what coaches see until you publish again.':'Already bought a card? Don’t pay again. Activate your physical card using its private code when received. No connected card does not mean you have not paid; unlinked online and cash purchases cannot be checked here.';purchaseGuidance();},
     render(card) {
       const item = document.createElement('div'); item.className = 'card-item';
       const label = document.createElement('p'); label.textContent = 'Active card · ' + new Date(card.activated_at).toLocaleDateString();
       const link = document.createElement('a'); link.href = canonicalOrigin + '/card.html?card=' + encodeURIComponent(card.public_token);
       link.textContent = link.href; link.target = '_blank'; link.rel = 'noopener';
-      item.append(label, link); return item;
+      const copy=document.createElement('button');copy.type='button';copy.className='secondary';copy.textContent='Copy card link';
+      const result=document.createElement('p');result.setAttribute('role','status');
+      copy.onclick=async()=>{copy.disabled=true;try{await navigator.clipboard.writeText(link.href);result.textContent='Card link copied.';}catch{result.textContent='Select and copy the link above.';}finally{copy.disabled=false;}};
+      item.append(label, link,copy,result); return item;
     }
   });
 }
 mountAuth(async nextUser => {
-  user=nextUser;const version=++accountVersion;connectedCard=false;purchased=null;emailBuilder.clear();editor.reset();showLink('');builder.hidden=!user;purchaseGuidance();
+  user=nextUser;const version=++accountVersion;connectedCard=false;cardsChecked=false;purchased=null;emailBuilder.clear();editor.reset();dashboard.reset();dashboard.update({signedIn:!!user});showLink('');builder.hidden=!user;purchaseGuidance();
   $('athlete-workspace').hidden=!user;
   if(!user){$('inbox').replaceChildren();$('cards-list').replaceChildren();return;}
   const id=user.id;
@@ -119,7 +126,7 @@ mountAuth(async nextUser => {
   try {
     const {data,error}=await withTimeout(db.from('athlete_profiles').select('id,slug,display_name,sport,graduation_year,position,accolade,highlight_url,details,is_public,headshot_path').eq('id',id).maybeSingle());
     if(user?.id!==id)return;if(error)throw error;
-    if(data)showLink(data.slug,data.is_public);
+    dashboard.update({profile:data});if(data)showLink(data.slug,data.is_public);
     await editor.open({user,profileId:id,profile:data});
   } catch(error){if(user?.id===id){status.textContent=friendlyError(error)+' Refresh to retry. Your existing public profile has not changed.';status.dataset.state='error';}}
   if(user?.id===id)await Promise.allSettled([loadInbox(id),loadCards(id)]);

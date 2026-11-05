@@ -38,10 +38,10 @@ function setMode() {
     if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
   });
   if (['#buy', '#setup', '#email'].includes(fragment)) window.scrollTo({ top: 0 });
-  else if (['#profile', '#account'].includes(fragment)) {
+  else if (['#profile', '#account', '#athlete-workspace', '#order'].includes(fragment)) {
     const target = $(fragment.slice(1));
-    const visibleTarget = target?.hidden ? document.querySelector('.scoutcard-age-gate') : target;
-    visibleTarget?.scrollIntoView({ block: 'start' });
+    const visibleTarget = target?.hidden ? document.querySelector('.scoutcard-age-gate') || $('account') : target;
+    requestAnimationFrame(()=>visibleTarget?.scrollIntoView({ block: 'start' }));
   }
 }
 window.addEventListener('hashchange', setMode);
