@@ -11,6 +11,8 @@ function updateNavigation(){
   const home=!!document.getElementById('order');
   document.body.classList.toggle('checkout-mode',home&&location.hash==='#order');
   document.body.classList.toggle('athlete-entry',home&&['#account','#profile','#athlete-workspace'].includes(location.hash));
+  const accountTitle=document.querySelector('#account h2');
+  if(accountTitle)accountTitle.textContent=location.hash==='#account'?'Welcome back. Sign in.':'Create your account first.';
   // Preserve old shared parent links after moving the section to its own page.
   if ((location.pathname === '/' || location.pathname.endsWith('/index.html')) && location.hash === '#parents') {
     location.replace(new URL('parents.html', location.href).href);
