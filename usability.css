@@ -8,7 +8,7 @@ body [hidden]{display:none!important}
 .activation-page .skip-link:focus{top:10px}
 body.authenticated .task-help{display:none}
 body header.action-header:has(.account-shortcut){row-gap:8px}
-body.checkout-mode .hero,body.checkout-mode .athlete-perspective,body.checkout-mode .gameplan,body.checkout-mode .share-section{display:none!important}
+body.checkout-mode .hero,body.checkout-mode .gameplan,body.checkout-mode .share-section{display:none!important}
 body.checkout-mode .order{margin-top:28px}
 body.authenticated.setup-mode .setup-intro,body.authenticated.setup-mode .setup-choices,body.authenticated.setup-mode .setup-roadmap{display:none!important}
 body.athlete-entry .setup-intro,body.athlete-entry .setup-choices,body.athlete-entry .setup-roadmap{display:none!important}

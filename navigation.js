@@ -10,6 +10,9 @@ if(header){
 function updateNavigation(){
   const home=!!document.getElementById('order');
   document.body.classList.toggle('checkout-mode',home&&location.hash==='#order');
+  const testimonials=document.querySelector('.athlete-perspective');
+  const testimonialAnchor=document.body.classList.contains('checkout-mode')?document.getElementById('order'):document.querySelector('.hero');
+  if(testimonials&&testimonialAnchor&&testimonialAnchor.nextElementSibling!==testimonials)testimonialAnchor.after(testimonials);
   document.body.classList.toggle('athlete-entry',home&&['#account','#profile','#athlete-workspace'].includes(location.hash));
   const accountTitle=document.querySelector('#account h2');
   if(accountTitle)accountTitle.textContent=location.hash==='#account'?'Welcome back. Sign in.':'Create your account first.';
