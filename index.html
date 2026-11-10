@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="sport-presets.css"><link rel="stylesheet" href="headshots.css">
 <link rel="stylesheet" href="experience.css"><link rel="stylesheet" href="parents.css">
 <link rel="stylesheet" href="assets/fonts/dm-sans.css"><link rel="stylesheet" href="assets/fonts/dm-mono.css"><link rel="stylesheet" href="assets/fonts/fraunces.css">
-<link rel="stylesheet" href="navigation.css"><link rel="stylesheet" href="minimal.css"><link rel="stylesheet" href="homepage.css"></head>
+<link rel="stylesheet" href="navigation.css"><link rel="stylesheet" href="minimal.css"><link rel="stylesheet" href="homepage.css"><link rel="stylesheet" href="scoutcard-demo.css"></head>
 <body class="buy-mode minimal-page">
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="nav wrap action-header"><a class="brand" href="#buy"><span class="mark">S</span>SCOUT<span>CARD</span></a><nav class="primary-actions" aria-label="Main navigation"><a data-mode="setup" data-action="setup" href="#setup">Set Up Profile</a><a data-mode="buy" data-action="buy" href="#order">Buy The Card</a><a data-action="activate" href="activate.html">Activate The Card</a><a data-mode="email" data-action="email" href="#email">Send An Email</a></nav></header>
@@ -58,6 +58,63 @@
 <article><span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="24" height="21" rx="2.5"/><path d="M10 4v6M22 4v6M4 13h24M10 19h5v5h-5z"/></svg></span><h3>Upcoming events</h3></article>
 <article><span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="24" height="22" rx="2.5"/><circle cx="12" cy="13" r="3"/><path d="M7.5 22c.8-4 8.2-4 9 0M20 12h5M20 17h5M20 22h5"/></svg></span><h3>Your story</h3></article>
 </div></section>
+
+<section class="scd-demo wrap buy-only" id="scoutcard-demo" aria-labelledby="scd-title">
+  <div class="scd-heading"><div><p class="eyebrow">A CLOSER LOOK</p><h2 id="scd-title">See your SCOUTCARD<br><em>come to life.</em></h2></div><p>Preview the card, athlete profile, and email experience.</p></div>
+  <div class="scd-player" data-demo-mode="full" data-demo-state="idle">
+    <div class="scd-topbar"><span class="scd-badge">Sample Preview</span><span class="scd-duration">24-second walkthrough</span></div>
+    <div class="scd-controls" hidden>
+      <button class="scd-play" type="button" aria-controls="scd-stage"><span aria-hidden="true">▶</span> Play demo</button>
+      <button class="scd-full" type="button" aria-controls="scd-stage">View full email</button>
+      <span class="scd-time" aria-hidden="true">0:00 / 0:24</span>
+      <progress class="scd-progress" max="24" value="0" aria-label="Demo playback" aria-valuetext="0 of 24 seconds"></progress>
+    </div>
+    <p class="scd-status" role="status" aria-live="polite" aria-atomic="true">Full sample email. All athlete information is fictional.</p>
+    <div class="scd-layout">
+      <ol class="scd-steps" aria-label="Demonstration chapters">
+        <li data-demo-step="0"><span>01</span><div><strong>Build a profile</strong><p>Your story, stats, and film.</p></div></li>
+        <li data-demo-step="1"><span>02</span><div><strong>Connect your card</strong><p>After delivery and activation.</p></div></li>
+        <li data-demo-step="2"><span>03</span><div><strong>See the email take shape</strong><p>An illustrative email preview.</p></div></li>
+        <li data-demo-step="3"><span>04</span><div><strong>Explore the full preview</strong><p>Take your time. Make it yours.</p></div></li>
+      </ol>
+      <div class="scd-stage" id="scd-stage" tabindex="0" role="region" aria-label="SCOUTCARD demonstration preview">
+        <div class="scd-build" hidden>
+          <div class="scd-scene-heading"><span class="scd-small-label">YOUR STORY, AT A GLANCE</span><h3>Your athlete profile.</h3><p class="scd-build-caption">Add the details you want to share.</p></div>
+          <div class="scd-build-grid">
+            <div class="scd-connect" hidden><figure class="scd-card"><div class="scd-card-art"><img src="assets/scoutcard-blank-back.jpg" alt="SCOUTCARD NFC card with white lettering and blue and coral accents" width="1536" height="1024" loading="lazy" decoding="async"></div><figcaption>YOUR PHYSICAL NFC CARD</figcaption></figure><div class="scd-connection" aria-hidden="true"><span></span><b>↔</b><span></span></div><p class="scd-activation-pill">After delivery and activation</p></div>
+            <div class="scd-profile">
+  <span class="scd-small-label">EXAMPLE ATHLETE PROFILE</span>
+  <div class="scd-identity" data-demo-reveal="700"><span class="scd-avatar" aria-hidden="true">AR</span><div><h4>Alex Rivera</h4><p>Soccer · Forward · Class of 2027</p></div></div>
+  <p class="scd-teams" data-demo-reveal="2200">Summit High School<br>Summit United U18</p>
+  <dl class="scd-stats" data-demo-reveal="3700"><div><dt>Goals</dt><dd>12</dd></div><div><dt>Assists</dt><dd>8</dd></div><div><dt>Matches</dt><dd>18</dd></div><div><dt>GPA</dt><dd>3.7</dd></div></dl>
+  <div class="scd-film" data-demo-reveal="4900"><span aria-hidden="true">▶</span><div><strong>Highlight film</strong><small>Your own video link appears here.</small></div></div>
+  <p class="scd-fiction">Fictional athlete and sample stats.</p>
+</div>
+          </div>
+          <p class="scd-build-note">A free profile. A physical card that shares it.</p>
+        </div>
+        <article class="scd-email" aria-labelledby="scd-email-subject">
+          <div class="scd-mailbar"><span aria-hidden="true">←</span><span>EMAIL PREVIEW</span><span aria-hidden="true">···</span></div>
+          <div class="scd-envelope" data-demo-reveal="11000"><p><span>From</span> <strong>SCOUTCARD</strong><span class="scd-recipient">To: Alex (example)</span></p><h3 id="scd-email-subject" tabindex="-1">Your SCOUTCARD is ready</h3></div>
+          <div class="scd-email-body">
+            <div class="scd-email-intro" data-demo-reveal="12500"><div class="scd-wordmark"><span aria-hidden="true">S</span> SCOUTCARD</div><h4>Your next introduction starts here.</h4><p>Hi Alex, meet your SCOUTCARD: a physical NFC card that connects to your athlete profile. Here’s a preview of what you can share.</p></div>
+            <div class="scd-email-product" data-demo-reveal="14500"><p class="scd-small-label">YOUR CARD + YOUR PROFILE</p><div class="scd-product-grid"><figure class="scd-card"><div class="scd-card-art"><img src="assets/scoutcard-blank-back.jpg" alt="SCOUTCARD NFC card with white lettering and blue and coral accents" width="1536" height="1024" loading="lazy" decoding="async"></div><figcaption>YOUR PHYSICAL NFC CARD</figcaption></figure><div class="scd-profile">
+  <span class="scd-small-label">EXAMPLE ATHLETE PROFILE</span>
+  <div class="scd-identity"><span class="scd-avatar" aria-hidden="true">AR</span><div><h4>Alex Rivera</h4><p>Soccer · Forward · Class of 2027</p></div></div>
+  <p class="scd-teams">Summit High School<br>Summit United U18</p>
+  <dl class="scd-stats"><div><dt>Goals</dt><dd>12</dd></div><div><dt>Assists</dt><dd>8</dd></div><div><dt>Matches</dt><dd>18</dd></div><div><dt>GPA</dt><dd>3.7</dd></div></dl>
+  <div class="scd-film"><span aria-hidden="true">▶</span><div><strong>Highlight film</strong><small>Your own video link appears here.</small></div></div>
+  <p class="scd-fiction">Fictional athlete and sample stats.</p>
+</div></div></div>
+            <div class="scd-inclusions" data-demo-reveal="16500"><div><span aria-hidden="true">01</span><strong>NFC card</strong><p>Tap to share on a compatible phone.</p></div><div><span aria-hidden="true">02</span><strong>Free athlete profile</strong><p>Highlights, stats, academics, and teams.</p></div><div><span aria-hidden="true">03</span><strong>Update anytime</strong><p>Keep your profile current with the same card.</p></div></div>
+            <div class="scd-email-finish" data-demo-reveal="18500"><a class="scd-email-link" href="example-profile.html">View Your SCOUTCARD <span aria-hidden="true">↗</span></a><p class="scd-activation-note">When your card arrives, publish your profile and activate it with the private code supplied with the card.</p><div class="scd-email-footer"><strong>SCOUTCARD</strong><span>scoutcard.tech</span><small>Sample email concept · Example data</small></div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="scd-bottom"><p>This animation illustrates a sample email concept.<br>Buying a card does not automatically create, publish, or activate a profile.</p><a class="scd-buy" href="#order" data-card-purchase>Get your SCOUTCARD <span aria-hidden="true">↗</span></a></div>
+  </div>
+</section>
 <section class="order wrap" id="order"><div><p class="eyebrow">GET YOUR CARD</p><h2>Your<br><em>SCOUTCARD.</em></h2><p><strong>$5 USD · U.S. shipping included.</strong><br>U.S. delivery only. Expected to ship within 30 days of payment. Review the final total in Stripe.</p>
 <p class="order-next" id="pickup-info"><strong>Ashburn-area pickup</strong><br>Available at select times in Ashburn, VA. <a href="mailto:scout.card26@gmail.com?subject=SCOUTCARD%20Ashburn%20pickup">Arrange pickup before ordering →</a></p>
 <p class="order-next"><strong>Already bought a card? Don’t pay again.</strong> <a href="#setup">Continue setup</a> or <a href="activate.html">activate your card</a>.</p><p class="micro">Unused standard cards: 20-day returns. <a href="refunds.html">Read the refund policy →</a></p></div><form id="order-form" aria-describedby="buy-at-your-pace"><div class="order-profile-note" id="buy-at-your-pace"><h3>Buy now. Build later.</h3><p>No finished or published profile required. Drafts stay private. Purchases must be made by an adult (18+) with the required permissions.</p></div><p id="order-known-purchase" class="order-profile-note" role="status" hidden><strong>A card purchase is confirmed for this account.</strong> Don’t pay again for the same card. <a href="#profile">Continue your profile</a> or <a href="family.html">open the parent dashboard</a>, publish when ready, then activate the physical card using its private code.</p><label for="order-email">Email for your order</label><input id="order-email" type="email" required maxlength="254" autocomplete="email" placeholder="name@email.com"><p>Enter delivery details in Stripe. After payment, finish and publish your profile, then activate with the private code supplied with your physical card.</p><button class="button" type="submit">Continue to payment →</button><p id="order-note" role="status">Your email and order reference are saved before Stripe opens. Delivery details are saved after payment. You’re charged only when you pay in Stripe.</p><a id="checkout-resume" hidden>Continue to secure checkout →</a></form></section>
@@ -73,4 +130,4 @@
 <footer class="wrap"><a class="brand" href="#buy"><span class="mark">S</span>SCOUT<span>CARD</span></a><p>© 2026 SCOUTCARD. Built for what’s next.</p><div class="nav-links"><a href="about.html">About us</a><a href="privacy.html">Privacy</a><a href="activate.html">Activate card</a></div></footer>
 <noscript><p class="wrap">Please enable JavaScript to sign in, save your profile, or place an order.</p></noscript>
 
-<script type="module" src="page-loader.js"></script><script type="module" src="navigation.js"></script><script src="site-notice.js" defer></script></body></html>
+<script type="module" src="page-loader.js"></script><script type="module" src="navigation.js"></script><script src="site-notice.js" defer></script><script type="module" src="scoutcard-demo.js"></script></body></html>
